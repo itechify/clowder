@@ -93,6 +93,7 @@ test("redraws Cats chosen by tapping in the scene", async ({ page }) => {
 })
 
 test("shops between Nights by tapping in the scene", async ({ page }) => {
+  test.setTimeout(60_000)
   await boot(page, 1)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
@@ -109,7 +110,7 @@ test("shops between Nights by tapping in the scene", async ({ page }) => {
   // frame rates slow the scene's clock, so allow it a while.
   await expect
     .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
-      timeout: 15_000
+      timeout: 40_000
     })
     .toEqual(["shop"])
   const before = await page.evaluate(() => window.__clowder!.run())

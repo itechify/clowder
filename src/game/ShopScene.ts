@@ -32,10 +32,11 @@ const offerX = (count: number) => {
   )
 }
 
-const title = (word: string) => word[0].toUpperCase() + word.slice(1)
+const capitalise = (word: string) => word[0].toUpperCase() + word.slice(1)
 
 /** A Cat's Coat and Personality, as the Shop labels them. */
-const kind = (cat: Cat) => `${title(cat.coat)} ${title(cat.personality)}`
+const coatAndPersonality = (cat: Cat) =>
+  `${capitalise(cat.coat)} ${capitalise(cat.personality)}`
 
 /** The Roster grouped as the player thinks of it: by Coat, then Personality. */
 const byKind = (roster: Cat[]) =>
@@ -56,7 +57,7 @@ export class ShopScene extends Phaser.Scene {
   /** The Roster Cat picked out to Rehome, awaiting confirmation. */
   private rehoming: CatId | null = null
   /** The offers as first laid out, so an Adopted Cat leaves its card empty. */
-  private slots: CatId[] = []
+  private offerCards: CatId[] = []
   private layer!: Phaser.GameObjects.Container
 
   constructor() {
@@ -66,7 +67,7 @@ export class ShopScene extends Phaser.Scene {
   create() {
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.rehoming = null
-    this.slots = []
+    this.offerCards = []
     this.drawRoom()
     this.layer = this.add.container()
     const off = session.on(() => {
@@ -120,12 +121,12 @@ export class ShopScene extends Phaser.Scene {
     )
 
     // Cats on offer, each with its Adopt price, in the cards they arrived in.
-    if (shop.catOffers.some((cat) => !this.slots.includes(cat.id)))
-      this.slots = shop.catOffers.map((cat) => cat.id)
+    if (shop.catOffers.some((cat) => !this.offerCards.includes(cat.id)))
+      this.offerCards = shop.catOffers.map((cat) => cat.id)
     const adoptPrice = run.config.shop.adoptPrice
-    const xs = offerX(this.slots.length)
+    const xs = offerX(this.offerCards.length)
     const cardWidth = Math.min(156, (WIDTH - 20) / xs.length - 16)
-    this.slots.forEach((id, i) => {
+    this.offerCards.forEach((id, i) => {
       const x = xs[i]
       const card = add(this.add.graphics())
       card
@@ -146,7 +147,11 @@ export class ShopScene extends Phaser.Scene {
           .text(x, OFFER_Y + 30, cat.name, font(17, "#4a3426", "800"))
           .setOrigin(0.5)
       )
-      add(this.add.text(x, OFFER_Y + 52, kind(cat), font(13)).setOrigin(0.5))
+      add(
+        this.add
+          .text(x, OFFER_Y + 52, coatAndPersonality(cat), font(13))
+          .setOrigin(0.5)
+      )
       this.button(
         { x, y: OFFER_Y + 84, w: cardWidth - 28, h: 40 },
         `Adopt ${adoptPrice}`,
@@ -165,7 +170,7 @@ export class ShopScene extends Phaser.Scene {
       18
     )
 
-    // The Roster, where one Cat per visit may be picked out to Rehome.
+    // The Roster, where a Cat may be picked out to Rehome.
     const rehomePrice = run.config.shop.rehomeCatPrice
     const picked = run.roster.find((cat) => cat.id === this.rehoming)
     add(
@@ -174,10 +179,10 @@ export class ShopScene extends Phaser.Scene {
           WIDTH / 2,
           ROSTER_LABEL_Y,
           picked
-            ? `Rehome ${picked.name}, ${kind(picked)}?`
+            ? `Rehome ${picked.name}, ${coatAndPersonality(picked)}?`
             : shop.catRehomesLeft > 0
               ? `Roster ${run.roster.length}. Tap a Cat to Rehome it.`
-              : `Roster ${run.roster.length}. One Cat Rehomed this visit.`,
+              : `Roster ${run.roster.length}. No more Rehoming this visit.`,
           font(15, "#fdf6ea", "700")
         )
         .setOrigin(0.5)
