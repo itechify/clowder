@@ -27,4 +27,5 @@ manifest and a Workbox service worker that precaches the whole game, and
 from the precache. The shell offers to install where the browser supports it
 and asks before a new version takes over (`src/shell/pwa.ts`). The service
 worker is not registered in development. `pnpm icons` regenerates the icons in
-`public/`.
+`public/`: simplified 16/32px favicons, 192/512px app icons, a 180px Apple
+touch icon, and a 512px maskable icon with both Cats inside the safe zone.

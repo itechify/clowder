@@ -1,13 +1,12 @@
-// The app icons: an orange Cat's face on the living-room brown, rasterized
-// without an external graphics dependency. Run with `node scripts/icons.mjs`.
+// Two Cats make a Clowder: shared artwork for app icons and tiny favicons,
+// rasterized without an external graphics dependency. Run with `pnpm icons`.
 
 import { mkdirSync, writeFileSync } from "node:fs"
 import { deflateSync } from "node:zlib"
 
 const BACKGROUND = [59, 42, 34]
-const GLOW = [107, 74, 58]
-const FUR = [240, 146, 60]
-const EAR = [246, 176, 160]
+const ORANGE = [240, 146, 60]
+const CREAM = [255, 225, 177]
 const EYE = [46, 31, 25]
 
 const ellipse = (u, v, cx, cy, rx, ry) =>
@@ -21,20 +20,28 @@ const triangle = (u, v, [ax, ay], [bx, by], [cx, cy]) => {
   return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0))
 }
 
-/** The colour at (u, v), centred coordinates where the face spans about ±0.4. */
-function paint(u, v) {
+/** A Cat in local coordinates; tiny favicons use only the silhouette. */
+function cat(u, v, fur, tiny) {
   const mirrored = Math.abs(u)
-  if (triangle(mirrored, v, [0, 0.1], [0.04, 0.07], [-0.04, 0.07])) return EAR
-  if (ellipse(mirrored, v, 0.11, 0.02, 0.035, 0.06)) return EYE
-  if (triangle(mirrored, v, [0.26, -0.08], [0.24, -0.3], [0.1, -0.17]))
-    return EAR
+  if (!tiny) {
+    if (ellipse(mirrored, v, 0.08, 0.025, 0.018, 0.028)) return EYE
+    if (triangle(u, v, [-0.023, 0.077], [0.023, 0.077], [0, 0.1])) return EYE
+  }
   if (
-    ellipse(u, v, 0, 0.06, 0.32, 0.27) ||
-    triangle(mirrored, v, [0.32, -0.02], [0.27, -0.38], [0.04, -0.17])
+    ellipse(u, v, 0, 0.035, 0.24, 0.2) ||
+    triangle(mirrored, v, [0.235, -0.005], [0.225, -0.3], [0.075, -0.15])
   )
-    return FUR
-  if (u * u + v * v < 0.2) return GLOW
-  return BACKGROUND
+    return fur
+  return null
+}
+
+/** Stagger the heads so all four ears and both faces remain visible. */
+function paint(u, v, tiny) {
+  return (
+    cat((u - 0.19) / 0.94, (v - 0.13) / 0.94, CREAM, tiny) ??
+    cat(u + 0.13, v + 0.055, ORANGE, tiny) ??
+    BACKGROUND
+  )
 }
 
 const crc = (bytes) => {
@@ -55,7 +62,7 @@ const chunk = (name, data) => {
   return Buffer.concat([length, type, data, check])
 }
 
-/** An opaque PNG; `scale` shrinks the face (maskable icons keep a safe zone). */
+/** An opaque PNG; `scale` keeps both Cats inside the maskable safe zone. */
 function png(size, scale) {
   const SAMPLES = 4
   const row = size * 3 + 1
@@ -67,7 +74,7 @@ function png(size, scale) {
         for (let sx = 0; sx < SAMPLES; sx++) {
           const u = ((x + (sx + 0.5) / SAMPLES) / size - 0.5) / scale
           const v = ((y + (sy + 0.5) / SAMPLES) / size - 0.5) / scale
-          const colour = paint(u, v)
+          const colour = paint(u, v, size <= 32)
           for (let i = 0; i < 3; i++) sum[i] += colour[i]
         }
       raw.set(
@@ -90,9 +97,11 @@ function png(size, scale) {
 
 mkdirSync("public", { recursive: true })
 for (const [name, size, scale] of [
+  ["favicon-16.png", 16, 1],
+  ["favicon-32.png", 32, 1],
   ["icon-192.png", 192, 1],
   ["icon-512.png", 512, 1],
-  ["maskable-512.png", 512, 0.8],
+  ["maskable-512.png", 512, 0.75],
   ["apple-touch-icon.png", 180, 0.9]
 ])
   writeFileSync(`public/${name}`, png(size, scale))
