@@ -11,9 +11,12 @@ import {
 } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
 import { session } from "./game/session"
+import { PwaPrompts } from "./shell/PwaPrompts"
+import { pwa } from "./shell/pwa"
 import "./style.css"
 
 if (import.meta.env.DEV) installDebugHook()
+pwa.register()
 
 /** Between-Run screen: how the household did, and a fresh one. */
 function Results() {
@@ -106,6 +109,7 @@ function App() {
     <>
       <div id="game" />
       {over && asleep && <Results />}
+      <PwaPrompts />
     </>
   )
 }
