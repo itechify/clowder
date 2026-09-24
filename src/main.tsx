@@ -4,9 +4,12 @@ import { createRoot } from "react-dom/client"
 import { CouchScene, HEIGHT, RESOLUTION, WIDTH } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
 import { chooseSeed, session } from "./game/session"
+import { PwaPrompts } from "./shell/PwaPrompts"
+import { pwa } from "./shell/pwa"
 import "./style.css"
 
 if (import.meta.env.DEV) installDebugHook()
+pwa.register()
 
 /** Between-Run screen: the Night that ended the Run, and a fresh household. */
 function NightOver() {
@@ -51,6 +54,7 @@ function App() {
     <>
       <div id="game" />
       {session.run.night.status !== "playing" && <NightOver />}
+      <PwaPrompts />
     </>
   )
 }
