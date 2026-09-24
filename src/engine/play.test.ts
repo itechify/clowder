@@ -145,10 +145,8 @@ describe("the end of a Night", () => {
 
     const result = accepted(run, { type: "play" })
 
-    expect(result.run.night.score).toBe(80)
-    expect(result.run.night.status).toBe("cleared")
-    expect(result.run.night.playsLeft).toBe(2)
     expect(result.events).toContainEqual({ type: "nightCleared", score: 80 })
+    expect(result.run.night.number).toBe(2)
   })
 
   it("loses the Night when no Plays remain short of the Target", () => {
@@ -173,8 +171,8 @@ describe("the end of a Night", () => {
     expect(result.events).toContainEqual({ type: "nightLost", score: 10 })
   })
 
-  it("rejects every action once the Night is over", () => {
-    const run = runWithCouch(["aloof"], { config: { firstTarget: 10 } })
+  it("rejects every action once the Night is lost", () => {
+    const run = runWithCouch(["aloof"], { config: { playsPerNight: 1 } })
     const over = apply(run, { type: "play" })
     const cat = over.night.hand[0]
 

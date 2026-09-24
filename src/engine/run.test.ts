@@ -55,6 +55,10 @@ describe("the start of a Night", () => {
     expect(b.roster).toEqual(a.roster)
   })
 
+  it("records the seed it was started from", () => {
+    expect(startRun(42).seed).toBe(42)
+  })
+
   it("gives different draws for different seeds", () => {
     const a = startRun(1)
     const b = startRun(2)

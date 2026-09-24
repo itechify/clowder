@@ -33,6 +33,13 @@ class Session {
     this.emit([])
   }
 
+  /** A fresh Run from a new random seed. */
+  newHousehold() {
+    let seed = chooseSeed("")
+    while (seed === this.run.seed) seed = chooseSeed("")
+    this.start(seed)
+  }
+
   apply(action: Action): ActionResult {
     const result = applyAction(this.run, action)
     if (result.ok) {

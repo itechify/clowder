@@ -11,7 +11,18 @@ export type Config = {
   handSize: number
   seats: number
   playsPerNight: number
+  /** Clearing the last Night wins the Run. */
+  nights: number
   firstTarget: number
+  /** Night n's Target is firstTarget × targetGrowth^(n − 1), rounded. */
+  targetGrowth: number
+  /** Treats for clearing a Night: `early` through Night `earlyNights`, `later` after. */
+  clearReward: {
+    early: number
+    earlyNights: number
+    later: number
+    perUnusedPlay: number
+  }
 }
 
 export const defaultConfig: Config = {
@@ -25,5 +36,8 @@ export const defaultConfig: Config = {
   handSize: 8,
   seats: 5,
   playsPerNight: 3,
-  firstTarget: 300
+  nights: 9,
+  firstTarget: 300,
+  targetGrowth: 1.6,
+  clearReward: { early: 3, earlyNights: 2, later: 4, perUnusedPlay: 1 }
 }
