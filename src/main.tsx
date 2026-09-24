@@ -1,18 +1,14 @@
 import Phaser from "phaser"
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useSyncExternalStore } from "react"
 import { createRoot } from "react-dom/client"
 import { starCat } from "./engine"
-import {
-  CouchScene,
-  HEIGHT,
-  RESOLUTION,
-  SLEEP_MOMENT_MS,
-  WIDTH
-} from "./game/CouchScene"
+import { CouchScene, HEIGHT, RESOLUTION, WIDTH } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
+import { presentation } from "./game/presentation"
 import { session } from "./game/session"
 import { PwaPrompts } from "./shell/PwaPrompts"
 import { pwa } from "./shell/pwa"
+import { SettingsMenu } from "./shell/SettingsMenu"
 import "./style.css"
 
 if (import.meta.env.DEV) installDebugHook()
@@ -79,15 +75,8 @@ function Results() {
 /** The shell: hosts the Phaser canvas and the screens around a Run (ADR-0003). */
 function App() {
   useSyncExternalStore(session.on, () => session.revision)
+  useSyncExternalStore(presentation.on, () => presentation.revision)
   const over = session.run.status !== "playing"
-  // The results wait until the household has fallen asleep in the scene.
-  const [asleep, setAsleep] = useState(false)
-  useEffect(() => {
-    setAsleep(false)
-    if (!over) return
-    const timer = setTimeout(() => setAsleep(true), SLEEP_MOMENT_MS)
-    return () => clearTimeout(timer)
-  }, [over])
   useEffect(() => {
     const game = new Phaser.Game({
       type: Phaser.AUTO,
@@ -108,7 +97,9 @@ function App() {
   return (
     <>
       <div id="game" />
-      {over && asleep && <Results />}
+      <SettingsMenu />
+      {/* The results wait until the household has fallen asleep in the scene. */}
+      {over && presentation.asleep && <Results />}
       <PwaPrompts />
     </>
   )

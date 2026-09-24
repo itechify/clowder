@@ -11,13 +11,28 @@ export type ActiveGathering = {
   seats: number[]
 }
 
+/**
+ * What gave a Cat its Scoring event: its Seat, when the Play scores it. Repeats
+ * will name the House Cat that grants them.
+ */
+export type ScoringSource = "seat"
+
 /** One Cat adding its base Purr plus its Personality bonus. */
 export type ScoringEvent = {
   seat: number
   cat: CatId
+  source: ScoringSource
   basePurr: number
   bonus: number
   purr: number
+  /** Mult added by effects that fire when this Cat scores. */
+  mult: number
+}
+
+/** An effect multiplying the Play's Mult, applied after every Scoring event. */
+export type TimesEffect = {
+  name: string
+  times: number
 }
 
 /** A Play's Score, phase by phase (ADR-0001). */
@@ -26,6 +41,8 @@ export type ScoreBreakdown = {
   gatherings: ActiveGathering[]
   /** Phase 2: in scoring order, left to right by Seat. */
   scoringEvents: ScoringEvent[]
+  /** Phase 3: × effects, each multiplying Mult in turn. */
+  timesEffects: TimesEffect[]
   purr: number
   mult: number
   /** Phase 4: total Purr × Mult, rounded down once. */
@@ -54,7 +71,7 @@ export function previewPlay(run: Run): ScoreBreakdown {
         seats
       })
   }
-  const mult = active.reduce((sum, g) => sum + g.mult, 1)
+  const gatheringMult = active.reduce((sum, g) => sum + g.mult, 1)
 
   // Phase 2: each Cat's Scoring event adds Purr.
   const scoringEvents: ScoringEvent[] = []
@@ -71,19 +88,27 @@ export function previewPlay(run: Run): ScoreBreakdown {
     scoringEvents.push({
       seat,
       cat: cat.id,
+      source: "seat",
       basePurr: cat.basePurr,
       bonus,
-      purr: cat.basePurr + bonus
+      purr: cat.basePurr + bonus,
+      mult: 0
     })
   })
   const purr = scoringEvents.reduce((sum, event) => sum + event.purr, 0)
 
   // Phase 3: × effects multiply Mult. None exist before House Cats.
+  const timesEffects: TimesEffect[] = []
+  const mult = timesEffects.reduce(
+    (product, effect) => product * effect.times,
+    scoringEvents.reduce((sum, event) => sum + event.mult, gatheringMult)
+  )
 
   // Phase 4: Purr × Mult, rounded down only here.
   return {
     gatherings: active,
     scoringEvents,
+    timesEffects,
     purr,
     mult,
     score: Math.floor(purr * mult)

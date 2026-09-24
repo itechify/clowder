@@ -5,6 +5,7 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
+import { presentation } from "./presentation"
 import { session } from "./session"
 
 export type DebugHook = {
@@ -12,6 +13,8 @@ export type DebugHook = {
   preview: () => ScoreBreakdown
   apply: (action: Action) => ActionResult
   start: (seed: number) => void
+  /** Whether a Play's scoring sequence is playing out in the scene. */
+  scoring: () => boolean
 }
 
 declare global {
@@ -30,6 +33,7 @@ export function installDebugHook() {
     run: () => session.run,
     preview: () => previewPlay(session.run),
     apply: (action) => session.apply(action),
-    start: (seed) => session.start(seed)
+    start: (seed) => session.start(seed),
+    scoring: () => presentation.scoring
   }
 }

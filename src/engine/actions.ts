@@ -1,5 +1,10 @@
 import { startNight } from "./run"
-import { type ActiveGathering, previewPlay, type ScoringEvent } from "./scoring"
+import {
+  type ActiveGathering,
+  previewPlay,
+  type ScoringEvent,
+  type TimesEffect
+} from "./scoring"
 import { recordPlay } from "./stats"
 import type { CatId, Night, Run, RunStatus } from "./types"
 
@@ -9,11 +14,26 @@ export type Action =
   | { type: "play" }
   | { type: "redraw"; cats: CatId[] }
 
+/** A Play's Purr and Mult so far, as its Score builds up event by event. */
+export type Tally = { purr: number; mult: number }
+
 /** What happened, in order: the script the renderer animates. */
 export type RunEvent =
-  | ({ type: "gatheringActivated"; firstTime: boolean } & ActiveGathering)
-  | ({ type: "catScored" } & ScoringEvent)
-  | { type: "scoreTotal"; purr: number; mult: number; score: number }
+  | ({
+      type: "gatheringActivated"
+      firstTime: boolean
+      tally: Tally
+    } & ActiveGathering)
+  | ({ type: "catScored"; tally: Tally } & ScoringEvent)
+  | ({ type: "timesEffect"; tally: Tally } & TimesEffect)
+  | {
+      type: "scoreTotal"
+      purr: number
+      mult: number
+      score: number
+      /** The Night's Scores summed, this Play's included. */
+      nightScore: number
+    }
   | { type: "catsDrawn"; cats: CatId[] }
   | { type: "catsRedrawn"; sentOut: CatId[]; drawn: CatId[] }
   | { type: "nightCleared"; score: number }
@@ -115,22 +135,33 @@ function play(run: Run): ActionResult {
   const newlyDiscovered = breakdown.gatherings
     .map((active) => active.gathering)
     .filter((gathering) => !run.discoveredGatherings.includes(gathering))
+  // Each phase in turn (ADR-0001), tallying the Score as it builds.
+  const tally: Tally = { purr: 0, mult: 1 }
   const events: RunEvent[] = [
-    ...breakdown.gatherings.map(
-      (active): RunEvent => ({
+    ...breakdown.gatherings.map((active): RunEvent => {
+      tally.mult += active.mult
+      return {
         type: "gatheringActivated",
         ...active,
-        firstTime: newlyDiscovered.includes(active.gathering)
-      })
-    ),
-    ...breakdown.scoringEvents.map(
-      (event): RunEvent => ({ type: "catScored", ...event })
-    ),
+        firstTime: newlyDiscovered.includes(active.gathering),
+        tally: { ...tally }
+      }
+    }),
+    ...breakdown.scoringEvents.map((event): RunEvent => {
+      tally.purr += event.purr
+      tally.mult += event.mult
+      return { type: "catScored", ...event, tally: { ...tally } }
+    }),
+    ...breakdown.timesEffects.map((effect): RunEvent => {
+      tally.mult *= effect.times
+      return { type: "timesEffect", ...effect, tally: { ...tally } }
+    }),
     {
       type: "scoreTotal",
       purr: breakdown.purr,
       mult: breakdown.mult,
-      score: breakdown.score
+      score: breakdown.score,
+      nightScore: run.night.score + breakdown.score
     }
   ]
   const played = run.night.couch.filter((cat) => cat !== null)

@@ -2,7 +2,8 @@ export {
   type Action,
   type ActionResult,
   applyAction,
-  type RunEvent
+  type RunEvent,
+  type Tally
 } from "./actions"
 export { type Config, defaultConfig } from "./config"
 export type { Coat } from "./content/coats"
@@ -13,7 +14,9 @@ export {
   type ActiveGathering,
   previewPlay,
   type ScoreBreakdown,
-  type ScoringEvent
+  type ScoringEvent,
+  type ScoringSource,
+  type TimesEffect
 } from "./scoring"
 export {
   type BestPlay,
