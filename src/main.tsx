@@ -10,12 +10,12 @@ import {
   WIDTH
 } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
+import { ShopScene } from "./game/ShopScene"
 import { session } from "./game/session"
 import { PwaPrompts } from "./shell/PwaPrompts"
 import { pwa } from "./shell/pwa"
 import "./style.css"
 
-if (import.meta.env.DEV) installDebugHook()
 pwa.register()
 
 /** Between-Run screen: how the household did, and a fresh one. */
@@ -100,9 +100,10 @@ function App() {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
       },
-      scene: [CouchScene],
+      scene: [CouchScene, ShopScene],
       render: { antialias: true }
     })
+    if (import.meta.env.DEV) installDebugHook(game)
     return () => game.destroy(true)
   }, [])
   return (

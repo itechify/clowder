@@ -25,6 +25,8 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
       config,
       rng,
       roster,
+      catsCreated: roster.length,
+      shop: null,
       discoveredGatherings: [],
       status: "playing",
       treats: 0,

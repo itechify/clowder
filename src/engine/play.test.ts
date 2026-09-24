@@ -147,7 +147,7 @@ describe("the end of a Night", () => {
     const result = accepted(run, { type: "play" })
 
     expect(result.events).toContainEqual({ type: "nightCleared", score: 320 })
-    expect(result.run.night.number).toBe(2)
+    expect(result.run.night.status).toBe("cleared")
   })
 
   it("loses the Night when no Plays remain short of the Target", () => {
