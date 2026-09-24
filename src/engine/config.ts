@@ -26,6 +26,16 @@ export type Config = {
     later: number
     perUnusedPlay: number
   }
+  shop: {
+    /** Cats offered for Adoption on each visit. */
+    catOffers: number
+    adoptPrice: number
+    rehomeCatPrice: number
+    catRehomesPerVisit: number
+    /** The first Reroll of a visit costs `rerollPrice`; each costs `rerollPriceStep` more. */
+    rerollPrice: number
+    rerollPriceStep: number
+  }
 }
 
 export const defaultConfig: Config = {
@@ -44,5 +54,13 @@ export const defaultConfig: Config = {
   nights: 9,
   firstTarget: 300,
   targetGrowth: 1.6,
-  clearReward: { early: 3, earlyNights: 2, later: 4, perUnusedPlay: 1 }
+  clearReward: { early: 3, earlyNights: 2, later: 4, perUnusedPlay: 1 },
+  shop: {
+    catOffers: 2,
+    adoptPrice: 3,
+    rehomeCatPrice: 1,
+    catRehomesPerVisit: 1,
+    rerollPrice: 1,
+    rerollPriceStep: 1
+  }
 }

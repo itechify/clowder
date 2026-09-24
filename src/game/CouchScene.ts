@@ -74,7 +74,7 @@ const contiguous = (seats: number[]) =>
 const purrTimesMult = (purr: number, mult: number) =>
   `${purr} Purr × ${mult.toFixed(1)}`
 
-const font = (size: number, colour = "#4a3426", weight = "600") => ({
+export const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
   fontSize: `${size}px`,
   fontStyle: weight,
@@ -116,6 +116,21 @@ export class CouchScene extends Phaser.Scene {
   }
 
   create() {
+    // The Shop may already be open, as when the Run is resumed there.
+    if (session.run.shop) {
+      this.scene.start("shop")
+      return
+    }
+    // Back from the Shop, the scene starts afresh.
+    this.held = null
+    this.lastCouch = []
+    this.redrawing = null
+    this.press = null
+    this.dragging = null
+    this.sprites.clear()
+    this.movedFrom.clear()
+    this.scoring = null
+    this.bedtime = null
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.seatX = seatX(session.run.config.seats)
     this.lastDrawn = session.run
@@ -156,6 +171,13 @@ export class CouchScene extends Phaser.Scene {
       // A sequence still playing is overtaken: it ends at its final state.
       this.scoring?.finish("overtaken")
       this.bedtime?.remove()
+      // A cleared Night's sequence opens the Shop when it finishes; opened
+      // any other way, the Shop takes over at once.
+      const shopOpened = events.some((event) => event.type === "shopOpened")
+      if (session.run.shop && !shopOpened) {
+        this.scene.start("shop")
+        return
+      }
       const before = this.lastDrawn
       this.lastDrawn = session.run
       if (events.length === 0) {
@@ -1001,6 +1023,11 @@ export class CouchScene extends Phaser.Scene {
       presentation.update({ scoring: false })
       // Overtaken, the next sequence or draw shows what comes after.
       if (ending === "overtaken") return
+      // The Night is cleared: its celebration is over, so off to the Shop.
+      if (session.run.shop) {
+        this.scene.start("shop")
+        return
+      }
       this.draw(ended)
       if (ended)
         this.bedtime = this.time.delayedCall(SLEEP_MOMENT_MS, () =>

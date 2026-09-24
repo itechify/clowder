@@ -22,6 +22,7 @@ test("plays a seeded Run through to its results", async ({ page }) => {
     const scores: [number, number][] = []
     const seed = run().seed
     while (run().status === "playing") {
+      if (run().shop) apply({ type: "leaveShop" })
       run()
         .night.hand.slice(0, 5)
         .forEach((cat, seat) => {
@@ -77,4 +78,54 @@ test("redraws Cats chosen by tapping in the scene", async ({ page }) => {
   expect(after.night.hand).not.toContain(second)
   expect(after.night.hand).toHaveLength(8)
   expect(after.night.drawPile).toEqual(before.night.drawPile.slice(2))
+})
+
+test("shops between Nights by tapping in the scene", async ({ page }) => {
+  test.setTimeout(60_000)
+  await boot(page, 1)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (!run().shop) {
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+  })
+  // The cleared Night celebrates on the Couch, then the Shop opens; headless
+  // frame rates slow the scene's clock, so allow it a while.
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
+      timeout: 40_000
+    })
+    .toEqual(["shop"])
+  const before = await page.evaluate(() => window.__clowder!.run())
+  expect(before.treats).toBe(5)
+  const [offer] = before.shop!.catOffers
+
+  // Adopt the first offer, pick out and Rehome a Roster Cat, then Reroll
+  // (see ShopScene's layout).
+  await tap(page, 105, 284)
+  await tap(page, 43, 440)
+  await tap(page, 105, 790)
+  await tap(page, 195, 345)
+
+  const after = await page.evaluate(() => window.__clowder!.run())
+  expect(after.treats).toBe(0)
+  expect(after.roster.map((cat) => cat.id)).toContain(offer.id)
+  expect(after.roster).toHaveLength(30)
+  expect(after.shop!.rerollPrice).toBe(2)
+
+  await tap(page, 285, 790)
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scenes()))
+    .toEqual(["couch"])
+  const next = await page.evaluate(() => window.__clowder!.run())
+  expect(next.shop).toBeNull()
+  expect(next.night.number).toBe(2)
+  expect([...next.night.hand, ...next.night.drawPile].sort()).toEqual(
+    after.roster.map((cat) => cat.id).sort()
+  )
 })

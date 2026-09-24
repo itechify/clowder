@@ -1,18 +1,24 @@
-import { startNight } from "./run"
 import {
   type ActiveGathering,
   previewPlay,
   type ScoringEvent,
   type TimesEffect
 } from "./scoring"
+import {
+  applyShopAction,
+  isShopAction,
+  openShop,
+  type ShopAction
+} from "./shop"
 import { recordPlay } from "./stats"
-import type { CatId, Night, Run, RunStatus } from "./types"
+import type { Cat, CatId, Night, Run, RunStatus } from "./types"
 
 export type Action =
   | { type: "place"; cat: CatId; seat: number }
   | { type: "unseat"; cat: CatId }
   | { type: "play" }
   | { type: "redraw"; cats: CatId[] }
+  | ShopAction
 
 /** A Play's Purr and Mult so far, as its Score builds up event by event. */
 export type Tally = { purr: number; mult: number }
@@ -43,6 +49,11 @@ export type RunEvent =
       forUnusedPlays: number
       treats: number
     }
+  | { type: "shopOpened" }
+  | { type: "catAdopted"; cat: Cat; price: number }
+  | { type: "catRehomed"; cat: Cat; price: number }
+  | { type: "offersRerolled"; offers: Cat[]; price: number }
+  | { type: "nightStarted"; night: number }
   | { type: "nightLost"; score: number }
   | { type: "runEnded"; outcome: Exclude<RunStatus, "playing"> }
 
@@ -55,6 +66,11 @@ export function applyAction(run: Run, action: Action): ActionResult {
   const reject = (reason: string): ActionResult => ({ ok: false, run, reason })
   const { night } = run
   if (run.status !== "playing") return reject("The Run is over")
+  if (isShopAction(action)) {
+    if (!run.shop) return reject("The Shop is closed")
+    return applyShopAction(run, run.shop, action)
+  }
+  if (run.shop) return reject("The Night is over; leave the Shop first")
   const withCouch = (couch: (CatId | null)[]): ActionResult => ({
     ok: true,
     run: { ...run, night: { ...night, couch } },
@@ -213,7 +229,7 @@ function loseRun(run: Run, events: RunEvent[]): ActionResult {
   }
 }
 
-/** Pays the cleared Night's Treats, then starts the next Night or wins the Run. */
+/** Pays the cleared Night's Treats, then opens the Shop or wins the Run. */
 function clearNight(run: Run, events: RunEvent[]): ActionResult {
   const { config, night } = run
   const reward = config.clearReward
@@ -230,8 +246,10 @@ function clearNight(run: Run, events: RunEvent[]): ActionResult {
     treats: run.treats + treats,
     stats: { ...run.stats, nightsCleared: run.stats.nightsCleared + 1 }
   }
-  if (night.number < config.nights)
-    return { ok: true, run: startNight(paid, night.number + 1), events }
+  if (night.number < config.nights) {
+    events.push({ type: "shopOpened" })
+    return { ok: true, run: openShop(paid), events }
+  }
   events.push({ type: "runEnded", outcome: "won" })
   return { ok: true, run: { ...paid, status: "won" }, events }
 }

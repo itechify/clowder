@@ -2,8 +2,8 @@ import { useState, useSyncExternalStore } from "react"
 import { scoringSpeeds, settings } from "./settings"
 
 /**
- * The settings button, pinned to the wall of the scene above the Couch, and
- * the panel it opens.
+ * The settings button, pinned to the top of the scene between its headings,
+ * and the panel it opens.
  */
 export function SettingsMenu() {
   useSyncExternalStore(settings.on, () => settings.revision)
@@ -17,8 +17,23 @@ export function SettingsMenu() {
           aria-label="Settings"
           onClick={() => setOpen(true)}
         >
-          {/* The text presentation keeps the gear in the room's palette. */}
-          {"\u2699\uFE0E"}
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+              <rect
+                key={angle}
+                x="10.25"
+                y="1.5"
+                width="3.5"
+                height="5"
+                rx="1"
+                transform={`rotate(${angle} 12 12)`}
+              />
+            ))}
+            <path
+              fillRule="evenodd"
+              d="M12 5a7 7 0 1 0 0 14a7 7 0 1 0 0-14zm0 4.2a2.8 2.8 0 1 1 0 5.6a2.8 2.8 0 1 1 0-5.6z"
+            />
+          </svg>
         </button>
       </div>
       {open && (

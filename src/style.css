@@ -181,23 +181,27 @@ body,
   pointer-events: none;
 }
 
-/* On the wall, below the HUD and clear of the window. */
+/* Top centre, between the headings of both the Couch and the Shop: a 44px
+   target at the scene's scale, centred on (168, 36). */
 .settings-button {
   position: absolute;
-  left: 5.1%;
-  top: 14%;
-  width: 10%;
+  left: 37.4%;
+  top: 1.66%;
+  width: 11.3%;
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 50%;
-  background: #e9cfa9;
-  color: #4a3426;
-  font-size: 6.4cqw;
-  line-height: 1;
+  background: none;
+  color: #7a5a3c;
   cursor: pointer;
   pointer-events: auto;
-  box-shadow: inset 0 0 0 2px #c9a57c;
+}
+
+.settings-button svg {
+  width: 68%;
+  fill: currentColor;
 }
 
 .choices {

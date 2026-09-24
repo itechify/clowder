@@ -6,9 +6,12 @@ export {
   type Tally
 } from "./actions"
 export { type Config, defaultConfig } from "./config"
-export type { Coat } from "./content/coats"
+export { type Coat, coats } from "./content/coats"
 export type { GatheringId } from "./content/gatherings"
-export type { Personality } from "./content/personalities"
+export {
+  type Personality,
+  personalities
+} from "./content/personalities"
 export { startRun } from "./run"
 export {
   type ActiveGathering,
@@ -18,6 +21,7 @@ export {
   type ScoringSource,
   type TimesEffect
 } from "./scoring"
+export type { ShopAction } from "./shop"
 export {
   type BestPlay,
   type RunStats,
@@ -30,5 +34,6 @@ export type {
   Night,
   NightStatus,
   Run,
-  RunStatus
+  RunStatus,
+  Shop
 } from "./types"

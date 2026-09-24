@@ -34,6 +34,15 @@ export type Night = {
 
 export type RunStatus = "playing" | "won" | "lost"
 
+/** The visit between Nights where Treats are spent. */
+export type Shop = {
+  /** New Cats, not yet in the Roster, that may be Adopted. */
+  catOffers: Cat[]
+  catRehomesLeft: number
+  /** What the next Reroll costs; it rises with each Reroll this visit. */
+  rerollPrice: number
+}
+
 /** A Run is plain, serialisable data; every rule reads it and none mutate it. */
 export type Run = {
   /** Together with the actions applied, reproduces the Run exactly. */
@@ -41,7 +50,11 @@ export type Run = {
   config: Config
   rng: RngState
   roster: Cat[]
+  /** Cats created this Run, Roster and Shop offers alike; numbers new ids. */
+  catsCreated: number
   night: Night
+  /** Open between a cleared Night and the next; null during a Night. */
+  shop: Shop | null
   /** Gatherings activated by any Play so far this Run, in discovery order. */
   discoveredGatherings: GatheringId[]
   status: RunStatus

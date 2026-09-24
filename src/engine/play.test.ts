@@ -100,7 +100,7 @@ describe("Play", () => {
     ])
   })
 
-  it("scripts a Night-clearing Play phase by phase, then its Treats", () => {
+  it("scripts a Night-clearing Play phase by phase, then its Treats and the Shop", () => {
     const run = runWithCouch([
       "orange sleepy",
       "orange sleepy",
@@ -144,7 +144,8 @@ describe("Play", () => {
         nightScore: 340
       },
       { type: "nightCleared", score: 340 },
-      { type: "treatsAwarded", forNight: 3, forUnusedPlays: 2, treats: 5 }
+      { type: "treatsAwarded", forNight: 3, forUnusedPlays: 2, treats: 5 },
+      { type: "shopOpened" }
     ])
   })
 
@@ -287,7 +288,7 @@ describe("the end of a Night", () => {
     const result = accepted(run, { type: "play" })
 
     expect(result.events).toContainEqual({ type: "nightCleared", score: 320 })
-    expect(result.run.night.number).toBe(2)
+    expect(result.run.night.status).toBe("cleared")
   })
 
   it("loses the Night when no Plays remain short of the Target", () => {

@@ -59,6 +59,31 @@ test("scores at the chosen speed, and keeps it", async ({ page }) => {
   await expect(settings.getByRole("radio", { name: "4×" })).toBeChecked()
 })
 
+test("opens the Shop once a cleared Night's sequence is skipped", async ({
+  page
+}) => {
+  await boot(page, 1)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (!run().shop) {
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+  })
+  const scenes = () => page.evaluate(() => window.__clowder!.scenes())
+
+  // The clearing Play scores on the Couch first.
+  expect(await scoring(page)).toBe(true)
+  expect(await scenes()).toEqual(["couch"])
+  await tap(page, ...layout.wall)
+
+  await expect.poll(scenes).toEqual(["shop"])
+})
+
 test("drags Cats onto Seats, between them, and off the Couch", async ({
   page
 }) => {
