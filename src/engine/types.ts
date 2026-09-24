@@ -22,6 +22,7 @@ export type Night = {
   /** Scores of this Night's Plays so far, summed. */
   score: number
   playsLeft: number
+  redrawsLeft: number
   drawPile: CatId[]
   /** Every drawn, unplayed Cat, including those seated on the Couch. */
   hand: CatId[]

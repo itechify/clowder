@@ -36,6 +36,7 @@ function startNight(
     target: config.firstTarget,
     score: 0,
     playsLeft: config.playsPerNight,
+    redrawsLeft: config.redrawsPerNight,
     drawPile: shuffled.slice(config.handSize),
     hand: shuffled.slice(0, config.handSize),
     couch: Array.from({ length: config.seats }, () => null),

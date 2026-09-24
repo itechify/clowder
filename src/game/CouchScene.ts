@@ -20,7 +20,8 @@ const HAND_ROW_Y = 585
 const HAND_ROW_HEIGHT = 105
 const PREVIEW_Y = 446
 const BREAKDOWN_Y = 486
-const BUTTON = { x: WIDTH / 2, y: 790, w: 230, h: 58 }
+const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
+const REDRAW_BUTTON = { x: 316, y: 790, w: 108, h: 58 }
 
 /** Seat centres, spread evenly between the Couch's arms. */
 const seatX = (seats: number) =>
@@ -52,6 +53,8 @@ export class CouchScene extends Phaser.Scene {
   private held: CatId | null = null
   /** The Cat just seated, which snaps into place on the next draw. */
   private landed: CatId | null = null
+  /** The Cats chosen to Redraw, or null when not choosing. */
+  private redrawing: CatId[] | null = null
   private layer!: Phaser.GameObjects.Container
   private seatX: number[] = []
 
@@ -71,11 +74,16 @@ export class CouchScene extends Phaser.Scene {
         .on("pointerdown", () => this.tapSeat(seat))
     })
     this.add
-      .zone(BUTTON.x, BUTTON.y, BUTTON.w, BUTTON.h)
+      .zone(PLAY_BUTTON.x, PLAY_BUTTON.y, PLAY_BUTTON.w, PLAY_BUTTON.h)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.tapPlay())
+    this.add
+      .zone(REDRAW_BUTTON.x, REDRAW_BUTTON.y, REDRAW_BUTTON.w, REDRAW_BUTTON.h)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.tapRedraw())
     const off = session.on((events) => {
       if (events.length === 0) this.held = null
+      this.redrawing = null
       this.draw()
       this.celebrate(events)
     })
@@ -85,7 +93,9 @@ export class CouchScene extends Phaser.Scene {
 
   private tapSeat(seat: number) {
     const occupant = session.run.night.couch[seat]
-    if (this.held) {
+    if (this.redrawing) {
+      if (occupant) this.chooseForRedraw(occupant)
+    } else if (this.held) {
       const cat = this.held
       this.held = null
       if (session.apply({ type: "place", cat, seat }).ok) this.landed = cat
@@ -96,13 +106,56 @@ export class CouchScene extends Phaser.Scene {
   }
 
   private tapHandCat(cat: CatId) {
+    if (this.redrawing) return this.chooseForRedraw(cat)
     this.held = this.held === cat ? null : cat
     this.draw()
   }
 
+  /** Plays, or while choosing Cats to Redraw, stops choosing. */
   private tapPlay() {
     this.held = null
-    session.apply({ type: "play" })
+    if (this.redrawing) {
+      this.redrawing = null
+      this.draw()
+    } else {
+      session.apply({ type: "play" })
+    }
+  }
+
+  /** Starts choosing Cats to Redraw, then swaps the chosen Cats. */
+  private tapRedraw() {
+    this.held = null
+    if (!this.redrawing) {
+      if (!this.canRedraw()) return
+      this.redrawing = []
+      this.draw()
+    } else {
+      session.apply({ type: "redraw", cats: this.redrawing })
+    }
+  }
+
+  /** Toggles a Cat in or out of the Redraw, as far as the engine allows. */
+  private chooseForRedraw(cat: CatId) {
+    const chosen = this.redrawing ?? []
+    const next = chosen.includes(cat)
+      ? chosen.filter((c) => c !== cat)
+      : [...chosen, cat]
+    if (
+      next.length < chosen.length ||
+      applyAction(session.run, { type: "redraw", cats: next }).ok
+    ) {
+      this.redrawing = next
+      this.draw()
+    }
+  }
+
+  /** Whether any Redraw is possible now; the engine decides. */
+  private canRedraw() {
+    const { hand } = session.run.night
+    return (
+      hand.length > 0 &&
+      applyAction(session.run, { type: "redraw", cats: [hand[0]] }).ok
+    )
   }
 
   /** The static living room: wall, window, rug, and the Couch itself. */
@@ -171,6 +224,24 @@ export class CouchScene extends Phaser.Scene {
         )
         .setOrigin(0.5)
     )
+    add(this.add.text(20, 94, `Draw pile ${night.drawPile.length}`, font(15)))
+    add(
+      this.add
+        .text(WIDTH - 20, 94, `Redraws ${night.redrawsLeft}`, font(15))
+        .setOrigin(1, 0)
+    )
+
+    // A Cat chosen to Redraw glows cool, like one about to leave.
+    const chosen = new Set(this.redrawing)
+    const markChosen = (x: number, y: number) => {
+      const mark = add(this.add.graphics())
+      mark
+        .fillStyle(0xc9dcf2, 0.95)
+        .fillRoundedRect(x - 40, y - 52, 80, 100, 16)
+      mark
+        .lineStyle(3, 0x4f79a8, 1)
+        .strokeRoundedRect(x - 40, y - 52, 80, 100, 16)
+    }
 
     // Seated Cats with their live Personality bonus floating above, inside
     // whichever Gatherings they form.
@@ -178,6 +249,7 @@ export class CouchScene extends Phaser.Scene {
     this.drawGatherings(add, preview.gatherings, "behind")
     for (const event of preview.scoringEvents) {
       const cat = catById.get(event.cat)!
+      if (chosen.has(event.cat)) markChosen(this.seatX[event.seat], SEAT_Y - 4)
       const sprite = add(drawCat(this, cat, 64))
       sprite.setPosition(this.seatX[event.seat], SEAT_Y - 12)
       if (event.cat === this.landed) {
@@ -195,7 +267,7 @@ export class CouchScene extends Phaser.Scene {
             this.seatX[event.seat],
             SEAT_Y + 38,
             cat.name,
-            font(11, "#f6f1e4")
+            font(11, chosen.has(event.cat) ? "#4a3426" : "#f6f1e4")
           )
           .setOrigin(0.5)
       )
@@ -219,9 +291,11 @@ export class CouchScene extends Phaser.Scene {
         .text(
           WIDTH / 2,
           PREVIEW_Y,
-          preview.scoringEvents.length
-            ? `${preview.purr} Purr × ${preview.mult.toFixed(1)} = ${preview.score}`
-            : "Tap a Cat, then a Seat",
+          this.redrawing
+            ? `Choose up to ${run.config.catsPerRedraw} Cats to Redraw`
+            : preview.scoringEvents.length
+              ? `${preview.purr} Purr × ${preview.mult.toFixed(1)} = ${preview.score}`
+              : "Tap a Cat, then a Seat",
           font(20, "#4a3426", "800")
         )
         .setOrigin(0.5)
@@ -250,6 +324,7 @@ export class CouchScene extends Phaser.Scene {
         const x = 60 + (i % HAND_COLUMNS) * 90
         const y = HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
         const held = id === this.held
+        if (chosen.has(id)) markChosen(x, y - 10)
         if (held) {
           const glow = add(this.add.graphics())
           glow
@@ -264,29 +339,56 @@ export class CouchScene extends Phaser.Scene {
           .on("pointerdown", () => this.tapHandCat(id))
         add(
           this.add
-            .text(x, y + 30, cat.name, font(12, held ? "#4a3426" : "#fdf6ea"))
+            .text(
+              x,
+              y + 30,
+              cat.name,
+              font(12, held || chosen.has(id) ? "#4a3426" : "#fdf6ea")
+            )
             .setOrigin(0.5)
         )
       })
 
-    // Play: "Get Comfy". Dimmed until a Cat is on the Couch.
-    const ready = applyAction(run, { type: "play" }).ok
-    const button = add(this.add.graphics())
-    button
+    // Play: "Get Comfy", dimmed until a Cat is on the Couch; while choosing
+    // Cats to Redraw it backs out instead. Beside it, Redraw, then the swap.
+    const choosing = this.redrawing
+    this.drawButton(
+      PLAY_BUTTON,
+      choosing ? "Cancel" : "Get Comfy",
+      choosing !== null || applyAction(run, { type: "play" }).ok,
+      add
+    )
+    this.drawButton(
+      REDRAW_BUTTON,
+      choosing ? `Swap ${choosing.length}` : "Redraw",
+      choosing
+        ? applyAction(run, { type: "redraw", cats: choosing }).ok
+        : this.canRedraw(),
+      add
+    )
+  }
+
+  private drawButton(
+    area: typeof PLAY_BUTTON,
+    label: string,
+    ready: boolean,
+    add: <T extends Phaser.GameObjects.GameObject>(object: T) => T
+  ) {
+    add(this.add.graphics())
       .fillStyle(ready ? 0x4a3426 : 0x9c8672, 1)
       .fillRoundedRect(
-        BUTTON.x - BUTTON.w / 2,
-        BUTTON.y - BUTTON.h / 2,
-        BUTTON.w,
-        BUTTON.h,
+        area.x - area.w / 2,
+        area.y - area.h / 2,
+        area.w,
+        area.h,
         29
       )
     add(
       this.add
         .text(
-          BUTTON.x,
-          BUTTON.y,
-          "Get Comfy",
+          area.x,
+          area.y,
+          label,
           font(22, ready ? "#fdf6ea" : "#e6d8c6", "800")
         )
         .setOrigin(0.5)
