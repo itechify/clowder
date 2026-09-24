@@ -53,3 +53,31 @@ test("plays a seeded Night through to its end", async ({ page }) => {
   expect(fresh.night.status).toBe("playing")
   expect(fresh.night.hand).toHaveLength(8)
 })
+
+/** Taps the canvas at a point in the scene's 390×844 portrait layout. */
+async function tap(page: Page, x: number, y: number) {
+  const box = (await page.locator("#game canvas").boundingBox())!
+  await page.mouse.click(
+    box.x + (x / 390) * box.width,
+    box.y + (y / 844) * box.height
+  )
+}
+
+test("redraws Cats chosen by tapping in the scene", async ({ page }) => {
+  await boot(page, 7)
+  const before = await page.evaluate(() => window.__clowder!.run())
+  const [first, second] = before.night.hand
+
+  // Redraw, the first two Hand Cats, then Swap (see CouchScene's layout).
+  await tap(page, 316, 790)
+  await tap(page, 60, 585)
+  await tap(page, 150, 585)
+  await tap(page, 316, 790)
+
+  const after = await page.evaluate(() => window.__clowder!.run())
+  expect(after.night.redrawsLeft).toBe(1)
+  expect(after.night.hand).not.toContain(first)
+  expect(after.night.hand).not.toContain(second)
+  expect(after.night.hand).toHaveLength(8)
+  expect(after.night.drawPile).toEqual(before.night.drawPile.slice(2))
+})

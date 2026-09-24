@@ -7,14 +7,7 @@ import {
   type Run,
   startRun
 } from "./index"
-import { runWithCouch } from "./testing"
-
-/** Applies an action that must be accepted, returning the next Run and its events. */
-function accepted(run: Run, action: Action) {
-  const result = applyAction(run, action)
-  if (!result.ok) throw new Error(result.reason)
-  return result
-}
+import { accepted, runWithCouch } from "./testing"
 
 function apply(run: Run, ...actions: Action[]) {
   let next = run
@@ -171,6 +164,28 @@ describe("the end of a Night", () => {
     const result = accepted(run, { type: "play" })
 
     expect(result.events).toContainEqual({ type: "nightLost", score: 10 })
+  })
+
+  it("loses the Night when Plays remain but no Cats are left to seat", () => {
+    let run = startRun(1, {
+      ...defaultConfig,
+      playsPerNight: 10,
+      firstTarget: 10_000
+    })
+    // The 30-Cat Roster fills six Couches; the sixth Plays the last of them.
+    for (let play = 0; play < 5; play++)
+      run = apply(seatFromHand(run, 5), { type: "play" })
+    expect(run.night.drawPile).toEqual([])
+
+    const result = accepted(seatFromHand(run, 5), { type: "play" })
+
+    expect(result.run.night.hand).toEqual([])
+    expect(result.run.night.playsLeft).toBe(4)
+    expect(result.run.night.status).toBe("lost")
+    expect(result.events).toContainEqual({
+      type: "nightLost",
+      score: result.run.night.score
+    })
   })
 
   it("rejects every action once the Night is over", () => {

@@ -11,6 +11,9 @@ export type Config = {
   handSize: number
   seats: number
   playsPerNight: number
+  redrawsPerNight: number
+  /** The most Cats one Redraw may swap. */
+  catsPerRedraw: number
   firstTarget: number
 }
 
@@ -25,5 +28,7 @@ export const defaultConfig: Config = {
   handSize: 8,
   seats: 5,
   playsPerNight: 3,
+  redrawsPerNight: 2,
+  catsPerRedraw: 3,
   firstTarget: 300
 }
