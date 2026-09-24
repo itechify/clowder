@@ -22,8 +22,14 @@ const PREVIEW_Y = 452
 const BUTTON = { x: WIDTH / 2, y: 790, w: 230, h: 58 }
 /** How long the final Play's Score lingers before the lights go down. */
 const LIGHTS_OUT_DELAY = 1200
+/** The first Cat nods off this long after the lights go down... */
+const FIRST_NOD = 400
+/** ...and the last this long after the first, however many there are. */
+const NODDING_SPREAD = 1200
+const NOD_DURATION = 500
 /** From the Run's last Play until the Cats are all asleep; then the results. */
-export const SLEEP_MOMENT_MS = 3600
+export const SLEEP_MOMENT_MS =
+  LIGHTS_OUT_DELAY + FIRST_NOD + NODDING_SPREAD + NOD_DURATION + 300
 
 /** Where the `i`th Cat of the Hand not on the Couch sits on the rug. */
 const handSpot = (i: number) => ({
@@ -346,7 +352,10 @@ export class CouchScene extends Phaser.Scene {
       })
     sleepers.forEach(({ cat, x, y, size }, i) => {
       // Each Cat nods off a moment after the one before it.
-      const nodOff = LIGHTS_OUT_DELAY + 400 + i * 120
+      const nodOff =
+        LIGHTS_OUT_DELAY +
+        FIRST_NOD +
+        (NODDING_SPREAD * i) / Math.max(1, sleepers.length - 1)
       const asleep = add(drawCat(this, cat, size, { asleep: true }))
       asleep.setPosition(x, y)
       if (animate) {
@@ -356,13 +365,13 @@ export class CouchScene extends Phaser.Scene {
           targets: awake,
           alpha: 0,
           delay: nodOff,
-          duration: 500
+          duration: NOD_DURATION
         })
         this.tweens.add({
           targets: asleep,
           alpha: 1,
           delay: nodOff,
-          duration: 500
+          duration: NOD_DURATION
         })
       }
       const z = add(

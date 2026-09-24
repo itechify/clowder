@@ -9,7 +9,7 @@ export type BestPlay = {
   score: number
 }
 
-/** What the results scene shows once the Run ends. */
+/** How the Run has gone, for the results once it ends. */
 export type RunStats = {
   nightsCleared: number
   bestPlay: BestPlay | null
@@ -42,9 +42,12 @@ export function recordPlay(run: Run, breakdown: ScoreBreakdown): RunStats {
   return { ...stats, bestPlay: best, purrByCat }
 }
 
+/** A Cat and all the Purr it has contributed this Run. */
+export type StarCat = { cat: Cat; purr: number }
+
 /** The Cat that has contributed the most Purr this Run; earlier Roster Cats win ties. */
-export function starCat(run: Run): { cat: Cat; purr: number } | undefined {
-  let star: { cat: Cat; purr: number } | undefined
+export function starCat(run: Run): StarCat | undefined {
+  let star: StarCat | undefined
   for (const cat of run.roster) {
     const purr = run.stats.purrByCat[cat.id] ?? 0
     if (purr > (star?.purr ?? 0)) star = { cat, purr }

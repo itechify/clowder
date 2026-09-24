@@ -74,7 +74,7 @@ function drawCoatIcon(g: Phaser.GameObjects.Graphics, coat: Coat, r: number) {
 function drawFace(
   g: Phaser.GameObjects.Graphics,
   coat: Coat,
-  look: Personality,
+  personality: Personality,
   headX: number,
   headY: number,
   r: number
@@ -82,7 +82,7 @@ function drawFace(
   const ink = featureColour(coat)
   const eyeY = headY - r * 0.05
   const eyeDx = r * 0.38
-  switch (look) {
+  switch (personality) {
     case "clingy":
       g.fillStyle(ink, 1)
       g.fillCircle(headX - eyeDx, eyeY, r * 0.16)
@@ -186,8 +186,9 @@ export function drawCat(
 ): Phaser.GameObjects.Container {
   const g = scene.add.graphics()
   const r = size * 0.24
-  const look: Personality = asleep ? "sleepy" : cat.personality
-  const p = pose[look]
+  // Asleep, every Cat curls up like a Sleepy one.
+  const posed: Personality = asleep ? "sleepy" : cat.personality
+  const p = pose[posed]
   const bodyW = size * 0.66
   const bodyH = size * 0.5 * p.bodyH
   const bodyY = size * 0.28 - bodyH / 2
@@ -242,8 +243,8 @@ export function drawCat(
       r * 0.4
     )
   }
-  drawFace(g, cat.coat, look, headX, headY, r)
-  if (look === "sleepy") {
+  drawFace(g, cat.coat, posed, headX, headY, r)
+  if (posed === "sleepy") {
     g.lineStyle(2, 0x6b7fd7, 1)
     const zx = headX + r * 0.9
     const zy = headY - r * 1.1

@@ -1,7 +1,7 @@
 import { startNight } from "./run"
 import { previewPlay, type ScoringEvent } from "./scoring"
 import { recordPlay } from "./stats"
-import type { CatId, Night, Run } from "./types"
+import type { CatId, Night, Run, RunStatus } from "./types"
 
 export type Action =
   | { type: "place"; cat: CatId; seat: number }
@@ -21,7 +21,7 @@ export type RunEvent =
       treats: number
     }
   | { type: "nightLost"; score: number }
-  | { type: "runEnded"; outcome: "won" | "lost" }
+  | { type: "runEnded"; outcome: Exclude<RunStatus, "playing"> }
 
 export type ActionResult =
   | { ok: true; run: Run; events: RunEvent[] }
@@ -31,7 +31,7 @@ export type ActionResult =
 export function applyAction(run: Run, action: Action): ActionResult {
   const reject = (reason: string): ActionResult => ({ ok: false, run, reason })
   const { night } = run
-  if (night.status !== "playing") return reject("The Night is over")
+  if (run.status !== "playing") return reject("The Run is over")
   const withCouch = (couch: (CatId | null)[]): ActionResult => ({
     ok: true,
     run: { ...run, night: { ...night, couch } },

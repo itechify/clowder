@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import {
-  type Action,
   applyAction,
   type Config,
   defaultConfig,
@@ -8,13 +7,7 @@ import {
   starCat,
   startRun
 } from "./index"
-import { runWithCouch } from "./testing"
-
-function accepted(run: Run, action: Action) {
-  const result = applyAction(run, action)
-  if (!result.ok) throw new Error(result.reason)
-  return result
-}
+import { accepted, runWithCouch } from "./testing"
 
 /** Seats the first `count` Cats of the Hand from Seat 0 and Plays them. */
 function playFromHand(run: Run, count = 1) {
@@ -28,6 +21,16 @@ function playFromHand(run: Run, count = 1) {
 /** A Run in which every Play, however small, clears its Night. */
 const easyRun = (seed = 1, config: Partial<Config> = {}) =>
   startRun(seed, { ...defaultConfig, basePurr: 1_000_000, ...config })
+
+/**
+ * Plays a Run of lone Cats until it ends on Night 3: one-Cat Plays score 10
+ * to 25, so three always reach Night 2's Target of 30 and never Night 3's of 90.
+ */
+function lostOnNight3() {
+  let run = startRun(7, { ...defaultConfig, firstTarget: 10, targetGrowth: 3 })
+  while (run.status === "playing") run = playFromHand(run).run
+  return run
+}
 
 describe("clearing a Night", () => {
   it("starts the next Night with a fresh Hand of 8 and three Plays", () => {
@@ -132,14 +135,7 @@ describe("the end of a Run", () => {
   })
 
   it("can come on a later Night", () => {
-    // One-Cat Plays score 10 to 25, so three always reach Night 2's Target of
-    // 30 and never Night 3's of 90.
-    let run = startRun(7, {
-      ...defaultConfig,
-      firstTarget: 10,
-      targetGrowth: 3
-    })
-    while (run.status === "playing") run = playFromHand(run).run
+    const run = lostOnNight3()
 
     expect(run.status).toBe("lost")
     expect(run.night.number).toBe(3)
@@ -163,12 +159,7 @@ describe("Run statistics", () => {
   it("count the Nights cleared", () => {
     let won = easyRun()
     while (won.status === "playing") won = playFromHand(won).run
-    let lost = startRun(7, {
-      ...defaultConfig,
-      firstTarget: 10,
-      targetGrowth: 3
-    })
-    while (lost.status === "playing") lost = playFromHand(lost).run
+    const lost = lostOnNight3()
 
     expect(startRun(1).stats.nightsCleared).toBe(0)
     expect(won.stats.nightsCleared).toBe(9)
@@ -202,22 +193,35 @@ describe("Run statistics", () => {
     expect(playFromHand(run, 1).run.stats.bestPlay).toEqual(best)
   })
 
-  it("sum the Purr each Cat has contributed", () => {
+  it("record the Purr each Cat contributed to a Play", () => {
     const run = runWithCouch(["clingy", "clingy", null, "aloof"])
     const [clingyA, clingyB, , aloof] = run.night.couch as string[]
 
-    const first = accepted(run, { type: "play" })
-    const second = playFromHand(first.run, 5)
-    const secondPurr = second.events.find((e) => e.type === "scoreTotal")?.purr
-    const { purrByCat } = second.run.stats
+    const after = accepted(run, { type: "play" }).run
 
-    expect(first.run.stats.purrByCat).toEqual({
+    expect(after.stats.purrByCat).toEqual({
       [clingyA]: 15,
       [clingyB]: 15,
       [aloof]: 25
     })
-    const total = Object.values(purrByCat).reduce((a, b) => a + b)
-    expect(total).toBe(55 + (secondPurr ?? Number.NaN))
+  })
+
+  it("sum a Cat's Purr across the Nights it is played", () => {
+    // With the whole Roster in Hand, the same lone Cat clears Night after Night.
+    let run = startRun(1, {
+      ...defaultConfig,
+      handSize: 30,
+      firstTarget: 10,
+      targetGrowth: 1
+    })
+    const loner = run.roster.find((cat) => cat.personality === "aloof")!
+    for (let night = 1; night <= 2; night++) {
+      run = accepted(run, { type: "place", cat: loner.id, seat: 2 }).run
+      run = accepted(run, { type: "play" }).run
+    }
+
+    expect(run.night.number).toBe(3)
+    expect(run.stats.purrByCat).toEqual({ [loner.id]: 50 })
   })
 
   it("name the star Cat: the one that contributed the most Purr", () => {

@@ -1,9 +1,16 @@
-import { applyAction } from "./actions"
+import { type Action, applyAction } from "./actions"
 import { type Config, defaultConfig } from "./config"
 import type { Coat } from "./content/coats"
 import type { Personality } from "./content/personalities"
 import { startRun } from "./run"
 import type { CatId, Run } from "./types"
+
+/** Applies an action that must be accepted, returning the next Run and its events. */
+export function accepted(run: Run, action: Action) {
+  const result = applyAction(run, action)
+  if (!result.ok) throw new Error(result.reason)
+  return result
+}
 
 /** A Cat to seat: its Personality, optionally with a Coat; null leaves the Seat empty. */
 export type SeatSpec = Personality | `${Coat} ${Personality}` | null
