@@ -1,0 +1,57 @@
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+  /* The living room around the portrait layout on wide screens. */
+  background: radial-gradient(circle at 50% 35%, #6b4a3a, #2e1f19 75%);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(46 31 25 / 0.55);
+}
+
+.panel {
+  width: min(320px, 84vw);
+  padding: 28px 24px;
+  border-radius: 24px;
+  background: #fdf6ea;
+  color: #4a3426;
+  text-align: center;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+}
+
+.panel h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.panel p {
+  margin: 0 0 20px;
+  font-size: 17px;
+}
+
+.panel button {
+  padding: 14px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: #4a3426;
+  color: #fdf6ea;
+  font:
+    800 18px system-ui,
+    sans-serif;
+  cursor: pointer;
+}
