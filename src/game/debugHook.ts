@@ -1,3 +1,4 @@
+import type Phaser from "phaser"
 import {
   type Action,
   type ActionResult,
@@ -12,6 +13,8 @@ export type DebugHook = {
   preview: () => ScoreBreakdown
   apply: (action: Action) => ActionResult
   start: (seed: number) => void
+  /** The keys of the scenes showing now, such as "couch" or "shop". */
+  scenes: () => string[]
 }
 
 declare global {
@@ -25,11 +28,12 @@ declare global {
  * Lets end-to-end tests drive the engine in the running game despite the
  * canvas. Installed in development builds only (see src/main.tsx).
  */
-export function installDebugHook() {
+export function installDebugHook(game: Phaser.Game) {
   window.__clowder = {
     run: () => session.run,
     preview: () => previewPlay(session.run),
     apply: (action) => session.apply(action),
-    start: (seed) => session.start(seed)
+    start: (seed) => session.start(seed),
+    scenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key)
   }
 }

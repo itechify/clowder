@@ -27,3 +27,9 @@ export function shuffle<T>(
   }
   return [result, rng]
 }
+
+/** One item chosen evenly at random, and the advanced state. */
+export function pick<T>(state: RngState, items: readonly T[]): [T, RngState] {
+  const [roll, advanced] = next(state)
+  return [items[Math.floor(roll * items.length)], advanced]
+}

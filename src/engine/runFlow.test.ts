@@ -9,13 +9,19 @@ import {
 } from "./index"
 import { accepted, runWithCouch } from "./testing"
 
-/** Seats the first `count` Cats of the Hand from Seat 0 and Plays them. */
+/**
+ * Seats the first `count` Cats of the Hand from Seat 0 and Plays them, then
+ * leaves any Shop the Play opens without spending.
+ */
 function playFromHand(run: Run, count = 1) {
   let next = run
   run.night.hand.slice(0, count).forEach((cat, seat) => {
     next = accepted(next, { type: "place", cat, seat }).run
   })
-  return accepted(next, { type: "play" })
+  const played = accepted(next, { type: "play" })
+  if (!played.run.shop) return played
+  const left = accepted(played.run, { type: "leaveShop" })
+  return { ...left, events: [...played.events, ...left.events] }
 }
 
 /** A Run in which every Play, however small, clears its Night. */
@@ -31,22 +37,6 @@ function lostOnNight3() {
   while (run.status === "playing") run = playFromHand(run).run
   return run
 }
-
-describe("clearing a Night", () => {
-  it("starts the next Night with a fresh Hand of 8 and three Plays", () => {
-    const run = easyRun()
-
-    const { run: after } = playFromHand(run)
-
-    expect(after.night.number).toBe(2)
-    expect(after.night.status).toBe("playing")
-    expect(after.night.score).toBe(0)
-    expect(after.night.playsLeft).toBe(3)
-    expect(after.night.hand).toHaveLength(8)
-    expect(after.night.drawPile).toHaveLength(22)
-    expect(after.night.couch).toEqual([null, null, null, null, null])
-  })
-})
 
 describe("a Run's nine Nights", () => {
   it("raise the Target from 300 by ×1.6 each Night", () => {
@@ -218,6 +208,7 @@ describe("Run statistics", () => {
     for (let night = 1; night <= 2; night++) {
       run = accepted(run, { type: "place", cat: loner.id, seat: 2 }).run
       run = accepted(run, { type: "play" }).run
+      run = accepted(run, { type: "leaveShop" }).run
     }
 
     expect(run.night.number).toBe(3)

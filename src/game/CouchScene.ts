@@ -30,6 +30,8 @@ const FIRST_NOD = 400
 /** ...and the last this long after the first, however many there are. */
 const NODDING_SPREAD = 1200
 const NOD_DURATION = 500
+/** How long a cleared Night's celebration plays before the Shop opens. */
+const SHOP_OPENS_AFTER = 2400
 /** From the Run's last Play until the Cats are all asleep; then the results. */
 export const SLEEP_MOMENT_MS =
   LIGHTS_OUT_DELAY + FIRST_NOD + NODDING_SPREAD + NOD_DURATION + 300
@@ -53,7 +55,7 @@ const contiguous = (seats: number[]) =>
     return groups
   }, [])
 
-const font = (size: number, colour = "#4a3426", weight = "600") => ({
+export const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
   fontSize: `${size}px`,
   fontStyle: weight,
@@ -82,6 +84,15 @@ export class CouchScene extends Phaser.Scene {
   }
 
   create() {
+    // The Shop may already be open, as when the Run is resumed there.
+    if (session.run.shop) {
+      this.scene.start("shop")
+      return
+    }
+    this.held = null
+    this.landed = null
+    this.lastCouch = []
+    this.redrawing = null
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.seatX = seatX(session.run.config.seats)
     this.drawRoom()
@@ -101,6 +112,11 @@ export class CouchScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.tapRedraw())
     const off = session.on((events) => {
+      const shopOpened = events.some((event) => event.type === "shopOpened")
+      if (session.run.shop && !shopOpened) {
+        this.scene.start("shop")
+        return
+      }
       if (events.length === 0) {
         this.held = null
         this.lastCouch = []
@@ -113,6 +129,11 @@ export class CouchScene extends Phaser.Scene {
       }
       this.draw(events.some((event) => event.type === "runEnded"))
       this.celebrate(events)
+      // The Night is cleared: celebrate on the Couch, then off to the Shop.
+      if (shopOpened)
+        this.time.delayedCall(SHOP_OPENS_AFTER, () => {
+          if (session.run.shop) this.scene.start("shop")
+        })
     })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off)
     this.draw()
