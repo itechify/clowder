@@ -1,4 +1,4 @@
-import { applyAction } from "./actions"
+import { type Action, applyAction } from "./actions"
 import { type Config, defaultConfig } from "./config"
 import type { Coat } from "./content/coats"
 import type { Personality } from "./content/personalities"
@@ -48,4 +48,11 @@ export function runWithCouch(
     if (cat) next = applyAction(next, { type: "place", cat, seat }).run
   })
   return next
+}
+
+/** Applies an action that must be accepted, returning the next Run and its events. */
+export function accepted(run: Run, action: Action) {
+  const result = applyAction(run, action)
+  if (!result.ok) throw new Error(result.reason)
+  return result
 }

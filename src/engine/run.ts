@@ -19,7 +19,7 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
           basePurr: config.basePurr
         })
   const [night, afterNight] = startNight(rng, config, roster)
-  return { config, rng: afterNight, roster, night }
+  return { config, rng: afterNight, roster, night, discoveredGatherings: [] }
 }
 
 function startNight(

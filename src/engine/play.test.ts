@@ -7,14 +7,7 @@ import {
   type Run,
   startRun
 } from "./index"
-import { runWithCouch } from "./testing"
-
-/** Applies an action that must be accepted, returning the next Run and its events. */
-function accepted(run: Run, action: Action) {
-  const result = applyAction(run, action)
-  if (!result.ok) throw new Error(result.reason)
-  return result
-}
+import { accepted, runWithCouch } from "./testing"
 
 function apply(run: Run, ...actions: Action[]) {
   let next = run
@@ -47,7 +40,13 @@ describe("Play", () => {
   })
 
   it("adds the previewed Score to the Night and uses up a Play", () => {
-    const run = runWithCouch(["clingy", "clingy", "aloof", null, "sleepy"])
+    const run = runWithCouch([
+      "orange clingy",
+      "black clingy",
+      "orange aloof",
+      null,
+      "black sleepy"
+    ])
     const preview = previewPlay(run)
 
     const result = applyAction(run, { type: "play" })
@@ -140,15 +139,15 @@ describe("Play", () => {
 describe("the end of a Night", () => {
   it("clears the Night as soon as the summed Scores reach the Target", () => {
     const run = runWithCouch(["sleepy", "sleepy", "sleepy", "sleepy"], {
-      config: { firstTarget: 80 }
+      config: { firstTarget: 320 }
     })
 
     const result = accepted(run, { type: "play" })
 
-    expect(result.run.night.score).toBe(80)
+    expect(result.run.night.score).toBe(320)
     expect(result.run.night.status).toBe("cleared")
     expect(result.run.night.playsLeft).toBe(2)
-    expect(result.events).toContainEqual({ type: "nightCleared", score: 80 })
+    expect(result.events).toContainEqual({ type: "nightCleared", score: 320 })
   })
 
   it("loses the Night when no Plays remain short of the Target", () => {

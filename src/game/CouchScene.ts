@@ -1,5 +1,11 @@
 import Phaser from "phaser"
-import { applyAction, type CatId, previewPlay, type RunEvent } from "../engine"
+import {
+  type ActiveGathering,
+  applyAction,
+  type CatId,
+  previewPlay,
+  type RunEvent
+} from "../engine"
 import { drawCat } from "./catArt"
 import { session } from "./session"
 
@@ -12,12 +18,22 @@ const SEAT_Y = 352
 const HAND_COLUMNS = 4
 const HAND_ROW_Y = 585
 const HAND_ROW_HEIGHT = 105
-const PREVIEW_Y = 452
+const PREVIEW_Y = 446
+const BREAKDOWN_Y = 486
 const BUTTON = { x: WIDTH / 2, y: 790, w: 230, h: 58 }
 
 /** Seat centres, spread evenly between the Couch's arms. */
 const seatX = (seats: number) =>
   Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
+
+/** Splits sorted Seats into stretches of consecutive Seats. */
+const contiguous = (seats: number[]) =>
+  seats.reduce<number[][]>((groups, seat) => {
+    const last = groups.at(-1)
+    if (last && last.at(-1) === seat - 1) last.push(seat)
+    else groups.push([seat])
+    return groups
+  }, [])
 
 const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
@@ -119,6 +135,7 @@ export class CouchScene extends Phaser.Scene {
 
   /** Redraws everything that follows the Run: HUD, seated Cats, preview, Hand. */
   private draw() {
+    this.tweens.killTweensOf(this.layer.list)
     this.layer.removeAll(true)
     const { run } = session
     const { night } = run
@@ -155,8 +172,10 @@ export class CouchScene extends Phaser.Scene {
         .setOrigin(0.5)
     )
 
-    // Seated Cats with their live Personality bonus floating above.
+    // Seated Cats with their live Personality bonus floating above, inside
+    // whichever Gatherings they form.
     const preview = previewPlay(run)
+    this.drawGatherings(add, preview.gatherings, "behind")
     for (const event of preview.scoringEvents) {
       const cat = catById.get(event.cat)!
       const sprite = add(drawCat(this, cat, 64))
@@ -192,6 +211,7 @@ export class CouchScene extends Phaser.Scene {
       )
     }
     this.landed = null
+    this.drawGatherings(add, preview.gatherings, "over")
 
     // Live preview: Purr × Mult = Score, and where it would leave the Night.
     add(
@@ -206,6 +226,20 @@ export class CouchScene extends Phaser.Scene {
         )
         .setOrigin(0.5)
     )
+    if (preview.gatherings.length)
+      add(
+        this.add
+          .text(
+            WIDTH / 2,
+            BREAKDOWN_Y,
+            [
+              "1",
+              ...preview.gatherings.map(({ name, mult }) => `${name} ${mult}`)
+            ].join(" + ") + ` = ${preview.mult.toFixed(1)} Mult`,
+            font(13, "#fdf6ea", "700")
+          )
+          .setOrigin(0.5)
+      )
 
     // The Hand's Cats not yet on the Couch.
     const seated = new Set(night.couch)
@@ -259,6 +293,113 @@ export class CouchScene extends Phaser.Scene {
     )
   }
 
+  /**
+   * Shows each active Gathering on the Couch itself, named: a blanket over a
+   * Cuddle Puddle, Zs over a Nap Club, a bubble around each Cat with Personal
+   * Space, bunting for a Variety Pack, and a glow round a Full Sofa. Drawn in
+   * two layers, since blankets go over the Cats and the rest behind.
+   */
+  private drawGatherings(
+    add: <T extends Phaser.GameObjects.GameObject>(object: T) => T,
+    active: ActiveGathering[],
+    layer: "behind" | "over"
+  ) {
+    const g = add(this.add.graphics())
+    for (const { gathering, seats } of active) {
+      const groups = contiguous(seats)
+      if (layer === "behind") {
+        if (gathering === "fullSofa")
+          g.lineStyle(5, 0xf6c453, 0.9).strokeRoundedRect(
+            4,
+            258,
+            WIDTH - 8,
+            158,
+            24
+          )
+        if (gathering === "personalSpace")
+          for (const seat of seats)
+            g.fillStyle(0xdff1f7, 0.35)
+              .fillCircle(this.seatX[seat], SEAT_Y - 14, 32)
+              .lineStyle(2, 0xa7d3e3, 0.9)
+              .strokeCircle(this.seatX[seat], SEAT_Y - 14, 32)
+        if (gathering === "varietyPack") {
+          const from = this.seatX[seats[0]] - 30
+          const to = this.seatX[seats.at(-1)!] + 30
+          const flags = [0xe8893a, 0x2e2a30, 0xf4efe6, 0x8d9099, 0xd46a4f]
+          g.lineStyle(2, 0x7a5a3c, 1).lineBetween(from, 250, to, 250)
+          for (let x = from + 8, i = 0; x < to - 8; x += 18, i++)
+            g.fillStyle(flags[i % flags.length], 1).fillTriangle(
+              x - 6,
+              250,
+              x + 6,
+              250,
+              x,
+              262
+            )
+        }
+      } else {
+        if (gathering === "cuddlePuddle")
+          for (const group of groups) {
+            const from = this.seatX[group[0]] - 34
+            const width = this.seatX[group.at(-1)!] + 34 - from
+            g.fillStyle(0xf2c6c2, 0.95).fillRoundedRect(
+              from,
+              SEAT_Y + 12,
+              width,
+              18,
+              8
+            )
+            g.lineStyle(2, 0xd98f8a, 1)
+            for (let x = from + 12; x < from + width - 6; x += 16)
+              g.lineBetween(x, SEAT_Y + 15, x, SEAT_Y + 27)
+          }
+        if (gathering === "napClub")
+          for (const group of groups)
+            for (const seat of group.slice(1)) {
+              const x = (this.seatX[seat - 1] + this.seatX[seat]) / 2
+              const z = add(
+                this.add
+                  .text(x, SEAT_Y - 52, "z Z", font(15, "#6b7fd7", "900"))
+                  .setOrigin(0.5)
+              )
+              this.tweens.add({
+                targets: z,
+                y: SEAT_Y - 58,
+                duration: 900,
+                yoyo: true,
+                repeat: -1,
+                ease: "Sine.easeInOut"
+              })
+            }
+      }
+    }
+    if (layer === "behind") return
+
+    // Each Gathering's name, stacked above the Seats that form it.
+    active.forEach(({ name, mult, seats }, i) => {
+      const x =
+        (Math.max(55, this.seatX[seats[0]]) +
+          Math.min(WIDTH - 55, this.seatX[seats.at(-1)!])) /
+        2
+      const y = 228 - i * 26
+      const label = add(
+        this.add
+          .text(x, y, `${name} +${mult}`, font(13, "#4a3426", "800"))
+          .setOrigin(0.5)
+      )
+      add(this.add.graphics())
+        .fillStyle(0xfff4dc, 0.95)
+        .fillRoundedRect(
+          x - label.width / 2 - 8,
+          y - 11,
+          label.width + 16,
+          22,
+          11
+        )
+      this.layer.bringToTop(label)
+    })
+  }
+
   /** Pops each Cat's Purr where it sat, then the Play's Score. */
   private celebrate(events: RunEvent[]) {
     const pop = (
@@ -284,13 +425,59 @@ export class CouchScene extends Phaser.Scene {
       })
     }
     let delay = 0
+    let gatherings = 0
+    let discoveries = 0
     for (const event of events) {
-      if (event.type === "catScored") {
+      if (event.type === "gatheringActivated") {
+        const seats = event.seats.map((seat) => this.seatX[seat])
+        const x = (Math.min(...seats) + Math.max(...seats)) / 2
+        pop(
+          x,
+          SEAT_Y - 60 - gatherings * 28,
+          `${event.name} +${event.mult}`,
+          20,
+          delay
+        )
+        if (event.firstTime) this.discover(event.name, discoveries++ * 1800)
+        gatherings++
+        delay += 200
+      } else if (event.type === "catScored") {
         pop(this.seatX[event.seat], SEAT_Y - 20, `+${event.purr}`, 22, delay)
         delay += 120
       } else if (event.type === "scoreTotal") {
         pop(WIDTH / 2, PREVIEW_Y - 30, `${event.score}!`, 34, delay)
       }
     }
+  }
+
+  /** The "New Gathering!" moment, the first time a Run activates one. */
+  private discover(name: string, delay: number) {
+    const banner = this.add
+      .container(WIDTH / 2, 130)
+      .setAlpha(0)
+      .setScale(0.6)
+    const title = this.add
+      .text(0, -14, "New Gathering!", font(26, "#c2410c", "900"))
+      .setOrigin(0.5)
+      .setStroke("#fff7e8", 6)
+    const subtitle = this.add
+      .text(0, 18, name, font(18, "#4a3426", "800"))
+      .setOrigin(0.5)
+      .setStroke("#fff7e8", 5)
+    banner.add([title, subtitle])
+    this.tweens.chain({
+      targets: banner,
+      tweens: [
+        {
+          alpha: 1,
+          scale: 1,
+          delay,
+          duration: 280,
+          ease: "Back.easeOut"
+        },
+        { alpha: 0, y: 100, delay: 1300, duration: 400 }
+      ],
+      onComplete: () => banner.destroy()
+    })
   }
 }
