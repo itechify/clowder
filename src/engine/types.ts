@@ -1,5 +1,6 @@
 import type { Config } from "./config"
 import type { Coat } from "./content/coats"
+import type { GatheringId } from "./content/gatherings"
 import type { Personality } from "./content/personalities"
 import type { RngState } from "./rng"
 import type { RunStats } from "./stats"
@@ -22,6 +23,7 @@ export type Night = {
   /** Scores of this Night's Plays so far, summed. */
   score: number
   playsLeft: number
+  redrawsLeft: number
   drawPile: CatId[]
   /** Every drawn, unplayed Cat, including those seated on the Couch. */
   hand: CatId[]
@@ -40,6 +42,8 @@ export type Run = {
   rng: RngState
   roster: Cat[]
   night: Night
+  /** Gatherings activated by any Play so far this Run, in discovery order. */
+  discoveredGatherings: GatheringId[]
   status: RunStatus
   treats: number
   stats: RunStats

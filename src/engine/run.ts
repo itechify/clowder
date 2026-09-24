@@ -25,6 +25,7 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
       config,
       rng,
       roster,
+      discoveredGatherings: [],
       status: "playing",
       treats: 0,
       stats: noStats
@@ -47,6 +48,7 @@ export function startNight(run: Omit<Run, "night">, number: number): Run {
     ),
     score: 0,
     playsLeft: config.playsPerNight,
+    redrawsLeft: config.redrawsPerNight,
     drawPile: shuffled.slice(config.handSize),
     hand: shuffled.slice(0, config.handSize),
     couch: Array.from({ length: config.seats }, () => null),

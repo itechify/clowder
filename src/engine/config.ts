@@ -11,6 +11,9 @@ export type Config = {
   handSize: number
   seats: number
   playsPerNight: number
+  redrawsPerNight: number
+  /** The most Cats one Redraw may swap. */
+  catsPerRedraw: number
   /** Clearing the last Night wins the Run. */
   nights: number
   firstTarget: number
@@ -36,6 +39,8 @@ export const defaultConfig: Config = {
   handSize: 8,
   seats: 5,
   playsPerNight: 3,
+  redrawsPerNight: 2,
+  catsPerRedraw: 3,
   nights: 9,
   firstTarget: 300,
   targetGrowth: 1.6,

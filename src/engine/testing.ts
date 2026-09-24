@@ -5,13 +5,6 @@ import type { Personality } from "./content/personalities"
 import { startRun } from "./run"
 import type { CatId, Run } from "./types"
 
-/** Applies an action that must be accepted, returning the next Run and its events. */
-export function accepted(run: Run, action: Action) {
-  const result = applyAction(run, action)
-  if (!result.ok) throw new Error(result.reason)
-  return result
-}
-
 /** A Cat to seat: its Personality, optionally with a Coat; null leaves the Seat empty. */
 export type SeatSpec = Personality | `${Coat} ${Personality}` | null
 
@@ -55,4 +48,11 @@ export function runWithCouch(
     if (cat) next = applyAction(next, { type: "place", cat, seat }).run
   })
   return next
+}
+
+/** Applies an action that must be accepted, returning the next Run and its events. */
+export function accepted(run: Run, action: Action) {
+  const result = applyAction(run, action)
+  if (!result.ok) throw new Error(result.reason)
+  return result
 }

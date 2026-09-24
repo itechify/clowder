@@ -40,7 +40,13 @@ describe("Play", () => {
   })
 
   it("adds the previewed Score to the Night and uses up a Play", () => {
-    const run = runWithCouch(["clingy", "clingy", "aloof", null, "sleepy"])
+    const run = runWithCouch([
+      "orange clingy",
+      "black clingy",
+      "orange aloof",
+      null,
+      "black sleepy"
+    ])
     const preview = previewPlay(run)
 
     const result = applyAction(run, { type: "play" })
@@ -107,8 +113,10 @@ describe("Play", () => {
   })
 
   it("equals the preview for any seeded arrangement", () => {
+    // An unreachable Target keeps the Night, and its Score, open after the Play.
+    const config = { ...defaultConfig, firstTarget: Number.POSITIVE_INFINITY }
     for (let seed = 1; seed <= 200; seed++) {
-      let run = startRun(seed)
+      let run = startRun(seed, config)
       // Seat a seed-dependent selection of Hand Cats in seed-dependent Seats.
       run.night.hand.forEach((cat, i) => {
         const seat = (seed * (i + 3) + i) % 7
@@ -133,12 +141,12 @@ describe("Play", () => {
 describe("the end of a Night", () => {
   it("clears the Night as soon as the summed Scores reach the Target", () => {
     const run = runWithCouch(["sleepy", "sleepy", "sleepy", "sleepy"], {
-      config: { firstTarget: 80 }
+      config: { firstTarget: 320 }
     })
 
     const result = accepted(run, { type: "play" })
 
-    expect(result.events).toContainEqual({ type: "nightCleared", score: 80 })
+    expect(result.events).toContainEqual({ type: "nightCleared", score: 320 })
     expect(result.run.night.number).toBe(2)
   })
 
@@ -162,6 +170,29 @@ describe("the end of a Night", () => {
     const result = accepted(run, { type: "play" })
 
     expect(result.events).toContainEqual({ type: "nightLost", score: 10 })
+  })
+
+  it("loses the Night when Plays remain but no Cats are left to seat", () => {
+    let run = startRun(1, {
+      ...defaultConfig,
+      playsPerNight: 10,
+      firstTarget: 10_000
+    })
+    // The 30-Cat Roster fills six Couches; the sixth Plays the last of them.
+    for (let play = 0; play < 5; play++)
+      run = apply(seatFromHand(run, 5), { type: "play" })
+    expect(run.night.drawPile).toEqual([])
+
+    const result = accepted(seatFromHand(run, 5), { type: "play" })
+
+    expect(result.run.night.hand).toEqual([])
+    expect(result.run.night.playsLeft).toBe(4)
+    expect(result.run.night.status).toBe("lost")
+    expect(result.run.status).toBe("lost")
+    expect(result.events).toContainEqual({
+      type: "nightLost",
+      score: result.run.night.score
+    })
   })
 
   it("rejects every action once the Night is lost", () => {

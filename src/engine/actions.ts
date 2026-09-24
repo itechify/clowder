@@ -1,5 +1,5 @@
 import { startNight } from "./run"
-import { previewPlay, type ScoringEvent } from "./scoring"
+import { type ActiveGathering, previewPlay, type ScoringEvent } from "./scoring"
 import { recordPlay } from "./stats"
 import type { CatId, Night, Run, RunStatus } from "./types"
 
@@ -7,12 +7,15 @@ export type Action =
   | { type: "place"; cat: CatId; seat: number }
   | { type: "unseat"; cat: CatId }
   | { type: "play" }
+  | { type: "redraw"; cats: CatId[] }
 
 /** What happened, in order: the script the renderer animates. */
 export type RunEvent =
+  | ({ type: "gatheringActivated"; firstTime: boolean } & ActiveGathering)
   | ({ type: "catScored" } & ScoringEvent)
   | { type: "scoreTotal"; purr: number; mult: number; score: number }
   | { type: "catsDrawn"; cats: CatId[] }
+  | { type: "catsRedrawn"; sentOut: CatId[]; drawn: CatId[] }
   | { type: "nightCleared"; score: number }
   | {
       type: "treatsAwarded"
@@ -63,12 +66,63 @@ export function applyAction(run: Run, action: Action): ActionResult {
         return reject("Seat at least one Cat to Play")
       return play(run)
     }
+    case "redraw": {
+      const { cats } = action
+      if (cats.length === 0) return reject("Choose a Cat to Redraw")
+      if (cats.length > run.config.catsPerRedraw)
+        return reject(`Redraw at most ${run.config.catsPerRedraw} Cats`)
+      if (!cats.every((cat) => night.hand.includes(cat)))
+        return reject("That Cat is not in the Hand")
+      if (new Set(cats).size !== cats.length)
+        return reject("A Cat can only be redrawn once")
+      if (night.redrawsLeft === 0) return reject("No Redraws remain tonight")
+      // The Draw pile never reshuffles mid-Night, so it can run out of swaps.
+      if (night.drawPile.length < cats.length)
+        return reject("The Draw pile is too small")
+      return redraw(run, cats)
+    }
+  }
+}
+
+/** Swaps Hand Cats for fresh draws; the Cats sent out are gone for the Night. */
+function redraw(run: Run, sentOut: CatId[]): ActionResult {
+  const { night } = run
+  const drawn = night.drawPile.slice(0, sentOut.length)
+  // Each new Cat takes the place in the Hand of the Cat it replaces.
+  const hand = night.hand.map((cat) =>
+    sentOut.includes(cat) ? drawn[sentOut.indexOf(cat)] : cat
+  )
+  return {
+    ok: true,
+    run: {
+      ...run,
+      night: {
+        ...night,
+        redrawsLeft: night.redrawsLeft - 1,
+        hand,
+        drawPile: night.drawPile.slice(drawn.length),
+        couch: night.couch.map((cat) =>
+          cat && sentOut.includes(cat) ? null : cat
+        )
+      }
+    },
+    events: [{ type: "catsRedrawn", sentOut, drawn }]
   }
 }
 
 function play(run: Run): ActionResult {
   const breakdown = previewPlay(run)
+  const newlyDiscovered = breakdown.gatherings
+    .map((active) => active.gathering)
+    .filter((gathering) => !run.discoveredGatherings.includes(gathering))
   const events: RunEvent[] = [
+    ...breakdown.gatherings.map(
+      (active): RunEvent => ({
+        type: "gatheringActivated",
+        ...active,
+        firstTime: newlyDiscovered.includes(active.gathering)
+      })
+    ),
     ...breakdown.scoringEvents.map(
       (event): RunEvent => ({ type: "catScored", ...event })
     ),
@@ -87,36 +141,43 @@ function play(run: Run): ActionResult {
     hand: run.night.hand.filter((cat) => !played.includes(cat)),
     couch: run.night.couch.map(() => null)
   }
-  const scored: Run = { ...run, stats: recordPlay(run, breakdown), night }
+  const scored: Run = {
+    ...run,
+    night,
+    stats: recordPlay(run, breakdown),
+    discoveredGatherings: [...run.discoveredGatherings, ...newlyDiscovered]
+  }
   if (night.score >= night.target)
     return clearNight(
       { ...scored, night: { ...night, status: "cleared" } },
       events
     )
-  if (night.playsLeft === 0) {
-    events.push(
-      { type: "nightLost", score: night.score },
-      { type: "runEnded", outcome: "lost" }
-    )
-    return {
-      ok: true,
-      run: { ...scored, night: { ...night, status: "lost" }, status: "lost" },
-      events
-    }
-  }
+  if (night.playsLeft === 0) return loseRun(scored, events)
   // The Draw pile never reshuffles mid-Night, so the Hand may come up short.
   const drawn = night.drawPile.slice(0, run.config.handSize - night.hand.length)
   events.push({ type: "catsDrawn", cats: drawn })
+  const refilled: Run = {
+    ...scored,
+    night: {
+      ...night,
+      hand: [...night.hand, ...drawn],
+      drawPile: night.drawPile.slice(drawn.length)
+    }
+  }
+  // With no Cats left to seat, the remaining Plays can never be made.
+  if (refilled.night.hand.length === 0) return loseRun(refilled, events)
+  return { ok: true, run: refilled, events }
+}
+
+/** Loses the Night, and with it the Run. */
+function loseRun(run: Run, events: RunEvent[]): ActionResult {
+  events.push(
+    { type: "nightLost", score: run.night.score },
+    { type: "runEnded", outcome: "lost" }
+  )
   return {
     ok: true,
-    run: {
-      ...scored,
-      night: {
-        ...night,
-        hand: [...night.hand, ...drawn],
-        drawPile: night.drawPile.slice(drawn.length)
-      }
-    },
+    run: { ...run, night: { ...run.night, status: "lost" }, status: "lost" },
     events
   }
 }

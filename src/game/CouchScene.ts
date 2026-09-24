@@ -1,5 +1,6 @@
 import Phaser from "phaser"
 import {
+  type ActiveGathering,
   applyAction,
   type Cat,
   type CatId,
@@ -18,8 +19,10 @@ const SEAT_Y = 352
 const HAND_COLUMNS = 4
 const HAND_ROW_Y = 585
 const HAND_ROW_HEIGHT = 105
-const PREVIEW_Y = 452
-const BUTTON = { x: WIDTH / 2, y: 790, w: 230, h: 58 }
+const PREVIEW_Y = 446
+const BREAKDOWN_Y = 486
+const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
+const REDRAW_BUTTON = { x: 316, y: 790, w: 108, h: 58 }
 /** How long the final Play's Score lingers before the lights go down. */
 const LIGHTS_OUT_DELAY = 1200
 /** The first Cat nods off this long after the lights go down... */
@@ -41,6 +44,15 @@ const handSpot = (i: number) => ({
 const seatX = (seats: number) =>
   Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
+/** Splits sorted Seats into stretches of consecutive Seats. */
+const contiguous = (seats: number[]) =>
+  seats.reduce<number[][]>((groups, seat) => {
+    const last = groups.at(-1)
+    if (last && last.at(-1) === seat - 1) last.push(seat)
+    else groups.push([seat])
+    return groups
+  }, [])
+
 const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
   fontSize: `${size}px`,
@@ -60,6 +72,8 @@ export class CouchScene extends Phaser.Scene {
   private landed: CatId | null = null
   /** The last Play's Couch, where its Cats doze off once the Run ends. */
   private lastCouch: (CatId | null)[] = []
+  /** The Cats chosen to Redraw, or null when not choosing. */
+  private redrawing: CatId[] | null = null
   private layer!: Phaser.GameObjects.Container
   private seatX: number[] = []
 
@@ -79,14 +93,19 @@ export class CouchScene extends Phaser.Scene {
         .on("pointerdown", () => this.tapSeat(seat))
     })
     this.add
-      .zone(BUTTON.x, BUTTON.y, BUTTON.w, BUTTON.h)
+      .zone(PLAY_BUTTON.x, PLAY_BUTTON.y, PLAY_BUTTON.w, PLAY_BUTTON.h)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.tapPlay())
+    this.add
+      .zone(REDRAW_BUTTON.x, REDRAW_BUTTON.y, REDRAW_BUTTON.w, REDRAW_BUTTON.h)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.tapRedraw())
     const off = session.on((events) => {
       if (events.length === 0) {
         this.held = null
         this.lastCouch = []
       }
+      this.redrawing = null
       const scored = events.filter((event) => event.type === "catScored")
       if (scored.length > 0) {
         this.lastCouch = session.run.night.couch.map(() => null)
@@ -101,7 +120,9 @@ export class CouchScene extends Phaser.Scene {
 
   private tapSeat(seat: number) {
     const occupant = session.run.night.couch[seat]
-    if (this.held) {
+    if (this.redrawing) {
+      if (occupant) this.chooseForRedraw(occupant)
+    } else if (this.held) {
       const cat = this.held
       this.held = null
       if (session.apply({ type: "place", cat, seat }).ok) this.landed = cat
@@ -112,13 +133,56 @@ export class CouchScene extends Phaser.Scene {
   }
 
   private tapHandCat(cat: CatId) {
+    if (this.redrawing) return this.chooseForRedraw(cat)
     this.held = this.held === cat ? null : cat
     this.draw()
   }
 
+  /** Plays, or while choosing Cats to Redraw, stops choosing. */
   private tapPlay() {
     this.held = null
-    session.apply({ type: "play" })
+    if (this.redrawing) {
+      this.redrawing = null
+      this.draw()
+    } else {
+      session.apply({ type: "play" })
+    }
+  }
+
+  /** Starts choosing Cats to Redraw, then swaps the chosen Cats. */
+  private tapRedraw() {
+    this.held = null
+    if (!this.redrawing) {
+      if (!this.canRedraw()) return
+      this.redrawing = []
+      this.draw()
+    } else {
+      session.apply({ type: "redraw", cats: this.redrawing })
+    }
+  }
+
+  /** Toggles a Cat in or out of the Redraw, as far as the engine allows. */
+  private chooseForRedraw(cat: CatId) {
+    const chosen = this.redrawing ?? []
+    const next = chosen.includes(cat)
+      ? chosen.filter((c) => c !== cat)
+      : [...chosen, cat]
+    if (
+      next.length < chosen.length ||
+      applyAction(session.run, { type: "redraw", cats: next }).ok
+    ) {
+      this.redrawing = next
+      this.draw()
+    }
+  }
+
+  /** Whether any Redraw is possible now; the engine decides. */
+  private canRedraw() {
+    const { hand } = session.run.night
+    return (
+      hand.length > 0 &&
+      applyAction(session.run, { type: "redraw", cats: [hand[0]] }).ok
+    )
   }
 
   /** The static living room: wall, window, rug, and the Couch itself. */
@@ -154,6 +218,7 @@ export class CouchScene extends Phaser.Scene {
    * or, once the Run is over, the household asleep (`fallingAsleep` animates it).
    */
   private draw(fallingAsleep = false) {
+    this.tweens.killTweensOf(this.layer.list)
     this.layer.removeAll(true)
     const { run } = session
     const { night } = run
@@ -204,16 +269,37 @@ export class CouchScene extends Phaser.Scene {
         )
         .setOrigin(0.5)
     )
+    add(this.add.text(20, 94, `Draw pile ${night.drawPile.length}`, font(15)))
+    add(
+      this.add
+        .text(WIDTH - 20, 94, `Redraws ${night.redrawsLeft}`, font(15))
+        .setOrigin(1, 0)
+    )
 
     if (run.status !== "playing") {
       this.drawAsleep(add, catById, fallingAsleep)
       return
     }
 
-    // Seated Cats with their live Personality bonus floating above.
+    // A Cat chosen to Redraw glows cool, like one about to leave.
+    const chosen = new Set(this.redrawing)
+    const markChosen = (x: number, y: number) => {
+      const mark = add(this.add.graphics())
+      mark
+        .fillStyle(0xc9dcf2, 0.95)
+        .fillRoundedRect(x - 40, y - 52, 80, 100, 16)
+      mark
+        .lineStyle(3, 0x4f79a8, 1)
+        .strokeRoundedRect(x - 40, y - 52, 80, 100, 16)
+    }
+
+    // Seated Cats with their live Personality bonus floating above, inside
+    // whichever Gatherings they form.
     const preview = previewPlay(run)
+    this.drawGatherings(add, preview.gatherings, "behind")
     for (const event of preview.scoringEvents) {
       const cat = catById.get(event.cat)!
+      if (chosen.has(event.cat)) markChosen(this.seatX[event.seat], SEAT_Y - 4)
       const sprite = add(drawCat(this, cat, 64))
       sprite.setPosition(this.seatX[event.seat], SEAT_Y - 12)
       if (event.cat === this.landed) {
@@ -231,7 +317,7 @@ export class CouchScene extends Phaser.Scene {
             this.seatX[event.seat],
             SEAT_Y + 38,
             cat.name,
-            font(11, "#f6f1e4")
+            font(11, chosen.has(event.cat) ? "#4a3426" : "#f6f1e4")
           )
           .setOrigin(0.5)
       )
@@ -247,6 +333,7 @@ export class CouchScene extends Phaser.Scene {
       )
     }
     this.landed = null
+    this.drawGatherings(add, preview.gatherings, "over")
 
     // Live preview: Purr × Mult = Score, and where it would leave the Night.
     add(
@@ -254,13 +341,29 @@ export class CouchScene extends Phaser.Scene {
         .text(
           WIDTH / 2,
           PREVIEW_Y,
-          preview.scoringEvents.length
-            ? `${preview.purr} Purr × ${preview.mult.toFixed(1)} = ${preview.score}`
-            : "Tap a Cat, then a Seat",
+          this.redrawing
+            ? `Choose up to ${run.config.catsPerRedraw} Cats to Redraw`
+            : preview.scoringEvents.length
+              ? `${preview.purr} Purr × ${preview.mult.toFixed(1)} = ${preview.score}`
+              : "Tap a Cat, then a Seat",
           font(20, "#4a3426", "800")
         )
         .setOrigin(0.5)
     )
+    if (preview.gatherings.length)
+      add(
+        this.add
+          .text(
+            WIDTH / 2,
+            BREAKDOWN_Y,
+            [
+              "1",
+              ...preview.gatherings.map(({ name, mult }) => `${name} ${mult}`)
+            ].join(" + ") + ` = ${preview.mult.toFixed(1)} Mult`,
+            font(13, "#fdf6ea", "700")
+          )
+          .setOrigin(0.5)
+      )
 
     // The Hand's Cats not yet on the Couch.
     const seated = new Set(night.couch)
@@ -270,6 +373,7 @@ export class CouchScene extends Phaser.Scene {
         const cat = catById.get(id)!
         const { x, y } = handSpot(i)
         const held = id === this.held
+        if (chosen.has(id)) markChosen(x, y - 10)
         if (held) {
           const glow = add(this.add.graphics())
           glow
@@ -284,29 +388,56 @@ export class CouchScene extends Phaser.Scene {
           .on("pointerdown", () => this.tapHandCat(id))
         add(
           this.add
-            .text(x, y + 30, cat.name, font(12, held ? "#4a3426" : "#fdf6ea"))
+            .text(
+              x,
+              y + 30,
+              cat.name,
+              font(12, held || chosen.has(id) ? "#4a3426" : "#fdf6ea")
+            )
             .setOrigin(0.5)
         )
       })
 
-    // Play: "Get Comfy". Dimmed until a Cat is on the Couch.
-    const ready = applyAction(run, { type: "play" }).ok
-    const button = add(this.add.graphics())
-    button
+    // Play: "Get Comfy", dimmed until a Cat is on the Couch; while choosing
+    // Cats to Redraw it backs out instead. Beside it, Redraw, then the swap.
+    const choosing = this.redrawing
+    this.drawButton(
+      PLAY_BUTTON,
+      choosing ? "Cancel" : "Get Comfy",
+      choosing !== null || applyAction(run, { type: "play" }).ok,
+      add
+    )
+    this.drawButton(
+      REDRAW_BUTTON,
+      choosing ? `Swap ${choosing.length}` : "Redraw",
+      choosing
+        ? applyAction(run, { type: "redraw", cats: choosing }).ok
+        : this.canRedraw(),
+      add
+    )
+  }
+
+  private drawButton(
+    area: typeof PLAY_BUTTON,
+    label: string,
+    ready: boolean,
+    add: <T extends Phaser.GameObjects.GameObject>(object: T) => T
+  ) {
+    add(this.add.graphics())
       .fillStyle(ready ? 0x4a3426 : 0x9c8672, 1)
       .fillRoundedRect(
-        BUTTON.x - BUTTON.w / 2,
-        BUTTON.y - BUTTON.h / 2,
-        BUTTON.w,
-        BUTTON.h,
+        area.x - area.w / 2,
+        area.y - area.h / 2,
+        area.w,
+        area.h,
         29
       )
     add(
       this.add
         .text(
-          BUTTON.x,
-          BUTTON.y,
-          "Get Comfy",
+          area.x,
+          area.y,
+          label,
           font(22, ready ? "#fdf6ea" : "#e6d8c6", "800")
         )
         .setOrigin(0.5)
@@ -396,6 +527,113 @@ export class CouchScene extends Phaser.Scene {
     })
   }
 
+  /**
+   * Shows each active Gathering on the Couch itself, named: a blanket over a
+   * Cuddle Puddle, Zs over a Nap Club, a bubble around each Cat with Personal
+   * Space, bunting for a Variety Pack, and a glow round a Full Sofa. Drawn in
+   * two layers, since blankets go over the Cats and the rest behind.
+   */
+  private drawGatherings(
+    add: <T extends Phaser.GameObjects.GameObject>(object: T) => T,
+    active: ActiveGathering[],
+    layer: "behind" | "over"
+  ) {
+    const g = add(this.add.graphics())
+    for (const { gathering, seats } of active) {
+      const groups = contiguous(seats)
+      if (layer === "behind") {
+        if (gathering === "fullSofa")
+          g.lineStyle(5, 0xf6c453, 0.9).strokeRoundedRect(
+            4,
+            258,
+            WIDTH - 8,
+            158,
+            24
+          )
+        if (gathering === "personalSpace")
+          for (const seat of seats)
+            g.fillStyle(0xdff1f7, 0.35)
+              .fillCircle(this.seatX[seat], SEAT_Y - 14, 32)
+              .lineStyle(2, 0xa7d3e3, 0.9)
+              .strokeCircle(this.seatX[seat], SEAT_Y - 14, 32)
+        if (gathering === "varietyPack") {
+          const from = this.seatX[seats[0]] - 30
+          const to = this.seatX[seats.at(-1)!] + 30
+          const flags = [0xe8893a, 0x2e2a30, 0xf4efe6, 0x8d9099, 0xd46a4f]
+          g.lineStyle(2, 0x7a5a3c, 1).lineBetween(from, 250, to, 250)
+          for (let x = from + 8, i = 0; x < to - 8; x += 18, i++)
+            g.fillStyle(flags[i % flags.length], 1).fillTriangle(
+              x - 6,
+              250,
+              x + 6,
+              250,
+              x,
+              262
+            )
+        }
+      } else {
+        if (gathering === "cuddlePuddle")
+          for (const group of groups) {
+            const from = this.seatX[group[0]] - 34
+            const width = this.seatX[group.at(-1)!] + 34 - from
+            g.fillStyle(0xf2c6c2, 0.95).fillRoundedRect(
+              from,
+              SEAT_Y + 12,
+              width,
+              18,
+              8
+            )
+            g.lineStyle(2, 0xd98f8a, 1)
+            for (let x = from + 12; x < from + width - 6; x += 16)
+              g.lineBetween(x, SEAT_Y + 15, x, SEAT_Y + 27)
+          }
+        if (gathering === "napClub")
+          for (const group of groups)
+            for (const seat of group.slice(1)) {
+              const x = (this.seatX[seat - 1] + this.seatX[seat]) / 2
+              const z = add(
+                this.add
+                  .text(x, SEAT_Y - 52, "z Z", font(15, "#6b7fd7", "900"))
+                  .setOrigin(0.5)
+              )
+              this.tweens.add({
+                targets: z,
+                y: SEAT_Y - 58,
+                duration: 900,
+                yoyo: true,
+                repeat: -1,
+                ease: "Sine.easeInOut"
+              })
+            }
+      }
+    }
+    if (layer === "behind") return
+
+    // Each Gathering's name, stacked above the Seats that form it.
+    active.forEach(({ name, mult, seats }, i) => {
+      const x =
+        (Math.max(55, this.seatX[seats[0]]) +
+          Math.min(WIDTH - 55, this.seatX[seats.at(-1)!])) /
+        2
+      const y = 228 - i * 26
+      const label = add(
+        this.add
+          .text(x, y, `${name} +${mult}`, font(13, "#4a3426", "800"))
+          .setOrigin(0.5)
+      )
+      add(this.add.graphics())
+        .fillStyle(0xfff4dc, 0.95)
+        .fillRoundedRect(
+          x - label.width / 2 - 8,
+          y - 11,
+          label.width + 16,
+          22,
+          11
+        )
+      this.layer.bringToTop(label)
+    })
+  }
+
   /** Pops each Cat's Purr where it sat, then the Play's Score. */
   private celebrate(events: RunEvent[]) {
     const pop = (
@@ -421,8 +659,23 @@ export class CouchScene extends Phaser.Scene {
       })
     }
     let delay = 0
+    let gatherings = 0
+    let discoveries = 0
     for (const event of events) {
-      if (event.type === "catScored") {
+      if (event.type === "gatheringActivated") {
+        const seats = event.seats.map((seat) => this.seatX[seat])
+        const x = (Math.min(...seats) + Math.max(...seats)) / 2
+        pop(
+          x,
+          SEAT_Y - 60 - gatherings * 28,
+          `${event.name} +${event.mult}`,
+          20,
+          delay
+        )
+        if (event.firstTime) this.discover(event.name, discoveries++ * 1800)
+        gatherings++
+        delay += 200
+      } else if (event.type === "catScored") {
         pop(this.seatX[event.seat], SEAT_Y - 20, `+${event.purr}`, 22, delay)
         delay += 120
       } else if (event.type === "scoreTotal") {
@@ -435,5 +688,36 @@ export class CouchScene extends Phaser.Scene {
         pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24, delay)
       }
     }
+  }
+
+  /** The "New Gathering!" moment, the first time a Run activates one. */
+  private discover(name: string, delay: number) {
+    const banner = this.add
+      .container(WIDTH / 2, 130)
+      .setAlpha(0)
+      .setScale(0.6)
+    const title = this.add
+      .text(0, -14, "New Gathering!", font(26, "#c2410c", "900"))
+      .setOrigin(0.5)
+      .setStroke("#fff7e8", 6)
+    const subtitle = this.add
+      .text(0, 18, name, font(18, "#4a3426", "800"))
+      .setOrigin(0.5)
+      .setStroke("#fff7e8", 5)
+    banner.add([title, subtitle])
+    this.tweens.chain({
+      targets: banner,
+      tweens: [
+        {
+          alpha: 1,
+          scale: 1,
+          delay,
+          duration: 280,
+          ease: "Back.easeOut"
+        },
+        { alpha: 0, y: 100, delay: 1300, duration: 400 }
+      ],
+      onComplete: () => banner.destroy()
+    })
   }
 }
