@@ -113,8 +113,10 @@ describe("Play", () => {
   })
 
   it("equals the preview for any seeded arrangement", () => {
+    // An unreachable Target keeps the Night, and its Score, open after the Play.
+    const config = { ...defaultConfig, firstTarget: Number.POSITIVE_INFINITY }
     for (let seed = 1; seed <= 200; seed++) {
-      let run = startRun(seed)
+      let run = startRun(seed, config)
       // Seat a seed-dependent selection of Hand Cats in seed-dependent Seats.
       run.night.hand.forEach((cat, i) => {
         const seat = (seed * (i + 3) + i) % 7
@@ -144,10 +146,8 @@ describe("the end of a Night", () => {
 
     const result = accepted(run, { type: "play" })
 
-    expect(result.run.night.score).toBe(320)
-    expect(result.run.night.status).toBe("cleared")
-    expect(result.run.night.playsLeft).toBe(2)
     expect(result.events).toContainEqual({ type: "nightCleared", score: 320 })
+    expect(result.run.night.number).toBe(2)
   })
 
   it("loses the Night when no Plays remain short of the Target", () => {
@@ -188,14 +188,15 @@ describe("the end of a Night", () => {
     expect(result.run.night.hand).toEqual([])
     expect(result.run.night.playsLeft).toBe(4)
     expect(result.run.night.status).toBe("lost")
+    expect(result.run.status).toBe("lost")
     expect(result.events).toContainEqual({
       type: "nightLost",
       score: result.run.night.score
     })
   })
 
-  it("rejects every action once the Night is over", () => {
-    const run = runWithCouch(["aloof"], { config: { firstTarget: 10 } })
+  it("rejects every action once the Night is lost", () => {
+    const run = runWithCouch(["aloof"], { config: { playsPerNight: 1 } })
     const over = apply(run, { type: "play" })
     const cat = over.night.hand[0]
 

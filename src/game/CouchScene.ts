@@ -2,6 +2,7 @@ import Phaser from "phaser"
 import {
   type ActiveGathering,
   applyAction,
+  type Cat,
   type CatId,
   previewPlay,
   type RunEvent
@@ -22,6 +23,22 @@ const PREVIEW_Y = 446
 const BREAKDOWN_Y = 486
 const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
 const REDRAW_BUTTON = { x: 316, y: 790, w: 108, h: 58 }
+/** How long the final Play's Score lingers before the lights go down. */
+const LIGHTS_OUT_DELAY = 1200
+/** The first Cat nods off this long after the lights go down... */
+const FIRST_NOD = 400
+/** ...and the last this long after the first, however many there are. */
+const NODDING_SPREAD = 1200
+const NOD_DURATION = 500
+/** From the Run's last Play until the Cats are all asleep; then the results. */
+export const SLEEP_MOMENT_MS =
+  LIGHTS_OUT_DELAY + FIRST_NOD + NODDING_SPREAD + NOD_DURATION + 300
+
+/** Where the `i`th Cat of the Hand not on the Couch sits on the rug. */
+const handSpot = (i: number) => ({
+  x: 60 + (i % HAND_COLUMNS) * 90,
+  y: HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
+})
 
 /** Seat centres, spread evenly between the Couch's arms. */
 const seatX = (seats: number) =>
@@ -53,6 +70,8 @@ export class CouchScene extends Phaser.Scene {
   private held: CatId | null = null
   /** The Cat just seated, which snaps into place on the next draw. */
   private landed: CatId | null = null
+  /** The last Play's Couch, where its Cats doze off once the Run ends. */
+  private lastCouch: (CatId | null)[] = []
   /** The Cats chosen to Redraw, or null when not choosing. */
   private redrawing: CatId[] | null = null
   private layer!: Phaser.GameObjects.Container
@@ -82,9 +101,17 @@ export class CouchScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.tapRedraw())
     const off = session.on((events) => {
-      if (events.length === 0) this.held = null
+      if (events.length === 0) {
+        this.held = null
+        this.lastCouch = []
+      }
       this.redrawing = null
-      this.draw()
+      const scored = events.filter((event) => event.type === "catScored")
+      if (scored.length > 0) {
+        this.lastCouch = session.run.night.couch.map(() => null)
+        for (const event of scored) this.lastCouch[event.seat] = event.cat
+      }
+      this.draw(events.some((event) => event.type === "runEnded"))
       this.celebrate(events)
     })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off)
@@ -186,8 +213,11 @@ export class CouchScene extends Phaser.Scene {
     g.fillRect(24, 410, 10, 18).fillRect(WIDTH - 34, 410, 10, 18)
   }
 
-  /** Redraws everything that follows the Run: HUD, seated Cats, preview, Hand. */
-  private draw() {
+  /**
+   * Redraws everything that follows the Run: HUD, seated Cats, preview, Hand;
+   * or, once the Run is over, the household asleep (`fallingAsleep` animates it).
+   */
+  private draw(fallingAsleep = false) {
     this.tweens.killTweensOf(this.layer.list)
     this.layer.removeAll(true)
     const { run } = session
@@ -198,13 +228,28 @@ export class CouchScene extends Phaser.Scene {
       return object
     }
 
-    // HUD: Night, Plays, and progress toward the Target.
+    // HUD: Night, Plays, Treats, and progress toward the Target.
     add(
-      this.add.text(20, 22, `Night ${night.number}`, font(24, "#4a3426", "800"))
+      this.add.text(
+        20,
+        22,
+        `Night ${night.number}/${run.config.nights}`,
+        font(24, "#4a3426", "800")
+      )
+    )
+    const treats = add(
+      this.add
+        .text(WIDTH - 20, 26, `Treats ${run.treats}`, font(18))
+        .setOrigin(1, 0)
     )
     add(
       this.add
-        .text(WIDTH - 20, 26, `Plays ${night.playsLeft}`, font(18))
+        .text(
+          treats.x - treats.width - 18,
+          26,
+          `Plays ${night.playsLeft}`,
+          font(18)
+        )
         .setOrigin(1, 0)
     )
     const bar = add(this.add.graphics())
@@ -230,6 +275,11 @@ export class CouchScene extends Phaser.Scene {
         .text(WIDTH - 20, 94, `Redraws ${night.redrawsLeft}`, font(15))
         .setOrigin(1, 0)
     )
+
+    if (run.status !== "playing") {
+      this.drawAsleep(add, catById, fallingAsleep)
+      return
+    }
 
     // A Cat chosen to Redraw glows cool, like one about to leave.
     const chosen = new Set(this.redrawing)
@@ -321,8 +371,7 @@ export class CouchScene extends Phaser.Scene {
       .filter((id) => !seated.has(id))
       .forEach((id, i) => {
         const cat = catById.get(id)!
-        const x = 60 + (i % HAND_COLUMNS) * 90
-        const y = HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
+        const { x, y } = handSpot(i)
         const held = id === this.held
         if (chosen.has(id)) markChosen(x, y - 10)
         if (held) {
@@ -393,6 +442,89 @@ export class CouchScene extends Phaser.Scene {
         )
         .setOrigin(0.5)
     )
+  }
+
+  /**
+   * The Run is over: the lights go down and every Cat dozes off where it is,
+   * the last Play's Cats on the Couch and the rest of the Hand on the rug.
+   */
+  private drawAsleep(
+    add: <T extends Phaser.GameObjects.GameObject>(object: T) => T,
+    catById: Map<CatId, Cat>,
+    animate: boolean
+  ) {
+    const { night } = session.run
+    const sleepers: { cat: Cat; x: number; y: number; size: number }[] = []
+    this.lastCouch.forEach((id, seat) => {
+      if (id)
+        sleepers.push({
+          cat: catById.get(id)!,
+          x: this.seatX[seat],
+          y: SEAT_Y - 12,
+          size: 64
+        })
+    })
+    const onCouch = new Set(this.lastCouch)
+    night.hand
+      .filter((id) => !onCouch.has(id))
+      .forEach((id, i) => {
+        sleepers.push({ cat: catById.get(id)!, ...handSpot(i), size: 72 })
+      })
+
+    const dusk = add(
+      this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x1b1633).setOrigin(0)
+    ).setAlpha(animate ? 0 : 0.55)
+    if (animate)
+      this.tweens.add({
+        targets: dusk,
+        alpha: 0.55,
+        delay: LIGHTS_OUT_DELAY,
+        duration: 1400
+      })
+    sleepers.forEach(({ cat, x, y, size }, i) => {
+      // Each Cat nods off a moment after the one before it.
+      const nodOff =
+        LIGHTS_OUT_DELAY +
+        FIRST_NOD +
+        (NODDING_SPREAD * i) / Math.max(1, sleepers.length - 1)
+      const asleep = add(drawCat(this, cat, size, { asleep: true }))
+      asleep.setPosition(x, y)
+      if (animate) {
+        const awake = add(drawCat(this, cat, size)).setPosition(x, y)
+        asleep.setAlpha(0)
+        this.tweens.add({
+          targets: awake,
+          alpha: 0,
+          delay: nodOff,
+          duration: NOD_DURATION
+        })
+        this.tweens.add({
+          targets: asleep,
+          alpha: 1,
+          delay: nodOff,
+          duration: NOD_DURATION
+        })
+      }
+      const z = add(
+        this.add
+          .text(
+            x + size * 0.3,
+            y - size * 0.45,
+            "z",
+            font(16, "#dfe3ff", "800")
+          )
+          .setAlpha(0)
+      )
+      this.tweens.add({
+        targets: z,
+        alpha: { from: 1, to: 0 },
+        y: z.y - 28,
+        x: z.x + 10,
+        delay: (animate ? nodOff : 0) + (i % 3) * 400,
+        duration: 1600,
+        repeat: -1
+      })
+    })
   }
 
   /**
@@ -548,6 +680,12 @@ export class CouchScene extends Phaser.Scene {
         delay += 120
       } else if (event.type === "scoreTotal") {
         pop(WIDTH / 2, PREVIEW_Y - 30, `${event.score}!`, 34, delay)
+        delay += 400
+      } else if (event.type === "nightCleared") {
+        pop(WIDTH / 2, 170, "Night cleared!", 34, delay)
+        delay += 300
+      } else if (event.type === "treatsAwarded") {
+        pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24, delay)
       }
     }
   }

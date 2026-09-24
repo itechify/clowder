@@ -1,5 +1,7 @@
+import { startNight } from "./run"
 import { type ActiveGathering, previewPlay, type ScoringEvent } from "./scoring"
-import type { CatId, Night, Run } from "./types"
+import { recordPlay } from "./stats"
+import type { CatId, Night, Run, RunStatus } from "./types"
 
 export type Action =
   | { type: "place"; cat: CatId; seat: number }
@@ -15,7 +17,14 @@ export type RunEvent =
   | { type: "catsDrawn"; cats: CatId[] }
   | { type: "catsRedrawn"; sentOut: CatId[]; drawn: CatId[] }
   | { type: "nightCleared"; score: number }
+  | {
+      type: "treatsAwarded"
+      forNight: number
+      forUnusedPlays: number
+      treats: number
+    }
   | { type: "nightLost"; score: number }
+  | { type: "runEnded"; outcome: Exclude<RunStatus, "playing"> }
 
 export type ActionResult =
   | { ok: true; run: Run; events: RunEvent[] }
@@ -25,7 +34,7 @@ export type ActionResult =
 export function applyAction(run: Run, action: Action): ActionResult {
   const reject = (reason: string): ActionResult => ({ ok: false, run, reason })
   const { night } = run
-  if (night.status !== "playing") return reject("The Night is over")
+  if (run.status !== "playing") return reject("The Run is over")
   const withCouch = (couch: (CatId | null)[]): ActionResult => ({
     ok: true,
     run: { ...run, night: { ...night, couch } },
@@ -102,7 +111,6 @@ function redraw(run: Run, sentOut: CatId[]): ActionResult {
 }
 
 function play(run: Run): ActionResult {
-  const { night } = run
   const breakdown = previewPlay(run)
   const newlyDiscovered = breakdown.gatherings
     .map((active) => active.gathering)
@@ -125,42 +133,74 @@ function play(run: Run): ActionResult {
       score: breakdown.score
     }
   ]
-  const played = night.couch.filter((cat) => cat !== null)
-  let next: Night = {
-    ...night,
-    score: night.score + breakdown.score,
-    playsLeft: night.playsLeft - 1,
-    hand: night.hand.filter((cat) => !played.includes(cat)),
-    couch: night.couch.map(() => null)
+  const played = run.night.couch.filter((cat) => cat !== null)
+  const night: Night = {
+    ...run.night,
+    score: run.night.score + breakdown.score,
+    playsLeft: run.night.playsLeft - 1,
+    hand: run.night.hand.filter((cat) => !played.includes(cat)),
+    couch: run.night.couch.map(() => null)
   }
-  if (next.score >= next.target) {
-    next = { ...next, status: "cleared" }
-    events.push({ type: "nightCleared", score: next.score })
-  } else if (next.playsLeft === 0) {
-    next = { ...next, status: "lost" }
-    events.push({ type: "nightLost", score: next.score })
-  } else {
-    // The Draw pile never reshuffles mid-Night, so the Hand may come up short.
-    const drawn = next.drawPile.slice(0, run.config.handSize - next.hand.length)
-    next = {
-      ...next,
-      hand: [...next.hand, ...drawn],
-      drawPile: next.drawPile.slice(drawn.length)
-    }
-    events.push({ type: "catsDrawn", cats: drawn })
-    // With no Cats left to seat, the remaining Plays can never be made.
-    if (next.hand.length === 0) {
-      next = { ...next, status: "lost" }
-      events.push({ type: "nightLost", score: next.score })
+  const scored: Run = {
+    ...run,
+    night,
+    stats: recordPlay(run, breakdown),
+    discoveredGatherings: [...run.discoveredGatherings, ...newlyDiscovered]
+  }
+  if (night.score >= night.target)
+    return clearNight(
+      { ...scored, night: { ...night, status: "cleared" } },
+      events
+    )
+  if (night.playsLeft === 0) return loseRun(scored, events)
+  // The Draw pile never reshuffles mid-Night, so the Hand may come up short.
+  const drawn = night.drawPile.slice(0, run.config.handSize - night.hand.length)
+  events.push({ type: "catsDrawn", cats: drawn })
+  const refilled: Run = {
+    ...scored,
+    night: {
+      ...night,
+      hand: [...night.hand, ...drawn],
+      drawPile: night.drawPile.slice(drawn.length)
     }
   }
+  // With no Cats left to seat, the remaining Plays can never be made.
+  if (refilled.night.hand.length === 0) return loseRun(refilled, events)
+  return { ok: true, run: refilled, events }
+}
+
+/** Loses the Night, and with it the Run. */
+function loseRun(run: Run, events: RunEvent[]): ActionResult {
+  events.push(
+    { type: "nightLost", score: run.night.score },
+    { type: "runEnded", outcome: "lost" }
+  )
   return {
     ok: true,
-    run: {
-      ...run,
-      night: next,
-      discoveredGatherings: [...run.discoveredGatherings, ...newlyDiscovered]
-    },
+    run: { ...run, night: { ...run.night, status: "lost" }, status: "lost" },
     events
   }
+}
+
+/** Pays the cleared Night's Treats, then starts the next Night or wins the Run. */
+function clearNight(run: Run, events: RunEvent[]): ActionResult {
+  const { config, night } = run
+  const reward = config.clearReward
+  const forNight =
+    night.number <= reward.earlyNights ? reward.early : reward.later
+  const forUnusedPlays = reward.perUnusedPlay * night.playsLeft
+  const treats = forNight + forUnusedPlays
+  events.push(
+    { type: "nightCleared", score: night.score },
+    { type: "treatsAwarded", forNight, forUnusedPlays, treats }
+  )
+  const paid: Run = {
+    ...run,
+    treats: run.treats + treats,
+    stats: { ...run.stats, nightsCleared: run.stats.nightsCleared + 1 }
+  }
+  if (night.number < config.nights)
+    return { ok: true, run: startNight(paid, night.number + 1), events }
+  events.push({ type: "runEnded", outcome: "won" })
+  return { ok: true, run: { ...paid, status: "won" }, events }
 }

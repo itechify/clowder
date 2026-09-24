@@ -14,7 +14,18 @@ export type Config = {
   redrawsPerNight: number
   /** The most Cats one Redraw may swap. */
   catsPerRedraw: number
+  /** Clearing the last Night wins the Run. */
+  nights: number
   firstTarget: number
+  /** Night n's Target is firstTarget × targetGrowth^(n − 1), rounded. */
+  targetGrowth: number
+  /** Treats for clearing a Night: `early` through Night `earlyNights`, `later` after. */
+  clearReward: {
+    early: number
+    earlyNights: number
+    later: number
+    perUnusedPlay: number
+  }
 }
 
 export const defaultConfig: Config = {
@@ -30,5 +41,8 @@ export const defaultConfig: Config = {
   playsPerNight: 3,
   redrawsPerNight: 2,
   catsPerRedraw: 3,
-  firstTarget: 300
+  nights: 9,
+  firstTarget: 300,
+  targetGrowth: 1.6,
+  clearReward: { early: 3, earlyNights: 2, later: 4, perUnusedPlay: 1 }
 }

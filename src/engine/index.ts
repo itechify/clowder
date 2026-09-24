@@ -15,4 +15,17 @@ export {
   type ScoreBreakdown,
   type ScoringEvent
 } from "./scoring"
-export type { Cat, CatId, Night, NightStatus, Run } from "./types"
+export {
+  type BestPlay,
+  type RunStats,
+  type StarCat,
+  starCat
+} from "./stats"
+export type {
+  Cat,
+  CatId,
+  Night,
+  NightStatus,
+  Run,
+  RunStatus
+} from "./types"

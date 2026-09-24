@@ -2,7 +2,8 @@ import { type Config, defaultConfig } from "./config"
 import { catNames } from "./content/catNames"
 import { coats } from "./content/coats"
 import { personalities } from "./content/personalities"
-import { type RngState, shuffle } from "./rng"
+import { shuffle } from "./rng"
+import { noStats } from "./stats"
 import type { Cat, Night, Run } from "./types"
 
 export function startRun(seed: number, config: Config = defaultConfig): Run {
@@ -18,22 +19,33 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
           personality,
           basePurr: config.basePurr
         })
-  const [night, afterNight] = startNight(rng, config, roster)
-  return { config, rng: afterNight, roster, night, discoveredGatherings: [] }
+  return startNight(
+    {
+      seed,
+      config,
+      rng,
+      roster,
+      discoveredGatherings: [],
+      status: "playing",
+      treats: 0,
+      stats: noStats
+    },
+    1
+  )
 }
 
-function startNight(
-  rng: RngState,
-  config: Config,
-  roster: Cat[]
-): [Night, RngState] {
-  const [shuffled, next] = shuffle(
-    rng,
+/** Shuffles the whole Roster into a fresh Draw pile and draws a Hand. */
+export function startNight(run: Omit<Run, "night">, number: number): Run {
+  const { config, roster } = run
+  const [shuffled, rng] = shuffle(
+    run.rng,
     roster.map((cat) => cat.id)
   )
   const night: Night = {
-    number: 1,
-    target: config.firstTarget,
+    number,
+    target: Math.round(
+      config.firstTarget * config.targetGrowth ** (number - 1)
+    ),
     score: 0,
     playsLeft: config.playsPerNight,
     redrawsLeft: config.redrawsPerNight,
@@ -42,5 +54,5 @@ function startNight(
     couch: Array.from({ length: config.seats }, () => null),
     status: "playing"
   }
-  return [night, next]
+  return { ...run, rng, night }
 }
