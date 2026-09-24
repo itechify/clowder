@@ -1,12 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { type Action, applyAction, previewPlay, type Run } from "./index"
-import { runWithCouch } from "./testing"
-
-function accepted(run: Run, action: Action) {
-  const result = applyAction(run, action)
-  if (!result.ok) throw new Error(result.reason)
-  return result
-}
+import { previewPlay } from "./index"
+import { accepted, runWithCouch } from "./testing"
 
 const active = (breakdown: ReturnType<typeof previewPlay>) =>
   breakdown.gatherings.map((g) => g.gathering)

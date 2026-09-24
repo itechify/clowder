@@ -61,13 +61,15 @@ export function applyAction(run: Run, action: Action): ActionResult {
 function play(run: Run): ActionResult {
   const { night } = run
   const breakdown = previewPlay(run)
-  const { discoveredGatherings } = run
+  const newlyDiscovered = breakdown.gatherings
+    .map((active) => active.gathering)
+    .filter((gathering) => !run.discoveredGatherings.includes(gathering))
   const events: RunEvent[] = [
     ...breakdown.gatherings.map(
-      (gathering): RunEvent => ({
+      (active): RunEvent => ({
         type: "gatheringActivated",
-        ...gathering,
-        firstTime: !discoveredGatherings.includes(gathering.gathering)
+        ...active,
+        firstTime: newlyDiscovered.includes(active.gathering)
       })
     ),
     ...breakdown.scoringEvents.map(
@@ -104,15 +106,12 @@ function play(run: Run): ActionResult {
     }
     events.push({ type: "catsDrawn", cats: drawn })
   }
-  const discovered = breakdown.gatherings
-    .map((active) => active.gathering)
-    .filter((gathering) => !discoveredGatherings.includes(gathering))
   return {
     ok: true,
     run: {
       ...run,
       night: next,
-      discoveredGatherings: [...discoveredGatherings, ...discovered]
+      discoveredGatherings: [...run.discoveredGatherings, ...newlyDiscovered]
     },
     events
   }

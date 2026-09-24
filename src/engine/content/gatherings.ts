@@ -19,24 +19,24 @@ export type Gathering = {
 }
 
 /**
- * The Seats of every run of at least `length` consecutive occupied Seats whose
- * Cats all belong together.
+ * The Seats of every stretch of at least `length` consecutive occupied Seats
+ * whose Cats all belong together.
  */
-function runs(
+function stretches(
   couch: Couch,
   length: number,
   together: (a: Cat, b: Cat) => boolean
 ): number[] {
   const seats: number[] = []
-  let run: number[] = []
+  let stretch: number[] = []
   const close = () => {
-    if (run.length >= length) seats.push(...run)
-    run = []
+    if (stretch.length >= length) seats.push(...stretch)
+    stretch = []
   }
   couch.forEach((cat, seat) => {
     const previous = couch[seat - 1]
     if (!cat || !previous || !together(previous, cat)) close()
-    if (cat) run.push(seat)
+    if (cat) stretch.push(seat)
   })
   close()
   return seats
@@ -53,13 +53,13 @@ export const gatherings: readonly Gathering[] = [
     id: "cuddlePuddle",
     name: "Cuddle Puddle",
     mult: 3,
-    seats: (couch) => runs(couch, 3, (a, b) => a.coat === b.coat)
+    seats: (couch) => stretches(couch, 3, (a, b) => a.coat === b.coat)
   },
   {
     id: "napClub",
     name: "Nap Club",
     mult: 3,
-    seats: (couch) => runs(couch, 3, (a, b) => sleepy(a) && sleepy(b))
+    seats: (couch) => stretches(couch, 3, (a, b) => sleepy(a) && sleepy(b))
   },
   {
     id: "personalSpace",

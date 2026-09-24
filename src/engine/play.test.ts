@@ -7,14 +7,7 @@ import {
   type Run,
   startRun
 } from "./index"
-import { runWithCouch } from "./testing"
-
-/** Applies an action that must be accepted, returning the next Run and its events. */
-function accepted(run: Run, action: Action) {
-  const result = applyAction(run, action)
-  if (!result.ok) throw new Error(result.reason)
-  return result
-}
+import { accepted, runWithCouch } from "./testing"
 
 function apply(run: Run, ...actions: Action[]) {
   let next = run

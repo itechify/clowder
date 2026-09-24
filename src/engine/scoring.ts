@@ -26,9 +26,9 @@ export type ScoreBreakdown = {
   gatherings: ActiveGathering[]
   /** Phase 2: in scoring order, left to right by Seat. */
   scoringEvents: ScoringEvent[]
-  /** Phase 4: total Purr × Mult, rounded down once. */
   purr: number
   mult: number
+  /** Phase 4: total Purr × Mult, rounded down once. */
   score: number
 }
 

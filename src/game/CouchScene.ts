@@ -26,7 +26,7 @@ const BUTTON = { x: WIDTH / 2, y: 790, w: 230, h: 58 }
 const seatX = (seats: number) =>
   Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
-/** Splits sorted Seats into runs of consecutive Seats. */
+/** Splits sorted Seats into stretches of consecutive Seats. */
 const contiguous = (seats: number[]) =>
   seats.reduce<number[][]>((groups, seat) => {
     const last = groups.at(-1)
@@ -232,9 +232,10 @@ export class CouchScene extends Phaser.Scene {
           .text(
             WIDTH / 2,
             BREAKDOWN_Y,
-            ["1", ...preview.gatherings.map((g) => `${g.name} ${g.mult}`)].join(
-              " + "
-            ) + ` = ${preview.mult.toFixed(1)} Mult`,
+            [
+              "1",
+              ...preview.gatherings.map(({ name, mult }) => `${name} ${mult}`)
+            ].join(" + ") + ` = ${preview.mult.toFixed(1)} Mult`,
             font(13, "#fdf6ea", "700")
           )
           .setOrigin(0.5)
