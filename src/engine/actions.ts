@@ -1,4 +1,4 @@
-import { previewPlay, type ScoringEvent } from "./scoring"
+import { type ActiveGathering, previewPlay, type ScoringEvent } from "./scoring"
 import type { CatId, Night, Run } from "./types"
 
 export type Action =
@@ -8,6 +8,7 @@ export type Action =
 
 /** What happened, in order: the script the renderer animates. */
 export type RunEvent =
+  | ({ type: "gatheringActivated"; firstTime: boolean } & ActiveGathering)
   | ({ type: "catScored" } & ScoringEvent)
   | { type: "scoreTotal"; purr: number; mult: number; score: number }
   | { type: "catsDrawn"; cats: CatId[] }
@@ -60,7 +61,15 @@ export function applyAction(run: Run, action: Action): ActionResult {
 function play(run: Run): ActionResult {
   const { night } = run
   const breakdown = previewPlay(run)
+  const { discoveredGatherings } = run
   const events: RunEvent[] = [
+    ...breakdown.gatherings.map(
+      (gathering): RunEvent => ({
+        type: "gatheringActivated",
+        ...gathering,
+        firstTime: !discoveredGatherings.includes(gathering.gathering)
+      })
+    ),
     ...breakdown.scoringEvents.map(
       (event): RunEvent => ({ type: "catScored", ...event })
     ),
@@ -95,5 +104,16 @@ function play(run: Run): ActionResult {
     }
     events.push({ type: "catsDrawn", cats: drawn })
   }
-  return { ok: true, run: { ...run, night: next }, events }
+  const discovered = breakdown.gatherings
+    .map((active) => active.gathering)
+    .filter((gathering) => !discoveredGatherings.includes(gathering))
+  return {
+    ok: true,
+    run: {
+      ...run,
+      night: next,
+      discoveredGatherings: [...discoveredGatherings, ...discovered]
+    },
+    events
+  }
 }

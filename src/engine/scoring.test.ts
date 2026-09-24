@@ -8,7 +8,7 @@ const bonuses = (breakdown: ReturnType<typeof previewPlay>) =>
 describe("a Play's Score", () => {
   it("is total Purr × Mult, with each Cat adding its 10 base Purr", () => {
     const breakdown = previewPlay(
-      runWithCouch(["clingy", null, "sleepy", null, "sleepy"])
+      runWithCouch(["orange aloof", "black sleepy", "white aloof"])
     )
 
     expect(breakdown.purr).toBe(30)

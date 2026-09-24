@@ -1,5 +1,6 @@
 import type { Config } from "./config"
 import type { Coat } from "./content/coats"
+import type { GatheringId } from "./content/gatherings"
 import type { Personality } from "./content/personalities"
 import type { RngState } from "./rng"
 
@@ -35,4 +36,6 @@ export type Run = {
   rng: RngState
   roster: Cat[]
   night: Night
+  /** Gatherings activated by any Play so far this Run, in discovery order. */
+  discoveredGatherings: GatheringId[]
 }
