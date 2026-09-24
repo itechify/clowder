@@ -21,11 +21,12 @@ const coatOutline: Record<Coat, number> = {
 const featureColour = (coat: Coat) => (coat === "black" ? 0xf2e5b8 : 0x2b1f1a)
 
 /** Unit-circle points for a regular star or polygon badge icon. */
-function ring(points: number, inner: number, radius: number, turn = 0) {
+/** `inner` is the star's inner radius as a fraction; 1 draws a plain polygon. */
+function ring(points: number, inner: number, radius: number) {
   return Array.from({ length: points * (inner === 1 ? 1 : 2) }, (_, i) => {
     const step = inner === 1 ? points : points * 2
     const r = inner === 1 || i % 2 === 0 ? radius : radius * inner
-    const angle = -Math.PI / 2 + turn + (i * 2 * Math.PI) / step
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / step
     return new Phaser.Math.Vector2(Math.cos(angle) * r, Math.sin(angle) * r)
   })
 }

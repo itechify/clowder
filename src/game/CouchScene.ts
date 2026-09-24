@@ -1,5 +1,5 @@
 import Phaser from "phaser"
-import { type CatId, previewPlay, type RunEvent } from "../engine"
+import { applyAction, type CatId, previewPlay, type RunEvent } from "../engine"
 import { drawCat } from "./catArt"
 import { session } from "./session"
 
@@ -8,12 +8,16 @@ export const WIDTH = 390
 export const HEIGHT = 844
 export const RESOLUTION = 2
 
-const SEAT_X = [55, 125, 195, 265, 335]
 const SEAT_Y = 352
-const HAND_X = [60, 150, 240, 330]
-const HAND_Y = [585, 690]
+const HAND_COLUMNS = 4
+const HAND_ROW_Y = 585
+const HAND_ROW_HEIGHT = 105
 const PREVIEW_Y = 452
 const BUTTON = { x: WIDTH / 2, y: 790, w: 230, h: 58 }
+
+/** Seat centres, spread evenly between the Couch's arms. */
+const seatX = (seats: number) =>
+  Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
 const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
@@ -33,6 +37,7 @@ export class CouchScene extends Phaser.Scene {
   /** The Cat just seated, which snaps into place on the next draw. */
   private landed: CatId | null = null
   private layer!: Phaser.GameObjects.Container
+  private seatX: number[] = []
 
   constructor() {
     super("couch")
@@ -40,9 +45,10 @@ export class CouchScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
+    this.seatX = seatX(session.run.config.seats)
     this.drawRoom()
     this.layer = this.add.container()
-    SEAT_X.forEach((x, seat) => {
+    this.seatX.forEach((x, seat) => {
       this.add
         .zone(x, SEAT_Y - 10, 68, 110)
         .setInteractive({ useHandCursor: true })
@@ -102,7 +108,7 @@ export class CouchScene extends Phaser.Scene {
     // Couch: back, five cushions, arms.
     g.fillStyle(0x6f8f72, 1).fillRoundedRect(8, 262, WIDTH - 16, 112, 22)
     g.fillStyle(0x5c7a5f, 1).fillRoundedRect(8, 372, WIDTH - 16, 40, 12)
-    for (const x of SEAT_X)
+    for (const x of this.seatX)
       g.fillStyle(0x86a888, 1).fillRoundedRect(x - 33, 300, 66, 80, 14)
     g.fillStyle(0x587558, 1)
     g.fillRoundedRect(0, 300, 22, 110, 10)
@@ -154,7 +160,7 @@ export class CouchScene extends Phaser.Scene {
     for (const event of preview.scoringEvents) {
       const cat = catById.get(event.cat)!
       const sprite = add(drawCat(this, cat, 64))
-      sprite.setPosition(SEAT_X[event.seat], SEAT_Y - 12)
+      sprite.setPosition(this.seatX[event.seat], SEAT_Y - 12)
       if (event.cat === this.landed) {
         sprite.setScale(1.25)
         this.tweens.add({
@@ -166,13 +172,18 @@ export class CouchScene extends Phaser.Scene {
       }
       add(
         this.add
-          .text(SEAT_X[event.seat], SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
+          .text(
+            this.seatX[event.seat],
+            SEAT_Y + 38,
+            cat.name,
+            font(11, "#f6f1e4")
+          )
           .setOrigin(0.5)
       )
       add(
         this.add
           .text(
-            SEAT_X[event.seat],
+            this.seatX[event.seat],
             SEAT_Y - 72,
             `+${event.bonus}`,
             font(18, event.bonus > 0 ? "#c2410c" : "#b9a58f", "800")
@@ -196,14 +207,14 @@ export class CouchScene extends Phaser.Scene {
         .setOrigin(0.5)
     )
 
-    // The Hand: drawn Cats not yet seated.
+    // The Hand's Cats not yet on the Couch.
     const seated = new Set(night.couch)
     night.hand
       .filter((id) => !seated.has(id))
       .forEach((id, i) => {
         const cat = catById.get(id)!
-        const x = HAND_X[i % 4]
-        const y = HAND_Y[Math.floor(i / 4)] ?? HAND_Y[1]
+        const x = 60 + (i % HAND_COLUMNS) * 90
+        const y = HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
         const held = id === this.held
         if (held) {
           const glow = add(this.add.graphics())
@@ -225,7 +236,7 @@ export class CouchScene extends Phaser.Scene {
       })
 
     // Play: "Get Comfy". Dimmed until a Cat is on the Couch.
-    const ready = night.status === "playing" && preview.scoringEvents.length > 0
+    const ready = applyAction(run, { type: "play" }).ok
     const button = add(this.add.graphics())
     button
       .fillStyle(ready ? 0x4a3426 : 0x9c8672, 1)
@@ -275,7 +286,7 @@ export class CouchScene extends Phaser.Scene {
     let delay = 0
     for (const event of events) {
       if (event.type === "catScored") {
-        pop(SEAT_X[event.seat], SEAT_Y - 20, `+${event.purr}`, 22, delay)
+        pop(this.seatX[event.seat], SEAT_Y - 20, `+${event.purr}`, 22, delay)
         delay += 120
       } else if (event.type === "scoreTotal") {
         pop(WIDTH / 2, PREVIEW_Y - 30, `${event.score}!`, 34, delay)

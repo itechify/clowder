@@ -8,7 +8,7 @@ import "./style.css"
 
 if (import.meta.env.DEV) installDebugHook()
 
-/** Between-Run screen: how the Night ended, and a fresh household. */
+/** Between-Run screen: the Night that ended the Run, and a fresh household. */
 function NightOver() {
   const { night } = session.run
   const cleared = night.status === "cleared"

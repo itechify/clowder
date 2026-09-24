@@ -97,15 +97,19 @@ describe("Play", () => {
   })
 
   it("refills the Hand only partially when the Draw pile runs short", () => {
-    const seated = seatFromHand(startRun(1), 3)
-    const run = {
-      ...seated,
-      night: { ...seated.night, drawPile: seated.night.drawPile.slice(0, 2) }
-    }
+    let run = startRun(1, {
+      ...defaultConfig,
+      playsPerNight: 6,
+      firstTarget: 10_000
+    })
+    // 22 Cats wait in the Draw pile; four full Couches draw 20 of them.
+    for (let play = 0; play < 4; play++)
+      run = apply(seatFromHand(run, 5), { type: "play" })
+    expect(run.night.drawPile).toHaveLength(2)
 
-    const after = apply(run, { type: "play" })
+    const after = apply(seatFromHand(run, 5), { type: "play" })
 
-    expect(after.night.hand).toHaveLength(7)
+    expect(after.night.hand).toHaveLength(5)
     expect(after.night.drawPile).toEqual([])
   })
 

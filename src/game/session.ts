@@ -11,10 +11,11 @@ type Listener = (events: RunEvent[]) => void
 
 /** A seed for a new Run: the page's `?seed=` when given, otherwise random. */
 export function chooseSeed(search = location.search): number {
-  const given = Number(new URLSearchParams(search).get("seed"))
-  return Number.isInteger(given) && given !== 0
+  const param = new URLSearchParams(search).get("seed")
+  const given = Number(param)
+  return param !== null && param !== "" && Number.isInteger(given)
     ? given
-    : Math.floor(Math.random() * 2 ** 31) + 1
+    : Math.floor(Math.random() * 2 ** 31)
 }
 
 /**
