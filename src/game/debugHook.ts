@@ -1,4 +1,4 @@
-import type Phaser from "phaser"
+import Phaser from "phaser"
 import {
   type Action,
   type ActionResult,
@@ -18,6 +18,8 @@ export type DebugHook = {
   scoring: () => boolean
   /** The keys of the scenes showing now, such as "couch" or "shop". */
   scenes: () => string[]
+  /** Every piece of text the showing scenes draw, in drawing order. */
+  texts: () => string[]
 }
 
 declare global {
@@ -38,6 +40,21 @@ export function installDebugHook(game: Phaser.Game) {
     apply: (action) => session.apply(action),
     start: (seed) => session.start(seed),
     scoring: () => presentation.scoring,
-    scenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key)
+    scenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
+    texts: () =>
+      game.scene
+        .getScenes(true)
+        .flatMap((scene) => textsIn(scene.children.list))
   }
+}
+
+/** The visible text among some game objects, looking inside containers. */
+function textsIn(objects: Phaser.GameObjects.GameObject[]): string[] {
+  return objects.flatMap((object) => {
+    if (object instanceof Phaser.GameObjects.Container)
+      return object.visible ? textsIn(object.list) : []
+    return object instanceof Phaser.GameObjects.Text && object.visible
+      ? [object.text]
+      : []
+  })
 }

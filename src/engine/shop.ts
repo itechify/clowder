@@ -27,6 +27,9 @@ const shopActions = new Set<string>([
 export const isShopAction = (action: { type: string }): action is ShopAction =>
   shopActions.has(action.type)
 
+/** Why a Shop action is refused when the player is short of Treats. */
+export const notEnoughTreats = "Not enough Treats"
+
 /** What Rehoming a House Cat refunds: half its Recruit price, rounded down. */
 export const rehomeRefund = (config: Config, houseCat: HouseCatId) =>
   Math.floor(config.shop.recruitPrices[houseCat] / 2)
@@ -112,7 +115,7 @@ export function applyShopAction(
     case "adopt": {
       const cat = shop.catOffers.find((offer) => offer.id === action.cat)
       if (!cat) return reject("That Cat is not on offer")
-      if (run.treats < prices.adoptPrice) return reject("Not enough Treats")
+      if (run.treats < prices.adoptPrice) return reject(notEnoughTreats)
       return {
         ok: true,
         run: {
@@ -134,7 +137,7 @@ export function applyShopAction(
       if (run.shelf.length >= run.config.shelfSize)
         return reject("The Shelf is full; Rehome a House Cat first")
       const price = prices.recruitPrices[houseCat]
-      if (run.treats < price) return reject("Not enough Treats")
+      if (run.treats < price) return reject(notEnoughTreats)
       return {
         ok: true,
         run: {
@@ -169,7 +172,7 @@ export function applyShopAction(
       if (!cat) return reject("That Cat is not in the Roster")
       if (shop.catRehomesLeft === 0)
         return reject("A Cat has already been Rehomed this visit")
-      if (run.treats < prices.rehomeCatPrice) return reject("Not enough Treats")
+      if (run.treats < prices.rehomeCatPrice) return reject(notEnoughTreats)
       return {
         ok: true,
         run: {
@@ -183,7 +186,7 @@ export function applyShopAction(
     }
     case "reroll": {
       const price = shop.rerollPrice
-      if (run.treats < price) return reject("Not enough Treats")
+      if (run.treats < price) return reject(notEnoughTreats)
       const [{ catOffers, houseCatOffers }, next] = newOffers(run)
       return {
         ok: true,
