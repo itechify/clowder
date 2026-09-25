@@ -21,7 +21,7 @@ const play: Step = () => ({ type: "play" })
 const playFive: Step[] = [0, 1, 2, 3, 4].map((i) => seatFromHand(i, i))
 
 /** Plays full Couches until the Shop opens. */
-function shopping(seed: number) {
+function runInShop(seed: number) {
   let run = startRun(seed)
   while (!run.shop) {
     for (const step of [...playFive, play]) run = accepted(run, step(run)).run
@@ -74,7 +74,7 @@ describe("saving and resuming a Run", () => {
   })
 
   it("resumes mid-Shop exactly as it would have gone on", () => {
-    const run = shopping(1)
+    const run = runInShop(1)
 
     const end = expectResumesIdentically(run, [
       (r) => ({ type: "adopt", cat: r.shop!.catOffers[0].id }),
@@ -134,7 +134,7 @@ describe("a damaged save", () => {
       cat: startRun(3).night.hand[0],
       seat: 2
     }).run
-    for (const run of [midNight, shopping(1)]) {
+    for (const run of [midNight, runInShop(1)]) {
       const saved = serialiseRun(run)
       const refusedAt = paths(JSON.parse(saved).run)
         .map((path) => ["run", ...path])

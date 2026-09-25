@@ -13,7 +13,7 @@ type Listener = (events: RunEvent[]) => void
 
 type RunStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">
 
-/** The one Run slot on this device. */
+/** Where the one saved Run on this device is kept. */
 const KEY = "clowder.run"
 
 /** The seed a page's `?seed=` asks for, if it asks for one. */

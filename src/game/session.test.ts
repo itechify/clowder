@@ -6,7 +6,6 @@ import { Session } from "./session"
 function memoryStorage(initial: Record<string, string> = {}) {
   const items = new Map(Object.entries(initial))
   return {
-    items,
     getItem: (key: string) => items.get(key) ?? null,
     setItem: (key: string, value: string) => {
       items.set(key, value)

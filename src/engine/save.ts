@@ -3,7 +3,7 @@ import { coats } from "./content/coats"
 import { gatherings } from "./content/gatherings"
 import { personalities } from "./content/personalities"
 import type { BestPlay, RunStats } from "./stats"
-import type { Cat, Night, Run, Shop } from "./types"
+import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
 
 /**
  * The shape of saved Runs. Bump it whenever Run state changes meaning, so a
@@ -35,13 +35,16 @@ type Check = (value: unknown) => boolean
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
-const number: Check = Number.isFinite
+const finite: Check = Number.isFinite
 const integer: Check = Number.isInteger
-const string: Check = (value) => typeof value === "string"
+const text: Check = (value) => typeof value === "string"
 const oneOf =
   (options: readonly unknown[]): Check =>
   (value) =>
     options.includes(value)
+/** One of every member of a union, which the type makes sure are all listed. */
+const memberOf = <T extends string>(members: Record<T, true>): Check =>
+  oneOf(Object.keys(members))
 const nullable =
   (check: Check): Check =>
   (value) =>
@@ -62,8 +65,8 @@ const shape =
     Object.entries(checks).every(([key, check]) => (check as Check)(value[key]))
 
 const isCat = shape<Cat>({
-  id: string,
-  name: string,
+  id: text,
+  name: text,
   coat: oneOf(coats),
   personality: oneOf(personalities),
   basePurr: integer
@@ -83,8 +86,8 @@ const isConfig = shape<Config>({
   redrawsPerNight: integer,
   catsPerRedraw: integer,
   nights: integer,
-  firstTarget: number,
-  targetGrowth: number,
+  firstTarget: finite,
+  targetGrowth: finite,
   clearReward: shape<Config["clearReward"]>({
     early: integer,
     earlyNights: integer,
@@ -113,10 +116,10 @@ const isRun = shape<Run>({
     score: integer,
     playsLeft: integer,
     redrawsLeft: integer,
-    drawPile: list(string),
-    hand: list(string),
-    couch: list(nullable(string)),
-    status: oneOf(["playing", "cleared", "lost"])
+    drawPile: list(text),
+    hand: list(text),
+    couch: list(nullable(text)),
+    status: memberOf<NightStatus>({ playing: true, cleared: true, lost: true })
   }),
   shop: nullable(
     shape<Shop>({
@@ -126,7 +129,7 @@ const isRun = shape<Run>({
     })
   ),
   discoveredGatherings: list(oneOf(gatherings.map((g) => g.id))),
-  status: oneOf(["playing", "won", "lost"]),
+  status: memberOf<RunStatus>({ playing: true, won: true, lost: true }),
   treats: integer,
   stats: shape<RunStats>({
     nightsCleared: integer,
