@@ -37,6 +37,10 @@ export const MOON_PHASES = defaultConfig.nights
 /** Freya warms up in stages, from reserved to affectionate. */
 export const FREYA_STAGES = 3
 
+/**
+ * A pose turned to one side, like a reacting Cat's, faces the viewer's right;
+ * the game mirrors it to face left.
+ */
 export type CatPose = "content" | "reacting"
 export type HouseCatPose =
   | "idle"

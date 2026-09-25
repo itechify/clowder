@@ -82,11 +82,12 @@ const NO_WORDS = "No words, signatures, or watermarks."
 const CHARACTER =
   "Square image with a transparent background and no floor or cast shadow. " +
   "One character, full body, centred left to right and sitting on an " +
-  "invisible floor line seven-eighths of the way down, so the bottom eighth " +
-  "stays empty but for a tail that may dangle into it. The character is " +
-  "about three-quarters of the image wide, at the same scale as the hero Cat " +
-  "on the style reference sheet. No floating hearts, Zs, or anger marks: " +
-  "the game adds its own."
+  `invisible floor line ${100 * CHARACTER_BASE.y}% of the way down, so the ` +
+  `bottom ${100 * (1 - CHARACTER_BASE.y)}% stays empty but for a tail that ` +
+  `may dangle into it. The character is about ` +
+  `${(100 * CHARACTER_SPAN) / CHARACTER_CANVAS}% of the image wide, at the ` +
+  "same scale as the hero Cat on the style reference sheet. No floating " +
+  "hearts, Zs, anger marks, or blush: the game adds its own."
 
 const coatLooks: Record<Coat, string> = {
   orange:
@@ -99,6 +100,10 @@ const coatLooks: Record<Coat, string> = {
   calico: "a calico Cat: white fur with bold patches of orange and black"
 }
 
+/** The hero Cat's pose, on the style reference sheet and as its own image. */
+const CLINGY_CONTENT =
+  "sitting upright and eager, big round shining eyes and a small happy smile, as if hoping someone will sit beside it"
+
 /**
  * Each Personality's content pose, and the reacting pose it takes when its
  * Neighbors earn its bonus. A reacting Cat faces the viewer's right; the game
@@ -106,8 +111,7 @@ const coatLooks: Record<Coat, string> = {
  */
 const personalityPoses: Record<Personality, Record<CatPose, string>> = {
   clingy: {
-    content:
-      "Clingy, content: sitting upright and eager, big round shining eyes and a small happy smile, as if hoping someone will sit beside it.",
+    content: `Clingy, content: ${CLINGY_CONTENT}.`,
     reacting:
       "Clingy, delighted by company: leaning its whole body toward the viewer's right as if snuggling into a friend just out of frame, eyes closed in a happy smile."
   },
@@ -169,8 +173,7 @@ const houseCatLooks: Record<HouseCatId, HouseCatLook> = {
   theVoid: {
     look: "hardly a cat at all: a cat-shaped patch of deep, starry darkness with two big round eyes",
     idle: "sitting still, stars twinkling faintly inside it, eyes calm",
-    triggered:
-      "its eyes glowing bright gold, the stars inside swirling, the darkness swelling a little larger"
+    triggered: "its eyes glowing bright gold and the stars inside swirling"
   },
   freya: {
     look: fromPhotos("Freya", "her"),
@@ -226,7 +229,7 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
     "A window with a cream-painted frame and a single vertical mullion, showing a deep blue night sky with a few small stars. No moon: that is a separate image.",
   couch:
     "A plump sage-green sofa seen straight on, with five separate seat cushions evenly spaced across it, rounded arms at both ends, and short wooden legs. Keep the top edge of the backrest plain: the game lays a meter along it.",
-  rug: "A cozy, woven terracotta rug with a cream border, seen from slightly above, big enough for eight Cats lounging in two rows.",
+  rug: "A cozy, woven terracotta rug with a cream border, seen from above at a gentle angle as it lies on the floor, big enough for eight Cats lounging in two rows.",
   shelf:
     "A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath.",
   treatJar:
@@ -234,21 +237,23 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
 }
 
 /** Each UI piece, ready (to press, or still to spend) and not. */
-const uiLooks: Record<UiPiece, { ready: string; not: string }> = {
+const uiLooks: Record<UiPiece, { ready: string; notReady: string }> = {
   playButton: {
     ready:
-      "A large, chunky, tactile pill-shaped button like a plump cushion, in warm dark brown with a soft highlight, begging to be pressed. Leave its face blank: the game writes on it.",
-    not: "A large pill-shaped cushion button pressed flat and faded to a dusty beige-brown, clearly not pressable. Leave its face blank: the game writes on it."
+      "A large, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown with a soft highlight, begging to be pressed. Leave its face blank: the game writes on it.",
+    notReady:
+      "A large pillowy, pill-shaped button pressed flat and faded to a dusty beige-brown, clearly not pressable. Leave its face blank: the game writes on it."
   },
   redrawButton: {
     ready:
-      "A small, chunky, tactile pill-shaped button like a plump cushion, in warm dark brown with a soft highlight, ready to press. Leave its face blank: the game writes on it.",
-    not: "A small pill-shaped cushion button pressed flat and faded to a dusty beige-brown, clearly not pressable. Leave its face blank: the game writes on it."
+      "A small, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown with a soft highlight, ready to press. Leave its face blank: the game writes on it.",
+    notReady:
+      "A small pillowy, pill-shaped button pressed flat and faded to a dusty beige-brown, clearly not pressable. Leave its face blank: the game writes on it."
   },
   pip: {
     ready:
       "A small, round pip: a glowing golden bead, full and still to spend.",
-    not: "A small, round pip already spent: an empty, hollow ring."
+    notReady: "A small, round pip already spent: an empty, hollow ring."
   }
 }
 
@@ -285,12 +290,20 @@ const gatheringLooks: Record<
 
 const capitalised = (word: string) => word[0].toUpperCase() + word.slice(1)
 
-/** A room, UI, or Gathering image: flat, front-on, and sized for its canvas. */
-const piece = ({ canvas }: ArtEntry, look: string, opaque = false) =>
+/**
+ * The prompt for a room, UI, or Gathering image, sized for its canvas: flat
+ * and front-on unless it lies on the floor.
+ */
+const piecePrompt = (
+  { canvas }: ArtEntry,
+  look: string,
+  { opaque = false, onFloor = false } = {}
+) =>
   [
     look,
     opaque ? "" : "Transparent background.",
-    `Front-on, with no perspective. It will be resized to exactly ${canvas.width}×${canvas.height} pixels, so compose for that shape.`,
+    onFloor ? "" : "Front-on, with no perspective.",
+    `It will be resized to exactly ${canvas.width}×${canvas.height} pixels, so compose for that shape.`,
     NO_WORDS,
     STYLE,
     MATCH
@@ -298,7 +311,7 @@ const piece = ({ canvas }: ArtEntry, look: string, opaque = false) =>
     .filter(Boolean)
     .join(" ")
 
-const character = (subject: string) =>
+const characterPrompt = (subject: string) =>
   [subject, CHARACTER, NO_WORDS, STYLE, MATCH].join(" ")
 
 /** What an image shows, and the prompt that asks for it. */
@@ -308,7 +321,7 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
       const { coat, personality, pose } = entry
       return {
         title: `${capitalised(coat)} ${capitalised(personality)} Cat, ${pose}`,
-        prompt: character(
+        prompt: characterPrompt(
           `${capitalised(coatLooks[coat])}. ${personalityPoses[personality][pose]}`
         )
       }
@@ -330,7 +343,7 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
                 ]
       return {
         title: `${name}, ${pose}`,
-        prompt: character(
+        prompt: characterPrompt(
           `A House Cat called ${name}: ${look}. On a shelf (don't draw the shelf), ${doing}.`
         )
       }
@@ -339,7 +352,7 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
       const { colour, icon } = badgeLooks[entry.coat]
       return {
         title: `${capitalised(entry.coat)} Coat badge`,
-        prompt: piece(
+        prompt: piecePrompt(
           entry,
           `A small round badge for a ${entry.coat} Cat: a ${colour} disc with ${icon} in bold contrast in the middle. The icon's shape must read in grayscale, for players who can't tell the colours apart.`
         )
@@ -350,7 +363,7 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
         const phase = entry.phase ?? 1
         return {
           title: `Moon, Night ${phase} of ${MOON_PHASES}`,
-          prompt: piece(
+          prompt: piecePrompt(
             entry,
             `The moon through the window on Night ${phase} of ${MOON_PHASES}, waxing across the Run: ${moonLook(phase)}, glowing softly.`
           )
@@ -360,7 +373,10 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
         title: capitalised(
           entry.piece.replace(/([A-Z])/g, " $1").toLowerCase()
         ),
-        prompt: piece(entry, roomLooks[entry.piece], entry.piece === "wall")
+        prompt: piecePrompt(entry, roomLooks[entry.piece], {
+          opaque: entry.piece === "wall",
+          onFloor: entry.piece === "rug"
+        })
       }
     case "ui": {
       const [name, ready, not] = {
@@ -371,7 +387,7 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
       const looks = uiLooks[entry.piece]
       return {
         title: `${name}, ${entry.ready ? ready : not}`,
-        prompt: piece(entry, entry.ready ? looks.ready : looks.not)
+        prompt: piecePrompt(entry, entry.ready ? looks.ready : looks.notReady)
       }
     }
     case "gathering": {
@@ -379,7 +395,7 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
       const span = entry.span ?? 1
       return {
         title: entry.span ? `${name}, across ${span} Seats` : name,
-        prompt: piece(entry, look(span))
+        prompt: piecePrompt(entry, look(span))
       }
     }
   }
@@ -429,7 +445,7 @@ const styleSheet: BriefEntry = {
   attach: [],
   prompt: [
     "A style reference sheet for Clowder, a cozy cat-collecting game set in a living room at night. Landscape.",
-    `On the left, large, the hero character: ${coatLooks.orange}, ${personalityPoses.clingy.content.replace(/^Clingy, content: /, "").replace(/\.$/, "")}, facing the viewer, full body on a plain background.`,
+    `On the left, large, the hero character: ${coatLooks.orange}, ${CLINGY_CONTENT}, facing the viewer, full body on a plain background.`,
     "On the right, the palette: unlabelled swatches of the five Coat colours (ginger orange, black, white, smoky gray, and a calico patch of all three) and of the room (warm cream wallpaper, wood browns, sage-green sofa, terracotta rug, night-sky blue, treat gold).",
     "Beneath the palette, the outline rules: sample strokes showing the single outline weight and dark-brown outline colour used on everything, and one sphere showing the cel shading.",
     NO_WORDS,
@@ -459,9 +475,9 @@ export function briefBatches(manifest: readonly ArtEntry[]): Batch[] {
 /** How to generate and deliver every image, whatever its batch. */
 const RULES = [
   `**Order.** Generate the style reference sheet first and approve it before anything else: it is attached to every later generation, so it holds the style together. Start each batch in a fresh conversation with it attached. The hero Cat on the sheet is then generated as its own image, like every other Cat.`,
-  `**Characters.** Every Cat and House Cat is a transparent ${CHARACTER_CANVAS}×${CHARACTER_CANVAS} PNG at one shared scale: about ${CHARACTER_SPAN} px across, centred, sitting on its base ${CHARACTER_CANVAS * (1 - CHARACTER_BASE.y)} px above the bottom edge, which leaves room for a tail to dangle over the Shelf. A reacting Cat faces the viewer's right; the game mirrors it to face left. Leave out hearts, Zs, and anger marks: the game draws them over the art.`,
+  `**Characters.** Every Cat and House Cat is a transparent ${CHARACTER_CANVAS}×${CHARACTER_CANVAS} PNG at one shared scale: about ${CHARACTER_SPAN} px across, centred, sitting on its base ${CHARACTER_CANVAS * (1 - CHARACTER_BASE.y)} px above the bottom edge, which leaves room for a tail to dangle over the Shelf. A character turned to one side, like a reacting Cat, faces the viewer's right; the game mirrors it to face left. Leave out hearts, Zs, anger marks, and blush: the game draws them over the art.`,
   `**The room, UI, and Gathering overlays** are authored at ${ROOM_SCALE}× the game's 390×844 design size. Only the wall is opaque; everything else has a transparent background. Leave buttons and the treat jar blank: the game writes their words and numbers.`,
-  "**Sizes.** Astra generates at 1024×1024, 1536×1024, or 1024×1536. Resize, crop, or pad each image to exactly its size before saving it; the build rejects any other size.",
+  "**Sizes.** Astra generates at 1024×1024, 1536×1024, or 1024×1536. Resize, crop, or pad each image to exactly its size before saving it, without stretching; the build rejects any other size. For a long, thin piece such as the shelf or a blanket, generate it wide, spanning the whole width, then crop to its shape.",
   "**Delivery.** Save each image as a PNG at its file path. A game image in `art/raw/` replaces its code-drawn fallback with no code change, and the dev server reloads when one lands. Then run `pnpm brief` to mark it delivered here.",
   "**Photos.** Skadi's and Freya's generations also attach every photo in `art/reference/photos/skadi/` or `art/reference/photos/freya/`. Those are the author's own cats: the folder is ignored by git, so the photos are never committed.",
   "**Fallback.** An image Astra can't produce consistently stays on its code-drawn fallback: list it in the batch's issue rather than holding up the batch."

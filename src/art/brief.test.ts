@@ -101,6 +101,7 @@ describe("the art brief", () => {
         expect(text).toMatch(/Cult of the Lamb/)
         expect(text).toMatch(/bold.*outlines/i)
         expect(text).toMatch(/saturated/i)
+        expect(text).not.toMatch(/undefined|NaN/)
       }
     })
 
