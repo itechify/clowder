@@ -3,15 +3,14 @@ import { art } from "../art/manifest"
 import {
   type Action,
   clearTreats,
-  copying,
   type HouseCatId,
-  houseCat,
   type Run,
   type ScoreBreakdown
 } from "../engine"
+import { stageShelf } from "../presentation/staging"
 import { addArt } from "./art"
 import { drawHouseCat } from "./characters"
-import { font } from "./fonts"
+import { font, numbers } from "./fonts"
 import { shelfX, WIDTH } from "./layout"
 
 type Add = <T extends Phaser.GameObjects.GameObject>(object: T) => T
@@ -56,7 +55,8 @@ export function shelfNotes(
 
 /**
  * Draws the Shelf: a plank with a position per House Cat it can hold, each House
- * Cat named beneath it, the `held` one glowing. With `onTap`, each position
+ * Cat at rest, named beneath it with whatever it has built up so far, the
+ * `held` one glowing. With `onTap`, each position
  * answers a tap. Returns the House Cats drawn, to animate during scoring.
  */
 export function drawShelf(
@@ -87,14 +87,14 @@ export function drawShelf(
   const g = add(scene.add.graphics())
 
   const sprites = new Map<HouseCatId, Phaser.GameObjects.Container>()
-  const copied = copying(run.shelf)
+  const staged = stageShelf(run)
   xs.forEach((x, position) => {
-    const id = run.shelf[position]
-    if (id === undefined) {
+    if (!staged[position]) {
       // A free position: a little mat waiting on the plank.
       g.fillStyle(0xfaf3e6, 0.55).fillEllipse(x, y + 2, size * 0.9, 7)
       g.lineStyle(1.5, 0xb07a52, 0.8).strokeEllipse(x, y + 2, size * 0.9, 7)
     } else {
+      const { houseCat: id, pose, name, state, inert } = staged[position]
       if (id === held)
         g.fillStyle(0xfff4c2, 0.9).fillRoundedRect(
           x - width / 2 + 4,
@@ -104,29 +104,38 @@ export function drawShelf(
           14
         )
       // A Copycat with nothing to copy is greyed out; one copying says whom.
-      const inert = id === "copycat" && copied[position] === null
       sprites.set(
         id,
-        add(drawHouseCat(scene, id, size))
+        add(drawHouseCat(scene, pose, size))
           .setPosition(x, sitY)
           .setAlpha(inert ? 0.35 : 1)
       )
-      const copiedName = copied[position] && houseCat(copied[position]).name
       const label = add(
         scene.add
-          .text(
-            x,
-            y + 18,
-            copiedName ? `Copycat as ${copiedName}` : houseCat(id).name,
-            {
-              ...font(10, inert ? "#9c8672" : "#4a3426", "800"),
-              align: "center",
-              wordWrap: { width: width - 4 }
-            }
-          )
+          .text(x, y + 18, name, {
+            ...font(10, inert ? "#9c8672" : "#4a3426", "800"),
+            align: "center",
+            wordWrap: { width: width - 4 }
+          })
           .setOrigin(0.5, 0)
       )
       label.setLineSpacing(-2)
+      // What it has built up so far, on a tag at its feet.
+      if (state) {
+        const tag = scene.add
+          .text(x - size * 0.5, y - 10, state, numbers(11, "#f6d743"))
+          .setOrigin(0.5)
+        add(scene.add.graphics())
+          .fillStyle(0x141018, 0.92)
+          .fillRoundedRect(
+            tag.x - tag.width / 2 - 5,
+            tag.y - 8,
+            tag.width + 10,
+            16,
+            8
+          )
+        add(tag)
+      }
       const note = notes[id]
       if (note) {
         const label = scene.add

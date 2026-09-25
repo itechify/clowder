@@ -8,6 +8,7 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
+import { type Staging, stage } from "../presentation/staging"
 import { artTexture, delivered } from "./art"
 import { presentation } from "./presentation"
 import { session } from "./session"
@@ -25,6 +26,8 @@ export type DebugHook = {
   art: (key: string) => "delivered" | "fallback"
   /** Every piece of text the showing scenes draw, in drawing order. */
   texts: () => string[]
+  /** What the living room shows for the Run as it stands (see staging). */
+  staging: () => Staging
   /** Every sound cue the game has asked for, in order. */
   cues: () => Cue[]
   /** Whether audio has started, and the theme for what is showing. */
@@ -58,6 +61,7 @@ export function installDebugHook(game: Phaser.Game) {
       game.scene
         .getScenes(true)
         .flatMap((scene) => textsIn(scene.children.list)),
+    staging: () => stage(session.run, presentation.seatingOrder),
     cues: () => [...sound.log],
     audio: () => ({ unlocked: sound.unlocked, theme: sound.theme })
   }
