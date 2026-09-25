@@ -54,6 +54,71 @@ export function SettingsMenu() {
                 </label>
               ))}
             </fieldset>
+            <fieldset className="levels">
+              <legend>Sound</legend>
+              <label>
+                Music
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={Math.round(settings.musicVolume * 100)}
+                  onChange={(event) =>
+                    settings.setMusicVolume(event.target.valueAsNumber / 100)
+                  }
+                />
+              </label>
+              <label>
+                Sound effects
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  value={Math.round(settings.sfxVolume * 100)}
+                  onChange={(event) =>
+                    settings.setSfxVolume(event.target.valueAsNumber / 100)
+                  }
+                />
+              </label>
+            </fieldset>
+            <div className="toggles">
+              <label>
+                Mute
+                <input
+                  type="checkbox"
+                  checked={settings.muted}
+                  onChange={(event) => settings.setMuted(event.target.checked)}
+                />
+              </label>
+              <label>
+                <span>
+                  Haptics
+                  {!settings.hapticsAvailable && (
+                    <small>Not available on this device</small>
+                  )}
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.hapticsAvailable && settings.haptics}
+                  disabled={!settings.hapticsAvailable}
+                  onChange={(event) =>
+                    settings.setHaptics(event.target.checked)
+                  }
+                />
+              </label>
+              <label>
+                Reduced motion
+                <input
+                  type="checkbox"
+                  checked={settings.reducedMotion}
+                  onChange={(event) =>
+                    settings.setReducedMotion(event.target.checked)
+                  }
+                />
+              </label>
+            </div>
             <button type="button" onClick={() => setOpen(false)}>
               Done
             </button>
