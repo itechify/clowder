@@ -140,33 +140,39 @@ describe("the mute setting", () => {
 })
 
 describe("the haptics setting", () => {
+  const vibrates = { canVibrate: true }
+
   it("starts on", () => {
-    expect(new Settings(memoryStorage()).haptics).toBe(true)
+    expect(new Settings(memoryStorage(), vibrates).haptics).toBe(true)
   })
 
   it("persists being turned off", () => {
     const storage = memoryStorage()
-    new Settings(storage).setHaptics(false)
+    new Settings(storage, vibrates).setHaptics(false)
 
-    expect(new Settings(storage).haptics).toBe(false)
+    expect(new Settings(storage, vibrates).haptics).toBe(false)
   })
 
   it("falls back to on when the stored value is not a yes or no", () => {
     const storage = memoryStorage({ "clowder.settings": '{"haptics":0}' })
 
-    expect(new Settings(storage).haptics).toBe(true)
+    expect(new Settings(storage, vibrates).haptics).toBe(true)
   })
 
-  it("is only available where the device can vibrate", () => {
-    const storage = memoryStorage()
+  it("is unavailable, and off, where the device cannot vibrate", () => {
+    for (const device of [{ canVibrate: false }, {}]) {
+      const settings = new Settings(memoryStorage(), device)
 
-    expect(new Settings(storage, { canVibrate: true }).hapticsAvailable).toBe(
-      true
-    )
-    expect(new Settings(storage, { canVibrate: false }).hapticsAvailable).toBe(
-      false
-    )
-    expect(new Settings(storage).hapticsAvailable).toBe(false)
+      expect(settings.hapticsAvailable).toBe(false)
+      expect(settings.haptics).toBe(false)
+    }
+  })
+
+  it("keeps the player's choice for a device that can vibrate", () => {
+    const storage = memoryStorage()
+    new Settings(storage, { canVibrate: false }).setHaptics(false)
+
+    expect(new Settings(storage, vibrates).haptics).toBe(false)
   })
 })
 
@@ -180,7 +186,7 @@ describe("the Reduced motion setting", () => {
 
     for (const reduce of [true, false]) {
       const settings = new Settings(storage, {
-        reducedMotion: osMotionPreference(reduce)
+        motionQuery: osMotionPreference(reduce)
       })
       expect(settings.reducedMotion).toBe(reduce)
     }
@@ -188,7 +194,7 @@ describe("the Reduced motion setting", () => {
 
   it("follows the OS preference as it changes, telling listeners", () => {
     const os = osMotionPreference(false)
-    const settings = new Settings(memoryStorage(), { reducedMotion: os })
+    const settings = new Settings(memoryStorage(), { motionQuery: os })
     let heard = 0
     settings.on(() => heard++)
 
@@ -201,9 +207,9 @@ describe("the Reduced motion setting", () => {
   it("keeps the player's choice over the OS preference, across visits", () => {
     const storage = memoryStorage()
     const os = osMotionPreference(true)
-    new Settings(storage, { reducedMotion: os }).setReducedMotion(false)
+    new Settings(storage, { motionQuery: os }).setReducedMotion(false)
 
-    const restored = new Settings(storage, { reducedMotion: os })
+    const restored = new Settings(storage, { motionQuery: os })
     os.change(true)
 
     expect(restored.reducedMotion).toBe(false)
@@ -212,7 +218,7 @@ describe("the Reduced motion setting", () => {
   it("follows the OS preference when the stored choice is not a yes or no", () => {
     const storage = memoryStorage({ "clowder.settings": '{"reducedMotion":1}' })
     const settings = new Settings(storage, {
-      reducedMotion: osMotionPreference(true)
+      motionQuery: osMotionPreference(true)
     })
 
     expect(settings.reducedMotion).toBe(true)

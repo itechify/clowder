@@ -10,10 +10,10 @@ export interface Device {
   /** Whether the Vibration API is supported; iOS Safari has none. */
   canVibrate?: boolean
   /** The OS's `prefers-reduced-motion` media query. */
-  reducedMotion?: MotionPreference
+  motionQuery?: MotionQuery
 }
 
-interface MotionPreference {
+interface MotionQuery {
   readonly matches: boolean
   addEventListener(type: "change", listener: () => void): void
 }
@@ -29,12 +29,12 @@ export class Settings {
   sfxVolume = 0.8
   /** Silences music and sound effects without forgetting their volumes. */
   muted = false
-  /** Pulses on big moments; a no-op where haptics are unavailable. */
-  haptics = true
   readonly hapticsAvailable: boolean
+  /** The player's haptics choice, kept for devices that can vibrate. */
+  private chosenHaptics = true
   /** The player's own Reduced motion choice, once they have made one. */
   private chosenReducedMotion?: boolean
-  private osMotion?: MotionPreference
+  private motionQuery?: MotionQuery
   /** Bumped on every change, for React's useSyncExternalStore. */
   revision = 0
   private listeners = new Set<() => void>()
@@ -44,8 +44,8 @@ export class Settings {
     device: Device = {}
   ) {
     this.hapticsAvailable = device.canVibrate ?? false
-    this.osMotion = device.reducedMotion
-    this.osMotion?.addEventListener("change", () => {
+    this.motionQuery = device.motionQuery
+    this.motionQuery?.addEventListener("change", () => {
       if (this.chosenReducedMotion === undefined) this.emit()
     })
     const stored = this.read()
@@ -54,50 +54,50 @@ export class Settings {
     if (isVolume(stored?.musicVolume)) this.musicVolume = stored.musicVolume
     if (isVolume(stored?.sfxVolume)) this.sfxVolume = stored.sfxVolume
     if (typeof stored?.muted === "boolean") this.muted = stored.muted
-    if (typeof stored?.haptics === "boolean") this.haptics = stored.haptics
+    if (typeof stored?.haptics === "boolean")
+      this.chosenHaptics = stored.haptics
     if (typeof stored?.reducedMotion === "boolean")
       this.chosenReducedMotion = stored.reducedMotion
   }
 
+  /** Pulses on big moments; always off where haptics are unavailable. */
+  get haptics() {
+    return this.hapticsAvailable && this.chosenHaptics
+  }
+
   /** Calms effects; follows the OS preference until the player chooses. */
   get reducedMotion() {
-    return this.chosenReducedMotion ?? this.osMotion?.matches ?? false
+    return this.chosenReducedMotion ?? this.motionQuery?.matches ?? false
   }
 
   setScoringSpeed(speed: ScoringSpeed) {
     this.scoringSpeed = speed
-    this.write()
-    this.emit()
+    this.changed()
   }
 
   setMusicVolume(volume: number) {
     this.musicVolume = clampVolume(volume)
-    this.write()
-    this.emit()
+    this.changed()
   }
 
   setSfxVolume(volume: number) {
     this.sfxVolume = clampVolume(volume)
-    this.write()
-    this.emit()
+    this.changed()
   }
 
   setMuted(muted: boolean) {
     this.muted = muted
-    this.write()
-    this.emit()
+    this.changed()
   }
 
   setHaptics(haptics: boolean) {
-    this.haptics = haptics
-    this.write()
-    this.emit()
+    this.chosenHaptics = haptics
+    this.changed()
   }
 
   setReducedMotion(reducedMotion: boolean) {
     this.chosenReducedMotion = reducedMotion
-    this.write()
-    this.emit()
+    this.changed()
   }
 
   on = (listener: () => void) => {
@@ -117,6 +117,11 @@ export class Settings {
     }
   }
 
+  private changed() {
+    this.write()
+    this.emit()
+  }
+
   private write() {
     try {
       this.storage?.setItem(
@@ -126,7 +131,7 @@ export class Settings {
           musicVolume: this.musicVolume,
           sfxVolume: this.sfxVolume,
           muted: this.muted,
-          haptics: this.haptics,
+          haptics: this.chosenHaptics,
           reducedMotion: this.chosenReducedMotion
         })
       )
@@ -152,5 +157,5 @@ export const settings =
     ? new Settings()
     : new Settings(window.localStorage, {
         canVibrate: typeof navigator.vibrate === "function",
-        reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+        motionQuery: window.matchMedia("(prefers-reduced-motion: reduce)")
       })
