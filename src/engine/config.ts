@@ -21,7 +21,7 @@ export type Config = {
   targetGrowth: number
   /** The Nights that are Disasters, each meeting the next in the Run's order. */
   disasterNights: number[]
-  /** A Disaster Night's Target is its normal Target × this, rounded once. */
+  /** A Disaster Night's Target is the Night's normal Target × this, rounded. */
   disasterTargetFactor: number
   /**
    * Treats for clearing a Night: `early` through Night `earlyNights`, `later`

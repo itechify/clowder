@@ -8,7 +8,7 @@ import {
   disasterById,
   personalities
 } from "../engine"
-import { font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
+import { DISASTER_RED, font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
 import { drawCat } from "./catArt"
 import { session } from "./session"
 
@@ -125,7 +125,7 @@ export class ShopScene extends Phaser.Scene {
     // The Disaster ahead, revealed now so the household can prepare for it.
     if (disaster) {
       add(this.add.graphics())
-        .fillStyle(0x8a3a2e, 1)
+        .fillStyle(DISASTER_RED, 1)
         .fillRoundedRect(14, 72, WIDTH - 28, 24, 12)
       add(
         this.add

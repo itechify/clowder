@@ -64,14 +64,15 @@ export function startNight(run: Omit<Run, "night">, number: number): Run {
     redraws: config.redrawsPerNight,
     ...(disaster && disasterById(disaster).changes)
   }
+  const target = Math.round(
+    config.firstTarget * config.targetGrowth ** (number - 1)
+  )
   const night: Night = {
     number,
     disaster,
-    target: Math.round(
-      config.firstTarget *
-        config.targetGrowth ** (number - 1) *
-        (disaster ? config.disasterTargetFactor : 1)
-    ),
+    target: disaster
+      ? Math.round(target * config.disasterTargetFactor)
+      : target,
     catsPerPlay: rules.catsPerPlay,
     score: 0,
     playsLeft: rules.plays,

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
-import type { DisasterId } from "./content/disasters"
 import {
   applyAction,
   type Config,
+  type DisasterId,
   defaultConfig,
   type Run,
   startRun
@@ -13,18 +13,24 @@ import { accepted } from "./testing"
 const easyRun = (seed = 1, config: Partial<Config> = {}) =>
   startRun(seed, { ...defaultConfig, basePurr: 1_000_000, ...config })
 
-/** Clears the Night with one lone Cat, then leaves the Shop for the next. */
-function clearNight(run: Run) {
+/** Plays the first Hand Cat alone; in an easy Run that clears the Night. */
+function playOne(run: Run) {
   const cat = run.night.hand[0]
-  const seated = accepted(run, { type: "place", cat, seat: 0 }).run
-  const cleared = accepted(seated, { type: "play" }).run
+  return accepted(accepted(run, { type: "place", cat, seat: 0 }).run, {
+    type: "play"
+  })
+}
+
+/** Clears the Night with one lone Cat, then leaves the Shop for the next. */
+function playOnToNextNight(run: Run) {
+  const cleared = playOne(run).run
   return cleared.shop ? accepted(cleared, { type: "leaveShop" }).run : cleared
 }
 
 /** An easy Run, played on to the Night of the given Disaster. */
 function runOn(disaster: DisasterId) {
   let run = easyRun()
-  while (run.night.disaster !== disaster) run = clearNight(run)
+  while (run.night.disaster !== disaster) run = playOnToNextNight(run)
   return run
 }
 
@@ -64,7 +70,7 @@ describe("Disaster Nights", () => {
     let run = easyRun()
     const byNight = [run.night.disaster]
     while (run.status === "playing") {
-      run = clearNight(run)
+      run = playOnToNextNight(run)
       if (run.status === "playing") byNight.push(run.night.disaster)
     }
     const [first, second, third] = run.disasters
@@ -88,13 +94,13 @@ describe("a Disaster Night's Target", () => {
     let run = easyRun()
     const targets = [run.night.target]
     for (let night = 1; night < 9; night++) {
-      run = clearNight(run)
+      run = playOnToNextNight(run)
       targets.push(run.night.target)
     }
 
     // Normally 768, 3146, and 12885 on Nights 3, 6, and 9.
     expect(targets).toEqual([
-      300, 480, 1152, 1229, 1966, 4719, 5033, 8053, 19327
+      300, 480, 1152, 1229, 1966, 4719, 5033, 8053, 19328
     ])
   })
 })
@@ -166,7 +172,7 @@ describe("the Nights after a Disaster", () => {
     const after: Run[] = []
     while (run.status === "playing") {
       const disaster = run.night.disaster
-      run = clearNight(run)
+      run = playOnToNextNight(run)
       if (disaster) after.push(run)
     }
 
@@ -185,11 +191,7 @@ describe("clearing a Disaster Night", () => {
     const paid: Record<string, unknown> = {}
     while (run.status === "playing") {
       const { disaster } = run.night
-      const cat = run.night.hand[0]
-      const { run: cleared, events } = accepted(
-        accepted(run, { type: "place", cat, seat: 0 }).run,
-        { type: "play" }
-      )
+      const { run: cleared, events } = playOne(run)
       if (disaster)
         paid[disaster] = events.find((event) => event.type === "treatsAwarded")
       run = cleared.shop
@@ -217,10 +219,7 @@ describe("the Shop", () => {
     let run = easyRun()
     const revealed: (DisasterId | null)[] = []
     while (run.status === "playing") {
-      const cat = run.night.hand[0]
-      run = accepted(accepted(run, { type: "place", cat, seat: 0 }).run, {
-        type: "play"
-      }).run
+      run = playOne(run).run
       if (!run.shop) break
       revealed.push(run.shop.nextDisaster)
       run = accepted(run, { type: "leaveShop" }).run

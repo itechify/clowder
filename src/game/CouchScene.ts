@@ -76,6 +76,9 @@ const contiguous = (seats: number[]) =>
 const purrTimesMult = (purr: number, mult: number) =>
   `${purr} Purr × ${mult.toFixed(1)}`
 
+/** The red of a Disaster, wherever one is announced. */
+export const DISASTER_RED = 0x8a3a2e
+
 export const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
   fontSize: `${size}px`,
@@ -295,8 +298,11 @@ export class CouchScene extends Phaser.Scene {
     if (dropped) this.movedFrom.set(dropped.cat, dropped.at)
     if (!action || !session.apply(action).ok) {
       this.draw()
-      // A Seat refused on a Disaster Night points at the rule refusing it.
-      if (action?.type === "place") this.nudgeDisasterSign()
+      // A Seat refused while tonight's Couch holds fewer Cats than it has
+      // Seats points at the Disaster limiting it.
+      const { night } = session.run
+      if (action?.type === "place" && night.catsPerPlay < night.couch.length)
+        this.nudgeDisasterSign()
     }
     this.movedFrom.clear()
   }
@@ -506,12 +512,12 @@ export class CouchScene extends Phaser.Scene {
     ]
     const w = Math.max(...texts.map((text) => text.width)) + 24
     const board = this.add.graphics()
-    board.fillStyle(0x8a3a2e, 1).fillRoundedRect(0, 0, w, 70, 12)
+    board.fillStyle(DISASTER_RED, 1).fillRoundedRect(0, 0, w, 70, 12)
     board.lineStyle(3, 0xf0b28c, 1).strokeRoundedRect(0, 0, w, 70, 12)
     return this.add.container(20, 120, [board, ...texts])
   }
 
-  /** Gives the Disaster sign a shake, when tonight has one. */
+  /** Gives the Disaster sign a shake. */
   private nudgeDisasterSign() {
     const sign = this.disasterSign
     if (!sign) return
