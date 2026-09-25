@@ -80,9 +80,8 @@ function drawFallback(scene: Phaser.Scene, entry: ArtEntry) {
       paintCoatBadge(g, entry.coat, size * BADGE.r)
       break
     case "houseCat":
-      // Until their other poses are drawn, House Cats hold their idle one.
       g.translateCanvas(0, -size * HOUSE_CAT_BASE)
-      paintHouseCat(g, entry.houseCat, size)
+      paintHouseCat(g, entry.houseCat, size, entry.pose)
       break
     default:
       paintRoomArt(entry)(g, ctx)

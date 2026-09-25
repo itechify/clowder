@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { artManifest, catArt, houseCatArt } from "../art/manifest"
+import { artManifest, catArt, FREYA_STAGES, houseCatArt } from "../art/manifest"
 import {
   applyAction,
   type CatId,
@@ -14,6 +14,7 @@ import { accepted, runWithCouch } from "../engine/testing"
 import {
   eyeTint,
   eyeTints,
+  FREYA_WARMS_AT,
   type Staging,
   seatingOrder,
   stage,
@@ -368,6 +369,63 @@ describe("staging the Shelf", () => {
     expect(stage(warmed).houseCats[0].state).toBe("×1.5")
   })
 
+  describe("Freya warming up", () => {
+    /** Freya's pose on a Shelf of her alone, `warmPlays` Plays into the Night. */
+    const freyaAfter = (warmPlays: number) => {
+      const run = runWithCouch([], { shelf: ["freya"] })
+      return stage({ ...run, night: { ...run.night, warmPlays } }).houseCats[0]
+        .pose
+    }
+
+    it("steps from reserved to affectionate, one stage per ×0.5 she gains", () => {
+      expect([0, 1, 2, 3].map((warmPlays) => freyaAfter(warmPlays))).toEqual([
+        houseCatArt("freya", "idle"),
+        houseCatArt("freya", "warming1"),
+        houseCatArt("freya", "warming2"),
+        houseCatArt("freya", "warming3")
+      ])
+    })
+
+    it("stays fully affectionate however much further she warms up", () => {
+      expect(freyaAfter(FREYA_WARMS_AT.length + 4)).toBe(
+        houseCatArt("freya", `warming${FREYA_STAGES}`)
+      )
+    })
+
+    it("warms up as a Play warms her, and survives a save and resume", () => {
+      const run = runWithCouch(["aloof"], { shelf: ["freya"] })
+      const warmed = accepted(run, { type: "play" }).run
+      expect(stage(warmed).houseCats[0].pose).toBe(
+        houseCatArt("freya", "warming1")
+      )
+      const resumed = restoreRun(serialiseRun(warmed))!
+      expect(stage(resumed).houseCats[0].pose).toBe(
+        houseCatArt("freya", "warming1")
+      )
+    })
+
+    it("is reserved again at the start of each Night", () => {
+      // A lone Aloof Cat big enough to clear the Night in one Play.
+      const run = runWithCouch(["aloof"], {
+        shelf: ["freya"],
+        config: { basePurr: 1_000_000 }
+      })
+      const cleared = accepted(run, { type: "play" }).run
+      expect(stage(cleared).houseCats[0].pose).toBe(
+        houseCatArt("freya", "warming1")
+      )
+      const next = accepted(cleared, { type: "leaveShop" }).run
+      expect(next.night.number).toBe(2)
+      expect(stage(next).houseCats[0].pose).toBe(houseCatArt("freya", "idle"))
+    })
+
+    it("leaves a Copycat copying her in its own pose", () => {
+      const run = runWithCouch([], { shelf: ["freya", "copycat"] })
+      const staged = stage({ ...run, night: { ...run.night, warmPlays: 2 } })
+      expect(staged.houseCats[1].pose).toBe(houseCatArt("copycat", "idle"))
+    })
+  })
+
   it("names whom each Copycat copies, and greys out one copying nothing", () => {
     const run = runWithCouch([], {
       shelf: ["copycat", "boxGoblin", "copycat"]
@@ -431,13 +489,21 @@ describe("staging's art", () => {
   it("asks only for poses the art manifest has", () => {
     const keys = new Set(artManifest.map((entry) => entry.key))
     for (let seed = 1; seed <= 20; seed++) {
-      const run = runWithCouch(
+      const seated = runWithCouch(
         ["clingy", "clingy", "aloof", "sleepy", "sleepy"],
         {
           seed,
           shelf: ["copycat", "freya", "theVoid", "skadi", "boxGoblin"]
         }
       )
+      // Freya warmed up through every stage she has, and past them.
+      const run = {
+        ...seated,
+        night: {
+          ...seated.night,
+          warmPlays: seed % (FREYA_WARMS_AT.length + 2)
+        }
+      }
       for (const staging of [stage(run), stageAsleep(run, run.night.couch)])
         for (const { pose } of [...staging.cats, ...staging.houseCats])
           expect(keys).toContain(pose)

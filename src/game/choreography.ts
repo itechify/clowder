@@ -1,6 +1,7 @@
 import { houseCatArt } from "../art/manifest"
 import type { Cue, CueName } from "../audio/cues"
 import type { HouseCatId, RunEvent } from "../engine"
+import { freyaPose } from "../presentation/staging"
 import type { ScoringSpeed } from "../shell/settings"
 import {
   type EffectConfig,
@@ -141,10 +142,16 @@ export function choreograph(
   const steps: Step[] = []
   const poses: PoseWindow[] = []
   /** Holds a House Cat's triggered pose, running on from one still held. */
-  const holdPose = (houseCat: HouseCatId, from: number, to: number) => {
+  const holdPose = (
+    houseCat: HouseCatId,
+    event: RunEvent,
+    from: number,
+    to: number
+  ) => {
     const held = poses.findLast((window) => window.houseCat === houseCat)
     if (held && held.to >= from) held.to = Math.max(held.to, to)
-    else poses.push({ houseCat, pose: triggeredPose(houseCat), from, to })
+    else
+      poses.push({ houseCat, pose: triggeredPose(houseCat, event), from, to })
   }
   let time = LEAD_IN
   /** A step leading into `event`'s own, holding the sequence for `ms` at 1×. */
@@ -207,7 +214,12 @@ export function choreograph(
       )
     })
     for (const houseCat of firing(event))
-      holdPose(houseCat, time / scoringSpeed, (time + beat) / scoringSpeed)
+      holdPose(
+        houseCat,
+        event,
+        time / scoringSpeed,
+        (time + beat) / scoringSpeed
+      )
     time += beat
   }
   return { steps, poses, duration: (time + TAIL) / scoringSpeed }
@@ -234,9 +246,19 @@ function firing(event: RunEvent): HouseCatId[] {
   }
 }
 
-/** A House Cat's pose while its effect fires; Skadi rolls belly-up. */
-const triggeredPose = (houseCat: HouseCatId) =>
-  houseCatArt(houseCat, houseCat === "skadi" ? "bellyUp" : "triggered")
+/**
+ * A House Cat's pose while `event` fires its effect. Skadi rolls belly-up;
+ * Freya shows the stage her × reaches, never cooler than she is, or a warm
+ * moment while she is still reserved.
+ */
+function triggeredPose(houseCat: HouseCatId, event: RunEvent) {
+  if (houseCat === "skadi") return houseCatArt(houseCat, "bellyUp")
+  if (houseCat === "freya" && "times" in event) {
+    const stage = freyaPose(event.times)
+    return houseCatArt(houseCat, stage === "idle" ? "triggered" : stage)
+  }
+  return houseCatArt(houseCat, "triggered")
+}
 
 /** The slam an event makes, if it adds Mult or multiplies it. */
 function slamOf(event: RunEvent): Slam | undefined {

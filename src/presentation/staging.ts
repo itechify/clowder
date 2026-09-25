@@ -1,4 +1,9 @@
-import { type CatPose, catArt, houseCatArt } from "../art/manifest"
+import {
+  type CatPose,
+  catArt,
+  type HouseCatPose,
+  houseCatArt
+} from "../art/manifest"
 import {
   type Cat,
   type CatId,
@@ -214,9 +219,22 @@ function placed(run: Run, couch: readonly (CatId | null)[]) {
 }
 
 /**
+ * The × at which Freya reaches each stage of warming up, one per signature
+ * pose; below the first she is reserved, as she starts each Night.
+ */
+export const FREYA_WARMS_AT = [1.5, 2, 2.5] as const
+
+/** Freya as far as her × has warmed her up: reserved, or a warming stage. */
+export function freyaPose(times: number): HouseCatPose {
+  const stage = FREYA_WARMS_AT.filter((at) => times >= at).length
+  return stage === 0 ? "idle" : `warming${stage}`
+}
+
+/**
  * The Shelf's House Cats at rest, each with what it has built up: Freya how
- * far she has warmed up tonight, and The Void how much base Purr it has grown
- * the Roster's Cats. A Copycat builds up whatever it copies.
+ * far she has warmed up tonight, shown in her pose too, and The Void how much
+ * base Purr it has grown the Roster's Cats. A Copycat builds up whatever it
+ * copies, but keeps its own pose.
  */
 export function stageShelf(run: Run): StagedHouseCat[] {
   const copied = copying(run.shelf)
@@ -231,7 +249,10 @@ export function stageShelf(run: Run): StagedHouseCat[] {
     const warmth = warmsUp && times?.([], run.night)
     return {
       houseCat: id,
-      pose: houseCatArt(id, "idle"),
+      pose: houseCatArt(
+        id,
+        id === "freya" && warmth ? freyaPose(warmth) : "idle"
+      ),
       name:
         id === "copycat" && acts
           ? `Copycat as ${houseCat(acts).name}`
