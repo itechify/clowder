@@ -45,7 +45,8 @@ function requestable(): string[] {
   keys.push(...Object.values(art.room))
   for (const ready of [true, false])
     keys.push(art.playButton(ready), art.redrawButton(ready))
-  for (const full of [true, false]) keys.push(art.pip(full))
+  for (const full of [true, false])
+    keys.push(art.pip(full), art.purrMeter(full))
   // A Gathering spans between its first and last Seats; each forms only
   // across so many Seats (see src/engine/content/gatherings.ts).
   const fewest: Record<GatheringId, number> = {
@@ -94,6 +95,7 @@ describe("the art manifest", () => {
         "room/rug",
         "room/shelf",
         "room/treatJar",
+        "room/disasterSign",
         "room/moon/1",
         "room/moon/9"
       ])

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { houseCat } from "../src/engine"
-import { boot, layout, shop, tap } from "./scene"
+import { boot, layout, ready, shop, tap } from "./scene"
 
 test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
   await boot(page, 7)
@@ -215,7 +215,7 @@ test("resumes a Run where it was left after a reload", async ({ page }) => {
   expect(before.night.couch[4]).not.toBeNull()
 
   await page.reload()
-  await page.waitForFunction(() => "__clowder" in window)
+  await ready(page)
 
   expect(new URL(page.url()).search).toBe("")
   expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
@@ -242,7 +242,7 @@ test("starts afresh once the saved Run has finished", async ({ page }) => {
   })
 
   await page.reload()
-  await page.waitForFunction(() => "__clowder" in window)
+  await ready(page)
 
   const fresh = await page.evaluate(() => window.__clowder!.run())
   expect(fresh.status).toBe("playing")
@@ -267,7 +267,7 @@ test("resumes a Run left in the Shop there", async ({ page }) => {
   const before = await page.evaluate(() => window.__clowder!.run())
 
   await page.reload()
-  await page.waitForFunction(() => "__clowder" in window)
+  await ready(page)
 
   expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
   await expect

@@ -10,8 +10,8 @@ import {
   type ScoreBreakdown
 } from "../engine"
 import { addArt } from "./art"
-import { font } from "./CouchScene"
 import { drawHouseCat } from "./characters"
+import { font } from "./fonts"
 import { shelfX, WIDTH } from "./layout"
 
 type Add = <T extends Phaser.GameObjects.GameObject>(object: T) => T

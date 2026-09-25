@@ -7,8 +7,6 @@ import {
   applyAction,
   type Cat,
   type CatId,
-  type DisasterId,
-  disasterById,
   type HouseCatId,
   houseCat,
   previewPlay,
@@ -16,6 +14,13 @@ import {
   type RunEvent,
   type ScoreBreakdown
 } from "../engine"
+import {
+  type DisasterSign,
+  hud,
+  type Pips,
+  type PurrMeter,
+  purrMeter
+} from "../presentation/hud"
 import {
   type Placement,
   type RugRow,
@@ -27,25 +32,38 @@ import { settings } from "../shell/settings"
 import { addArt } from "./art"
 import { drawCat } from "./characters"
 import { choreograph, type Step, skippedCues } from "./choreography"
+import { display, font, numbers, OUTLINE } from "./fonts"
 import { HEIGHT, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
+import { INK } from "./roomArt"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
 /** The top of the Shelf's plank, a windowsill above the Couch. */
 const SHELF_Y = 186
 const SHELF_CAT_SIZE = 48
-/** Centre of tonight's Disaster sign, between the Draw pile and the Redraws. */
-const DISASTER_SIGN = { x: 208, y: 101 }
-/** Where the window's centre, its moon, the Couch's feet, and the rug's centre are. */
-const WINDOW_Y = 151
-const MOON = { x: 245, y: 136 }
+/**
+ * Where the HUD sits in the room: the Night on the wall beside the window with
+ * its moon, the Draw pile beneath; the treat jar's base, top right, its Treats
+ * beside it; the nail tonight's Disaster sign hangs from, below the jar; and
+ * the purr meter's centre, along the top of the Couch's back.
+ */
+const NIGHT_LABEL = { x: 22, y: 26 }
+const DRAW_PILE_LABEL = { x: 22, y: 52 }
+const WINDOW = { x: 112, y: 100 }
+const MOON = { x: 155, y: 90 }
+const TREAT_JAR = { x: 362, y: 60 }
+const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
+/** The Disaster sign's nail, and how wide its words may run inside its border. */
+const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
+const PURR_METER = { x: WIDTH / 2, y: 264 }
+/** Where the Couch's feet and the rug's centre are. */
 const COUCH_FLOOR_Y = 428
 /** The top of each Seat's pad, which its Cat sits on. */
 const SEAT_PAD_Y = 344
 /** A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from its top. */
 const FULL_SOFA_Y = 337
-const BUNTING_Y = 249
+const BUNTING_Y = 277
 const RUG_Y = 636
 const SEAT_Y = 352
 const SEATED_SIZE = 64
@@ -65,12 +83,33 @@ const RUG_AREA = { w: 80, margin: 28, dy: -4 }
 const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
 const HOP_HEIGHT = 46
+/**
+ * Where the lowest Gathering name sits, just above the purr meter, the others
+ * stacking up from it.
+ */
+const GATHERING_NAME_Y = 236
+const GATHERING_NAME_STEP = 25
+/**
+ * The colours numbers pop up in as a Play scores: Purr, then a House Cat's
+ * Repeats, The Void's growth, and Freya's hearts.
+ */
+const POP = {
+  purr: "#ffa94d",
+  repeat: "#c4b0ff",
+  growth: "#c4b0ff",
+  heart: "#ff9cbb"
+}
 /** A picked-up Cat glows warm; one chosen to Redraw glows cool, ringed. */
 const GLOW = { held: 0xfff1b0, chosen: 0xa9c8ee, chosenRing: 0x4f79a8 }
 const PREVIEW_Y = 446
 const BREAKDOWN_Y = 486
 const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
 const REDRAW_BUTTON = { x: 316, y: 790, w: 108, h: 58 }
+/**
+ * Where a button's label and pips sit on its face, above and below its
+ * centre, and how far apart its pips are.
+ */
+const BUTTON_FACE = { labelAbove: 8, pipsBelow: 12, pipSpacing: 17 }
 /** How far a press must move before it picks the Cat up rather than tapping. */
 const DRAG_THRESHOLD = 8
 /** How long the final Play's Score lingers before the lights go down. */
@@ -144,17 +183,6 @@ function multBreakdown({
 /** Purr × Mult, as the preview and the scoring sequence both show it. */
 const purrTimesMult = (purr: number, mult: number) =>
   `${purr} Purr × ${mult.toFixed(1)}`
-
-/** The red of a Disaster, wherever one is announced. */
-export const DISASTER_RED = 0x8a3a2e
-
-export const font = (size: number, colour = "#4a3426", weight = "600") => ({
-  fontFamily: "system-ui, sans-serif",
-  fontSize: `${size}px`,
-  fontStyle: weight,
-  color: colour,
-  resolution: RESOLUTION
-})
 
 /**
  * The living room: the Couch, the Hand, the live Purr preview, and Play. It
@@ -507,15 +535,13 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * The static living room: wall, window, rug, and the Couch itself, a
-   * pad on each Seat.
+   * pad on each Seat. Every Night is spent indoors, so the window above the
+   * Shelf shows the night sky; its moon is the HUD's.
    */
   private drawRoom() {
     addArt(this, art.room.wall)
     addArt(this, art.room.rug, WIDTH / 2, RUG_Y)
-    // Window with a moon, since every Night is spent indoors, above the
-    // Shelf. The moon keeps to the first Night's crescent for now.
-    addArt(this, art.room.window, WIDTH / 2, WINDOW_Y)
-    addArt(this, moonArt(1), MOON.x, MOON.y)
+    addArt(this, art.room.window, WINDOW.x, WINDOW.y)
     addArt(this, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y)
     for (const x of this.seatX) addArt(this, art.room.seatPad, x, SEAT_PAD_Y)
   }
@@ -668,7 +694,7 @@ export class CouchScene extends Phaser.Scene {
   private drawGrowth(add: Add, cat: Cat, x: number, y: number) {
     if (cat.basePurr === session.run.config.basePurr) return
     const label = this.add
-      .text(x, y, `${cat.basePurr}`, font(11, "#f6d743", "900"))
+      .text(x, y, `${cat.basePurr}`, numbers(12, "#f6d743"))
       .setOrigin(0.5)
     add(this.add.graphics())
       .fillStyle(0x141018, 0.92)
@@ -677,77 +703,74 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * The HUD: Night, Plays, Treats, and progress toward the Target. Returns
-   * how to show a different Night score, for counting up during scoring.
+   * The HUD, drawn into the room: the moon in the window beside the Night, the
+   * treat jar and its Treats, the purr meter along the Couch's back filling
+   * toward the Target, and tonight's Disaster on a sign; the Plays and
+   * Redraws left are pips on their buttons. Returns how to show a different
+   * Night score, for counting up during scoring.
    */
   private drawHud(run: Run, add: Add) {
-    const { night } = run
+    const { night, treats, meter, drawPile, disaster } = hud(run)
+    add(addArt(this, moonArt(night.moon), MOON.x, MOON.y))
     add(
-      this.add.text(
-        20,
-        22,
-        `Night ${night.number}/${run.config.nights}`,
-        font(24, "#4a3426", "800")
-      )
-    )
-    const treats = add(
       this.add
-        .text(WIDTH - 20, 26, `Treats ${run.treats}`, font(18))
-        .setOrigin(1, 0)
+        .text(NIGHT_LABEL.x, NIGHT_LABEL.y, night.label, numbers(28))
+        .setOrigin(0, 0.5)
     )
     add(
       this.add
         .text(
-          treats.x - treats.width - 18,
-          26,
-          `Plays ${night.playsLeft}`,
-          font(18)
+          DRAW_PILE_LABEL.x,
+          DRAW_PILE_LABEL.y,
+          `Draw pile ${drawPile}`,
+          font(13, "#7a5a3c", "800")
         )
-        .setOrigin(1, 0)
+        .setOrigin(0, 0.5)
     )
-    const bar = add(this.add.graphics())
-    const progress = add(this.add.text(WIDTH / 2, 73, "", font(14)))
-    progress.setOrigin(0.5)
-    const showScore = (score: number) => {
-      const filled = Math.min(1, score / night.target)
-      bar.clear()
-      bar.fillStyle(0xe0c49d, 1).fillRoundedRect(20, 62, WIDTH - 40, 22, 11)
-      if (filled > 0)
-        bar
-          .fillStyle(0xe8893a, 1)
-          .fillRoundedRect(20, 62, Math.max(22, (WIDTH - 40) * filled), 22, 11)
-      progress.setText(`Score ${score} / Target ${night.target}`)
-    }
-    showScore(night.score)
-    add(this.add.text(20, 94, `Draw pile ${night.drawPile.length}`, font(15)))
+    add(addArt(this, art.room.treatJar, TREAT_JAR.x, TREAT_JAR.y))
     add(
       this.add
-        .text(WIDTH - 20, 94, `Redraws ${night.redrawsLeft}`, font(15))
-        .setOrigin(1, 0)
+        .text(TREAT_COUNT.x, TREAT_COUNT.y, `${treats}`, numbers(30, "#f6c453"))
+        .setOrigin(1, 0.5)
     )
-    this.disasterSign = night.disaster
-      ? add(this.drawDisasterSign(night.disaster))
-      : null
-    return showScore
+
+    // The meter's glow shows as much of its full self as the Night has filled.
+    add(addArt(this, art.purrMeter(false), PURR_METER.x, PURR_METER.y))
+    const glow = add(
+      addArt(this, art.purrMeter(true), PURR_METER.x, PURR_METER.y)
+    )
+    const score = add(
+      this.add.text(PURR_METER.x, PURR_METER.y, "", numbers(16)).setOrigin(0.5)
+    )
+    const showMeter = ({ filled, label }: PurrMeter) => {
+      const { realWidth, realHeight } = glow.frame
+      glow.setVisible(filled > 0).setCrop(0, 0, realWidth * filled, realHeight)
+      score.setText(label)
+    }
+    showMeter(meter)
+
+    this.disasterSign = disaster ? add(this.drawDisasterSign(disaster)) : null
+    return (nightScore: number) =>
+      showMeter(purrMeter(nightScore, run.night.target))
   }
 
   /**
-   * A sign naming tonight's Disaster and the rule it changes, hung between
-   * the Draw pile and the Redraws, clear of the Shelf below.
+   * A sign hung on the wall below the treat jar, naming tonight's Disaster
+   * and the rule it changes, clear of the Shelf below.
    */
-  private drawDisasterSign(id: DisasterId) {
-    const { name, rule } = disasterById(id)
-    const texts = [
-      this.add.text(0, -7, name, font(12, "#fdf6ea", "800")).setOrigin(0.5),
-      this.add.text(0, 7, rule, font(11, "#fdf6ea")).setOrigin(0.5)
+  private drawDisasterSign({ name, rule }: DisasterSign) {
+    const words = [
+      this.add.text(0, 30, name, display(15, "#fdf6ea")).setStroke(OUTLINE, 3),
+      this.add.text(0, 47, rule, font(11, "#fdf6ea", "800"))
     ]
-    const w = Math.max(...texts.map((text) => text.width)) + 16
-    const board = this.add.graphics()
-    board.fillStyle(DISASTER_RED, 1).fillRoundedRect(-w / 2, -15, w, 30, 10)
-    board.lineStyle(2, 0xf0b28c, 1).strokeRoundedRect(-w / 2, -15, w, 30, 10)
+    // Any line too long for the sign shrinks to fit inside its border.
+    for (const line of words)
+      line
+        .setOrigin(0.5)
+        .setScale(Math.min(1, DISASTER_SIGN.textWidth / line.width))
     return this.add.container(DISASTER_SIGN.x, DISASTER_SIGN.y, [
-      board,
-      ...texts
+      addArt(this, art.room.disasterSign),
+      ...words
     ])
   }
 
@@ -814,7 +837,7 @@ export class CouchScene extends Phaser.Scene {
             x,
             SEAT_Y - 72,
             `+${bonus}${scores.length > 1 ? ` ×${scores.length}` : ""}`,
-            font(18, bonus > 0 ? "#c2410c" : "#b9a58f", "800")
+            numbers(18, bonus > 0 ? POP.purr : "#e6d8c6")
           )
           .setOrigin(0.5)
       )
@@ -832,7 +855,7 @@ export class CouchScene extends Phaser.Scene {
             : preview.scoringEvents.length
               ? `${purrTimesMult(preview.purr, preview.mult)} = ${preview.score}`
               : "Tap or drag a Cat to a Seat",
-          font(20, "#4a3426", "800")
+          numbers(22)
         )
         .setOrigin(0.5)
     )
@@ -871,11 +894,14 @@ export class CouchScene extends Phaser.Scene {
 
     // Play: "Get Comfy", dimmed until a Cat is on the Couch; while choosing
     // Cats to Redraw it backs out instead. Beside it, Redraw, then the swap.
+    // Each shows the Plays or Redraws left as pips.
     const choosing = this.redrawing
+    const { plays, redraws } = hud(run)
     this.drawButton(
       PLAY_BUTTON,
       choosing ? "Cancel" : "Get Comfy",
       choosing !== null || applyAction(run, { type: "play" }).ok,
+      plays,
       add
     )
     this.drawButton(
@@ -884,6 +910,7 @@ export class CouchScene extends Phaser.Scene {
       choosing
         ? applyAction(run, { type: "redraw", cats: choosing }).ok
         : this.canRedraw(),
+      redraws,
       add
     )
     // A Cat being dragged is carried over everything else.
@@ -891,25 +918,41 @@ export class CouchScene extends Phaser.Scene {
     if (carried) this.layer.bringToTop(carried.sprite)
   }
 
+  /**
+   * A button, "Get Comfy" the largest, with a pip beneath its label for each
+   * Play or Redraw the Night began with, full while still to spend.
+   */
   private drawButton(
     area: typeof PLAY_BUTTON,
     label: string,
     ready: boolean,
+    pips: Pips,
     add: Add
   ) {
-    const button =
-      area === PLAY_BUTTON ? art.playButton(ready) : art.redrawButton(ready)
+    const primary = area === PLAY_BUTTON
+    const button = primary ? art.playButton(ready) : art.redrawButton(ready)
     add(addArt(this, button, area.x, area.y))
     add(
       this.add
         .text(
           area.x,
-          area.y,
+          area.y - BUTTON_FACE.labelAbove,
           label,
-          font(22, ready ? "#fdf6ea" : "#e6d8c6", "800")
+          display(primary ? 26 : 20, ready ? "#fdf6ea" : "#f3e9da")
         )
         .setOrigin(0.5)
+        .setStroke(OUTLINE, 4)
     )
+    const count = Math.max(pips.of, pips.left)
+    for (let pip = 0; pip < count; pip++)
+      add(
+        addArt(
+          this,
+          art.pip(pip < pips.left),
+          area.x + (pip - (count - 1) / 2) * BUTTON_FACE.pipSpacing,
+          area.y + BUTTON_FACE.pipsBelow
+        )
+      )
   }
 
   /**
@@ -957,12 +1000,7 @@ export class CouchScene extends Phaser.Scene {
       }
       const z = add(
         this.add
-          .text(
-            x + size * 0.3,
-            y - size * 0.45,
-            "z",
-            font(16, "#dfe3ff", "800")
-          )
+          .text(x + size * 0.3, y - size * 0.45, "z", display(16, "#dfe3ff"))
           .setAlpha(0)
       )
       this.tweens.add({
@@ -1038,21 +1076,22 @@ export class CouchScene extends Phaser.Scene {
         (Math.max(55, this.seatX[seats[0]]) +
           Math.min(WIDTH - 55, this.seatX[seats.at(-1)!])) /
         2
-      const y = 240 - (stack + i) * 24
+      const y = GATHERING_NAME_Y - (stack + i) * GATHERING_NAME_STEP
       const label = add(
-        this.add
-          .text(x, y, `${name} +${mult}`, font(13, "#4a3426", "800"))
-          .setOrigin(0.5)
+        this.add.text(x, y, `${name} +${mult}`, numbers(14)).setOrigin(0.5)
       )
+      const pill = [
+        x - label.width / 2 - 9,
+        y - 12,
+        label.width + 18,
+        24,
+        12
+      ] as const
       add(this.add.graphics())
-        .fillStyle(0xfff4dc, 0.95)
-        .fillRoundedRect(
-          x - label.width / 2 - 8,
-          y - 11,
-          label.width + 16,
-          22,
-          11
-        )
+        .fillStyle(0xe8893a, 1)
+        .fillRoundedRect(...pill)
+        .lineStyle(2, INK, 1)
+        .strokeRoundedRect(...pill)
       this.layer.bringToTop(label)
     })
   }
@@ -1084,8 +1123,9 @@ export class CouchScene extends Phaser.Scene {
       if (placement.on === "couch") seated.set(placement.seat, sprite)
       this.drawName(add, cat, placement, spot)
     }
-    this.drawButton(PLAY_BUTTON, "Get Comfy", false, add)
-    this.drawButton(REDRAW_BUTTON, "Redraw", false, add)
+    const { plays, redraws } = hud(before)
+    this.drawButton(PLAY_BUTTON, "Get Comfy", false, plays, add)
+    this.drawButton(REDRAW_BUTTON, "Redraw", false, redraws, add)
     const shelved = drawShelf(this, add, {
       run: before,
       y: SHELF_Y,
@@ -1095,12 +1135,7 @@ export class CouchScene extends Phaser.Scene {
     // Purr × Mult so far, where the preview was.
     const tally = add(
       this.add
-        .text(
-          WIDTH / 2,
-          PREVIEW_Y,
-          purrTimesMult(0, 1),
-          font(20, "#4a3426", "800")
-        )
+        .text(WIDTH / 2, PREVIEW_Y, purrTimesMult(0, 1), numbers(22))
         .setOrigin(0.5)
     )
     const showTally = (text: string) => {
@@ -1117,13 +1152,10 @@ export class CouchScene extends Phaser.Scene {
       y: number,
       label: string,
       size: number,
-      colour = "#c2410c"
+      colour = POP.purr
     ) => {
       const text = add(
-        this.add
-          .text(x, y, label, font(size, colour, "900"))
-          .setOrigin(0.5)
-          .setStroke("#fff7e8", 5)
+        this.add.text(x, y, label, numbers(size, colour)).setOrigin(0.5)
       )
       this.tweens.add({
         targets: text,
@@ -1212,7 +1244,7 @@ export class CouchScene extends Phaser.Scene {
             // A Repeat is the same Cat scoring again, sent by a House Cat.
             if (event.source !== "seat") {
               hop(event.source, "Repeat!")
-              pop(x, SEAT_Y - 128, "Repeat!", 15, "#6b4fb3")
+              pop(x, SEAT_Y - 128, "Repeat!", 15, POP.repeat)
             }
             pop(x, SEAT_Y - 72, `+${event.purr}`, 24)
             if (event.mult) pop(x, SEAT_Y - 100, `+${event.mult} Mult`, 16)
@@ -1223,13 +1255,13 @@ export class CouchScene extends Phaser.Scene {
         case "houseCatWarmedUp":
           // Freya warms up a little more, a heart at a time.
           return () =>
-            hop(event.houseCat, `♥ ×${event.times.toFixed(1)}`, "#d6456a")
+            hop(event.houseCat, `♥ ×${event.times.toFixed(1)}`, POP.heart)
         case "catGrew":
           // Grown for good: The Void's gift shows once the Score is in.
           return () => {
             const x = this.seatX[event.seat]
-            hop(event.houseCat, `+${event.purr} Purr`, "#6b4fb3")
-            pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, "#6b4fb3")
+            hop(event.houseCat, `+${event.purr} Purr`, POP.growth)
+            pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, POP.growth)
             const sprite = seated.get(event.seat)
             if (sprite)
               this.tweens.add({
@@ -1353,13 +1385,12 @@ export class CouchScene extends Phaser.Scene {
       .setAlpha(0)
       .setScale(0.6)
     const title = this.add
-      .text(0, -14, "New Gathering!", font(26, "#c2410c", "900"))
+      .text(0, -14, "New Gathering!", numbers(28, POP.purr))
       .setOrigin(0.5)
-      .setStroke("#fff7e8", 6)
     const subtitle = this.add
-      .text(0, 18, name, font(18, "#4a3426", "800"))
+      .text(0, 18, name, display(20, "#fdf6ea"))
       .setOrigin(0.5)
-      .setStroke("#fff7e8", 5)
+      .setStroke(OUTLINE, 4)
     banner.add([title, subtitle])
     const chain = this.tweens.chain({
       targets: banner,
