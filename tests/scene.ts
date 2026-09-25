@@ -1,11 +1,11 @@
 import { expect, type Page } from "@playwright/test"
 import type {} from "../src/game/debugHook"
 
-/** Opens the game on a seeded Run, with the debug hook ready. */
+/** Opens a seeded Run after its art has loaded and the Couch is ready. */
 export async function boot(page: Page, seed: number) {
   await page.goto(`/?seed=${seed}`)
   await expect(page.locator("#game canvas")).toBeVisible()
-  await page.waitForFunction(() => "__clowder" in window)
+  await page.waitForFunction(() => window.__clowder?.scenes().includes("couch"))
 }
 
 /** Opens the Settings menu, returning it. */
