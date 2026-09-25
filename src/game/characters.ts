@@ -3,7 +3,6 @@ import { fromBase } from "../art/eyes"
 import { art, CHARACTER_SPAN } from "../art/manifest"
 import type { Cat } from "../engine"
 import type { CatLook, EyeTint } from "../presentation/staging"
-import { settings } from "../shell/settings"
 import { addCharacter, catEyes } from "./art"
 import { BADGE, CAT_BASE } from "./catArt"
 import { HOUSE_CAT_BASE } from "./houseCatArt"
@@ -26,7 +25,7 @@ const LID_LINE = 0x2a1410
  * How Cats and House Cats move at rest, all code-driven. Durations are ranges
  * in ms, each character picking its own so no two move in step.
  */
-export const IDLE = {
+const IDLE = {
   /** A breath: how far a character stretches up (slimming as it does). */
   breath: { stretch: 0.025, ms: [1500, 2100] },
   /** Asleep, breaths come slower and deeper. */
@@ -42,8 +41,7 @@ const between = ([min, max]: readonly [number, number]) =>
 
 /**
  * Sets a character's rig breathing, and a Cat's blinking and bobbing now and
- * then; asleep, it only breathes. Reduced motion keeps breaths and blinks but
- * not bobs. The motion stops when the rig is destroyed.
+ * then; asleep, it only breathes. The motion stops when the rig is destroyed.
  */
 function idle(
   scene: Phaser.Scene,
@@ -84,7 +82,7 @@ function idle(
         repeat: -1
       })
     )
-  if (!asleep && bobs && !settings.reducedMotion)
+  if (!asleep && bobs)
     tweens.push(
       scene.tweens.add({
         targets: rig,

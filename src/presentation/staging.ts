@@ -94,7 +94,8 @@ export function seatingOrder(
   ]
 }
 
-type Pose = { pose: CatPose; facing: Facing }
+/** A seated Cat's reaction to its Neighbors, and which way it turns. */
+type Stance = { pose: CatPose; facing: Facing }
 
 /** How a Cat looks: its pose, which way it faces, and its eyes. */
 export type CatLook = Pick<StagedCat, "pose" | "facing" | "eyeTint">
@@ -120,7 +121,7 @@ function seatedPose(
   couch: readonly (Cat | null)[],
   seat: number,
   order: readonly CatId[]
-): Pose {
+): Stance {
   const cat = couch[seat]!
   const beside = (side: Facing) => couch[seat + (side === "left" ? -1 : 1)]
   const heeds = (neighbor: Cat | null | undefined) =>
@@ -130,9 +131,9 @@ function seatedPose(
     heeds(beside(side))
   )
   if (sides.length === 0) return { pose: "content", facing: "right" }
-  const placed = (side: Facing) => order.indexOf(beside(side)!.id)
+  const placedAt = (side: Facing) => order.indexOf(beside(side)!.id)
   const toward =
-    sides.length === 2 && placed("left") > placed("right")
+    sides.length === 2 && placedAt("left") > placedAt("right")
       ? "left"
       : sides.at(-1)!
   const away: Facing = toward === "left" ? "right" : "left"

@@ -1,4 +1,5 @@
 import Phaser from "phaser"
+import type { Eye as ArtEye } from "../art/eyes"
 import type { CatPose } from "../art/manifest"
 import type { Coat, Personality } from "../engine"
 import { INK } from "./roomArt"
@@ -89,7 +90,8 @@ export function paintCoatBadge(
   }
 }
 
-type Eye = { x: number; y: number; rx: number; ry: number }
+/** An open eye, as `Eye` in src/art/eyes.ts but drawn in code, needing no lid colour. */
+type Eye = Omit<ArtEye, "lid">
 
 /** Where a pose puts the head and body, and how far it leans, by size. */
 type Shape = {
@@ -312,7 +314,8 @@ function drawFace(
         headY + r * 0.26
       )
       break
-    default:
+    case "sleepy content":
+    case "sleepy reacting":
       shutEyes(g, ink, headX, eyeY, r, "asleep")
       g.fillStyle(ink, 1).fillCircle(headX, headY + r * 0.3, r * 0.06)
   }
