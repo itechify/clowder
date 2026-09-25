@@ -18,7 +18,7 @@ import {
 import {
   type Placement,
   type RugRow,
-  rugSlots,
+  rugPositions,
   type StagedCat,
   stage
 } from "../presentation/staging"
@@ -39,8 +39,8 @@ const DISASTER_SIGN = { x: 208, y: 101 }
 const WINDOW_Y = 151
 const MOON = { x: 245, y: 136 }
 const COUCH_FLOOR_Y = 428
-/** The top of each Seat's cushion, which its Cat sits on. */
-const CUSHION_Y = 344
+/** The top of each Seat's pad, which its Cat sits on. */
+const SEAT_PAD_Y = 344
 /** A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from its top. */
 const FULL_SOFA_Y = 337
 const BUNTING_Y = 249
@@ -54,15 +54,17 @@ const RUG_ROWS: Record<RugRow, { y: number; size: number }> = {
   back: { y: 592, size: 66 },
   front: { y: 680, size: 76 }
 }
-/** Each rug slot's tap and drag area, around its Cat's centre. */
-const RUG_AREA = { w: 80, extra: 28, dy: -4 }
+/**
+ * Each rug position's tap and drag area, around its Cat's centre: `w` wide,
+ * and `margin` taller than the Cat.
+ */
+const RUG_AREA = { w: 80, margin: 28, dy: -4 }
 /** How far a Cat picked up from the rug lifts off it. */
 const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
 const HOP_HEIGHT = 46
-/** A picked-up Cat's warm glow, and the cool glow of one chosen to Redraw. */
-const HELD_GLOW = 0xfff1b0
-const CHOSEN_GLOW = 0xa9c8ee
+/** A picked-up Cat glows warm; one chosen to Redraw glows cool, ringed. */
+const GLOW = { held: 0xfff1b0, chosen: 0xa9c8ee, chosenRing: 0x4f79a8 }
 const PREVIEW_Y = 446
 const BREAKDOWN_Y = 486
 const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
@@ -87,13 +89,13 @@ type Point = { x: number; y: number }
 /** Where a Cat is shown: its centre, and how big it is. */
 type Spot = Point & { size: number }
 /** A Cat as drawn: its sprite, whether on the Couch or the rug, and its size. */
-type Shown = {
+type ShownCat = {
   sprite: Phaser.GameObjects.Container
   on: Placement["on"]
   size: number
 }
 /** Where a Cat was, as shown, when the layer was last cleared. */
-type Was = Point & Omit<Shown, "sprite">
+type LastSeen = Point & Omit<ShownCat, "sprite">
 /** What a press began on: a Hand Cat, or a Seat (and whoever sits there). */
 type PressTarget = { cat: CatId } | { seat: number }
 /** How a scoring sequence ends: played out, skipped, or overtaken by a new one. */
@@ -171,9 +173,9 @@ export class CouchScene extends Phaser.Scene {
   /** The Cat being dragged, following the pointer. */
   private dragging: CatId | null = null
   /** Every Cat drawn, so it can be dragged or moved on from where it was. */
-  private shown = new Map<CatId, Shown>()
+  private shown = new Map<CatId, ShownCat>()
   /** Where each Cat was when the layer was last cleared, to move on from there. */
-  private movedFrom = new Map<CatId, Was>()
+  private movedFrom = new Map<CatId, LastSeen>()
   /** The Run as last drawn: where a Play's scoring sequence starts from. */
   private lastDrawn!: Run
   /** The scoring sequence playing out, if any. */
@@ -209,7 +211,7 @@ export class CouchScene extends Phaser.Scene {
     this.bedtime = null
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.seatX = seatX(session.run.config.seats)
-    this.rugX = rugX(rugSlots(session.run))
+    this.rugX = rugX(rugPositions(session.run))
     this.lastDrawn = session.run
     this.drawRoom()
     this.layer = this.add.container()
@@ -221,16 +223,16 @@ export class CouchScene extends Phaser.Scene {
           this.startPress(pointer, { seat })
         )
     })
-    // Each rug slot answers for whichever Cat lounges there, however it is
+    // Each rug position answers for whichever Cat lounges there, however it is
     // moving; the front row over the back.
     for (const row of ["back", "front"] as const)
-      this.rugX[row].forEach((_, slot) => {
-        const { x, y, size } = this.spot({ on: "rug", row, slot })
+      this.rugX[row].forEach((_, position) => {
+        const { x, y, size } = this.spot({ on: "rug", row, position })
         this.add
-          .zone(x, y + RUG_AREA.dy, RUG_AREA.w, size + RUG_AREA.extra)
+          .zone(x, y + RUG_AREA.dy, RUG_AREA.w, size + RUG_AREA.margin)
           .setInteractive({ useHandCursor: true })
           .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-            const cat = this.loungingAt(row, slot)
+            const cat = this.loungingAt(row, position)
             if (cat) this.startPress(pointer, { cat })
           })
       })
@@ -305,13 +307,14 @@ export class CouchScene extends Phaser.Scene {
         size: SEATED_SIZE
       }
     const { y, size } = RUG_ROWS[placement.row]
-    return { x: this.rugX[placement.row][placement.slot], y, size }
+    return { x: this.rugX[placement.row][placement.position], y, size }
   }
 
-  /** The Cat lounging in a rug slot now, if any. */
-  private loungingAt(row: RugRow, slot: number) {
+  /** The Cat lounging at a rug position now, if any. */
+  private loungingAt(row: RugRow, position: number) {
     return stage(session.run).cats.find(
-      ({ placement: p }) => p.on === "rug" && p.row === row && p.slot === slot
+      ({ placement: p }) =>
+        p.on === "rug" && p.row === row && p.position === position
     )?.cat
   }
 
@@ -499,7 +502,7 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * The static living room: wall, window, rug, and the Couch itself, a
-   * cushion on each Seat.
+   * pad on each Seat.
    */
   private drawRoom() {
     addArt(this, art.room.wall)
@@ -509,7 +512,7 @@ export class CouchScene extends Phaser.Scene {
     addArt(this, art.room.window, WIDTH / 2, WINDOW_Y)
     addArt(this, moonArt(1), MOON.x, MOON.y)
     addArt(this, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y)
-    for (const x of this.seatX) addArt(this, art.room.cushion, x, CUSHION_Y)
+    for (const x of this.seatX) addArt(this, art.room.seatPad, x, SEAT_PAD_Y)
   }
 
   /**
@@ -559,7 +562,7 @@ export class CouchScene extends Phaser.Scene {
    */
   private hop(
     sprite: Phaser.GameObjects.Container,
-    from: Was,
+    from: LastSeen,
     to: Point,
     on: Placement["on"],
     size: number
@@ -617,7 +620,7 @@ export class CouchScene extends Phaser.Scene {
    * A soft glow behind a Cat: warm for the one picked up, cool, and ringed,
    * for one chosen to Redraw, like one about to leave.
    */
-  private drawGlow(add: Add, { x, y, size }: Spot, colour: number) {
+  private drawGlow(add: Add, { x, y, size }: Spot, why: "held" | "chosen") {
     const glow = add(this.add.graphics())
     for (const [spread, alpha] of [
       [1.35, 0.25],
@@ -625,12 +628,32 @@ export class CouchScene extends Phaser.Scene {
       [1.05, 0.5]
     ])
       glow
-        .fillStyle(colour, alpha)
+        .fillStyle(GLOW[why], alpha)
         .fillEllipse(x, y, size * spread, size * spread)
-    if (colour === CHOSEN_GLOW)
+    if (why === "chosen")
       glow
-        .lineStyle(3, 0x4f79a8, 1)
+        .lineStyle(3, GLOW.chosenRing, 1)
         .strokeEllipse(x, y, size * 1.15, size * 1.15)
+  }
+
+  /** A Cat's name beneath it, on its pad on the Couch or on the rug. */
+  private drawName(add: Add, cat: Cat, placement: Placement, spot: Spot) {
+    const { x, y, size } = spot
+    add(
+      placement.on === "couch"
+        ? this.add
+            .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
+            .setOrigin(0.5)
+        : this.add
+            .text(
+              x,
+              y + size * 0.42,
+              cat.name,
+              font(placement.row === "front" ? 12 : 11, "#fdf6ea")
+            )
+            .setOrigin(0.5)
+            .setStroke("#7a3526", 3)
+    )
   }
 
   /**
@@ -772,15 +795,11 @@ export class CouchScene extends Phaser.Scene {
       if (placement.on !== "couch") continue
       const cat = catById.get(id)!
       const { x } = spot
-      if (chosen.has(id)) this.drawGlow(add, spot, CHOSEN_GLOW)
+      if (chosen.has(id)) this.drawGlow(add, spot, "chosen")
       this.drawCatAt(add, cat, placement)
       if (id === this.dragging) continue
       this.drawGrowth(add, cat, x - 22, SEAT_Y - 44)
-      add(
-        this.add
-          .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
-          .setOrigin(0.5)
-      )
+      this.drawName(add, cat, placement, spot)
       // With Repeats, how many times the Cat will score.
       const scores = preview.scoringEvents.filter((e) => e.cat === id)
       const { bonus } = scores[0]
@@ -837,22 +856,12 @@ export class CouchScene extends Phaser.Scene {
       const { x, y, size } = spot
       const held = id === this.held
       this.drawShadow(add, spot)
-      if (chosen.has(id)) this.drawGlow(add, spot, CHOSEN_GLOW)
-      if (held) this.drawGlow(add, { ...spot, y: y - LIFT }, HELD_GLOW)
+      if (chosen.has(id)) this.drawGlow(add, spot, "chosen")
+      if (held) this.drawGlow(add, { ...spot, y: y - LIFT }, "held")
       this.drawCatAt(add, cat, placement, held ? LIFT : 0)
       if (id === this.dragging) continue
       this.drawGrowth(add, cat, x - size * 0.36, y - size * 0.55)
-      add(
-        this.add
-          .text(
-            x,
-            y + size * 0.42,
-            cat.name,
-            font(placement.row === "front" ? 12 : 11, "#fdf6ea")
-          )
-          .setOrigin(0.5)
-          .setStroke("#7a3526", 3)
-      )
+      this.drawName(add, cat, placement, spot)
     }
 
     // Play: "Get Comfy", dimmed until a Cat is on the Couch; while choosing
@@ -1067,25 +1076,8 @@ export class CouchScene extends Phaser.Scene {
       if (placement.on === "rug") this.drawShadow(add, spot)
       const sprite = add(drawCat(this, cat, size)).setPosition(x, y)
       this.shown.set(id, { sprite, on: placement.on, size })
-      if (placement.on === "couch") {
-        seated.set(placement.seat, sprite)
-        add(
-          this.add
-            .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
-            .setOrigin(0.5)
-        )
-      } else
-        add(
-          this.add
-            .text(
-              x,
-              y + size * 0.42,
-              cat.name,
-              font(placement.row === "front" ? 12 : 11, "#fdf6ea")
-            )
-            .setOrigin(0.5)
-            .setStroke("#7a3526", 3)
-        )
+      if (placement.on === "couch") seated.set(placement.seat, sprite)
+      this.drawName(add, cat, placement, spot)
     }
     this.drawButton(PLAY_BUTTON, "Get Comfy", false, add)
     this.drawButton(REDRAW_BUTTON, "Redraw", false, add)

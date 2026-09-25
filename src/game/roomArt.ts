@@ -2,6 +2,7 @@ import type Phaser from "phaser"
 import {
   type ArtEntry,
   MOON_PHASES,
+  ROOM_SCALE,
   type RoomPiece,
   type UiPiece
 } from "../art/manifest"
@@ -20,15 +21,16 @@ const NIGHT_SKY = 0x2d3561
  */
 const seatCentres = seatX(defaultConfig.seats)
 
-/** Where the Shelf's plank starts, as the scene centres it. */
-const SHELF_LEFT = (WIDTH - 374) / 2
-
-/** The Shelf's brackets, between pairs of positions, from its left edge. */
-function bracketsX() {
+/**
+ * The brackets of a Shelf `width` across, centred as the scene shows it,
+ * between pairs of positions, from its left edge.
+ */
+function bracketsX(width: number) {
   const xs = shelfX(defaultConfig.shelfSize)
+  const left = (WIDTH - width) / 2
   const brackets: number[] = []
   for (let position = 1; position < xs.length; position += 2)
-    brackets.push((xs[position - 1] + xs[position]) / 2 - 4 - SHELF_LEFT)
+    brackets.push((xs[position - 1] + xs[position]) / 2 - 4 - left)
   return brackets
 }
 
@@ -45,7 +47,7 @@ const upholstery = {
   deep: 0x587558,
   shade: 0x5c7a5f,
   cloth: 0x6f8f72,
-  cushion: 0x86a888,
+  pad: 0x86a888,
   light: 0xa3c3a2,
   outline: 0x33402f
 }
@@ -72,10 +74,10 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
   },
   moon: (g, entry) => moon(g, entry.kind === "room" ? (entry.phase ?? 1) : 1),
   couch: (g) => {
-    const { deep, shade, cloth, cushion, outline } = upholstery
+    const { deep, shade, cloth, pad, outline } = upholstery
     // A tall back, tufted and seamed behind each Seat.
     g.fillStyle(cloth, 1).fillRoundedRect(16, 2, 358, 112, 30)
-    g.fillStyle(cushion, 1).fillRoundedRect(36, 10, 318, 10, 5)
+    g.fillStyle(pad, 1).fillRoundedRect(36, 10, 318, 10, 5)
     g.lineStyle(3, outline, 1).strokeRoundedRect(16, 2, 358, 112, 30)
     g.lineStyle(2, shade, 1)
     seatCentres.slice(1).forEach((x, i) => {
@@ -84,7 +86,7 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     })
     g.fillStyle(shade, 1)
     for (const x of seatCentres) g.fillCircle(x, 50, 3.5)
-    // The base the cushions rest on, and its legs.
+    // The base the Seats' pads rest on, and its legs.
     g.fillStyle(0x4a3426, 1)
       .fillRoundedRect(30, 146, 12, 20, 3)
       .fillRoundedRect(348, 146, 12, 20, 3)
@@ -99,9 +101,9 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
         .strokeRoundedRect(x, 40, 22, 22, 11)
     }
   },
-  cushion: (g) => {
-    const { cloth, cushion, light, outline } = upholstery
-    g.fillStyle(cushion, 1).fillRoundedRect(1.5, 1.5, 63, 35, 12)
+  seatPad: (g) => {
+    const { cloth, pad, light, outline } = upholstery
+    g.fillStyle(pad, 1).fillRoundedRect(1.5, 1.5, 63, 35, 12)
     g.fillStyle(light, 1).fillRoundedRect(6, 4, 54, 10, 5)
     g.lineStyle(1.5, cloth, 1).lineBetween(9, 18, 57, 18)
     g.lineStyle(3, outline, 1).strokeRoundedRect(1.5, 1.5, 63, 35, 12)
@@ -121,15 +123,16 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
       .fillTriangle(115, 110, 185, 70, 255, 110)
       .fillTriangle(115, 110, 185, 150, 255, 110)
   },
-  shelf: (g) => {
+  shelf: (g, entry) => {
+    const width = entry.canvas.width / ROOM_SCALE
     // Brackets fixing the plank to the wall, then the plank, lit along its top.
     g.fillStyle(wood.dark, 1)
-    for (const x of bracketsX()) {
+    for (const x of bracketsX(width)) {
       g.fillRect(x, 14, 8, 18)
       g.fillTriangle(x + 8, 14, x + 18, 14, x + 8, 26)
     }
-    g.fillStyle(wood.front, 1).fillRoundedRect(0, 0, 374, 16, 3)
-    g.fillStyle(wood.top, 1).fillRect(2, 1, 370, 4)
+    g.fillStyle(wood.front, 1).fillRoundedRect(0, 0, width, 16, 3)
+    g.fillStyle(wood.top, 1).fillRect(2, 1, width - 4, 4)
     g.lineStyle(1, wood.dark, 0.5)
     for (const [x, y, length] of [
       [30, 9, 60],
@@ -138,7 +141,7 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
       [320, 11, 34]
     ])
       g.lineBetween(x, y, x + length, y)
-    g.lineStyle(2, wood.dark, 1).strokeRoundedRect(0, 0, 374, 16, 3)
+    g.lineStyle(2, wood.dark, 1).strokeRoundedRect(0, 0, width, 16, 3)
   },
   treatJar: (g) => {
     g.fillStyle(0xe8893a, 1)

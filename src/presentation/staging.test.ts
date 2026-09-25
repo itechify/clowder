@@ -9,14 +9,14 @@ describe("staging", () => {
     const [a, b, c, d, e, f, g, h] = run.night.hand
 
     expect(stage(run).cats).toEqual([
-      { cat: a, placement: { on: "rug", row: "front", slot: 0 } },
-      { cat: b, placement: { on: "rug", row: "front", slot: 1 } },
-      { cat: c, placement: { on: "rug", row: "front", slot: 2 } },
-      { cat: d, placement: { on: "rug", row: "front", slot: 3 } },
-      { cat: e, placement: { on: "rug", row: "back", slot: 0 } },
-      { cat: f, placement: { on: "rug", row: "back", slot: 1 } },
-      { cat: g, placement: { on: "rug", row: "back", slot: 2 } },
-      { cat: h, placement: { on: "rug", row: "back", slot: 3 } }
+      { cat: a, placement: { on: "rug", row: "front", position: 0 } },
+      { cat: b, placement: { on: "rug", row: "front", position: 1 } },
+      { cat: c, placement: { on: "rug", row: "front", position: 2 } },
+      { cat: d, placement: { on: "rug", row: "front", position: 3 } },
+      { cat: e, placement: { on: "rug", row: "back", position: 0 } },
+      { cat: f, placement: { on: "rug", row: "back", position: 1 } },
+      { cat: g, placement: { on: "rug", row: "back", position: 2 } },
+      { cat: h, placement: { on: "rug", row: "back", position: 3 } }
     ])
   })
 
@@ -31,11 +31,11 @@ describe("staging", () => {
       { cat: b, placement: { on: "couch", seat: 0 } },
       { cat: e, placement: { on: "couch", seat: 2 } },
       { cat: f, placement: { on: "couch", seat: 4 } },
-      { cat: a, placement: { on: "rug", row: "front", slot: 0 } },
-      { cat: c, placement: { on: "rug", row: "front", slot: 1 } },
-      { cat: d, placement: { on: "rug", row: "front", slot: 2 } },
-      { cat: g, placement: { on: "rug", row: "front", slot: 3 } },
-      { cat: h, placement: { on: "rug", row: "back", slot: 0 } }
+      { cat: a, placement: { on: "rug", row: "front", position: 0 } },
+      { cat: c, placement: { on: "rug", row: "front", position: 1 } },
+      { cat: d, placement: { on: "rug", row: "front", position: 2 } },
+      { cat: g, placement: { on: "rug", row: "front", position: 3 } },
+      { cat: h, placement: { on: "rug", row: "back", position: 0 } }
     ])
   })
 
@@ -48,7 +48,7 @@ describe("staging", () => {
 
     expect(stage(run).cats.find((staged) => staged.cat === a)).toEqual({
       cat: a,
-      placement: { on: "rug", row: "front", slot: 0 }
+      placement: { on: "rug", row: "front", position: 0 }
     })
     expect(stage(run).cats.map((staged) => staged.placement)).toContainEqual({
       on: "couch",
@@ -65,7 +65,7 @@ describe("staging", () => {
 
     expect(stage(run).cats.find((staged) => staged.cat === drawn)).toEqual({
       cat: drawn,
-      placement: { on: "rug", row: "front", slot: 2 }
+      placement: { on: "rug", row: "front", position: 2 }
     })
   })
 
@@ -85,7 +85,7 @@ describe("staging", () => {
     expect(staged.find((cat) => cat.cat === c)?.placement).toEqual({
       on: "rug",
       row: "front",
-      slot: 0
+      position: 0
     })
     expect(staged).toHaveLength(2 + run.night.hand.length)
   })
@@ -95,10 +95,10 @@ describe("staging", () => {
     const [a, b, c, d] = run.night.hand
 
     expect(stage(run).cats.slice(0, 4)).toEqual([
-      { cat: a, placement: { on: "rug", row: "front", slot: 0 } },
-      { cat: b, placement: { on: "rug", row: "front", slot: 1 } },
-      { cat: c, placement: { on: "rug", row: "front", slot: 2 } },
-      { cat: d, placement: { on: "rug", row: "back", slot: 0 } }
+      { cat: a, placement: { on: "rug", row: "front", position: 0 } },
+      { cat: b, placement: { on: "rug", row: "front", position: 1 } },
+      { cat: c, placement: { on: "rug", row: "front", position: 2 } },
+      { cat: d, placement: { on: "rug", row: "back", position: 0 } }
     ])
   })
 })

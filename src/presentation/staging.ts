@@ -9,20 +9,20 @@ import type { CatId, Run } from "../engine"
 /** The rug's rows: the front row nearest the player, the back row behind it. */
 export type RugRow = "front" | "back"
 
-/** Where a Cat is: on a Seat of the Couch, or lounging in a slot on the rug. */
+/** Where a Cat is: on a Seat of the Couch, or lounging at a position on the rug. */
 export type Placement =
   | { on: "couch"; seat: number }
-  | { on: "rug"; row: RugRow; slot: number }
+  | { on: "rug"; row: RugRow; position: number }
 
 export type StagedCat = { cat: CatId; placement: Placement }
 
 export type Staging = {
-  /** Every Cat in view: the seated Cats by Seat, then the rug's by slot. */
+  /** Every Cat in view: the seated Cats by Seat, then the rug's by position. */
   cats: StagedCat[]
 }
 
 /** How many Cats each rug row holds, so a full Hand fills both rows. */
-export const rugSlots = (run: Run) => Math.ceil(run.config.handSize / 2)
+export const rugPositions = (run: Run) => Math.ceil(run.config.handSize / 2)
 
 /**
  * Stages the Run as it stands; or, given the `couch` of a Play already made,
@@ -33,7 +33,7 @@ export function stage(
   couch: readonly (CatId | null)[] = run.night.couch
 ): Staging {
   const { hand } = run.night
-  const perRow = rugSlots(run)
+  const perRow = rugPositions(run)
   const seated: StagedCat[] = couch.flatMap((cat, seat) =>
     cat ? [{ cat, placement: { on: "couch", seat } }] : []
   )
@@ -46,7 +46,7 @@ export function stage(
       placement: {
         on: "rug",
         row: i < perRow ? "front" : "back",
-        slot: i % perRow
+        position: i % perRow
       }
     }))
   return { cats: [...seated, ...lounging] }
