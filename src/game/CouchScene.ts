@@ -15,10 +15,17 @@ import {
   type RunEvent,
   type ScoreBreakdown
 } from "../engine"
+import {
+  type Placement,
+  type RugRow,
+  rugSlots,
+  type StagedCat,
+  stage
+} from "../presentation/staging"
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
 import { drawCat } from "./characters"
-import { HEIGHT, RESOLUTION, seatX, WIDTH } from "./layout"
+import { HEIGHT, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
@@ -32,16 +39,30 @@ const DISASTER_SIGN = { x: 208, y: 101 }
 const WINDOW_Y = 151
 const MOON = { x: 245, y: 136 }
 const COUCH_FLOOR_Y = 428
+/** The top of each Seat's cushion, which its Cat sits on. */
+const CUSHION_Y = 344
 /** A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from its top. */
 const FULL_SOFA_Y = 337
 const BUNTING_Y = 249
-const RUG_Y = 627.5
+const RUG_Y = 636
 const SEAT_Y = 352
+const SEATED_SIZE = 64
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
-const HAND_COLUMNS = 4
-const HAND_ROW_Y = 585
-const HAND_ROW_HEIGHT = 105
+/** Each rug row's Cats: their centres' height, and how big they are shown. */
+const RUG_ROWS: Record<RugRow, { y: number; size: number }> = {
+  back: { y: 592, size: 66 },
+  front: { y: 680, size: 76 }
+}
+/** Each rug slot's tap and drag area, around its Cat's centre. */
+const RUG_AREA = { w: 80, extra: 28, dy: -4 }
+/** How far a Cat picked up from the rug lifts off it. */
+const LIFT = 14
+/** How high a Cat hops between the rug and the Couch. */
+const HOP_HEIGHT = 46
+/** A picked-up Cat's warm glow, and the cool glow of one chosen to Redraw. */
+const HELD_GLOW = 0xfff1b0
+const CHOSEN_GLOW = 0xa9c8ee
 const PREVIEW_Y = 446
 const BREAKDOWN_Y = 486
 const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
@@ -63,16 +84,20 @@ const SLEEP_MOMENT_MS =
 
 type Add = <T extends Phaser.GameObjects.GameObject>(object: T) => T
 type Point = { x: number; y: number }
+/** Where a Cat is shown: its centre, and how big it is. */
+type Spot = Point & { size: number }
+/** A Cat as drawn: its sprite, whether on the Couch or the rug, and its size. */
+type Shown = {
+  sprite: Phaser.GameObjects.Container
+  on: Placement["on"]
+  size: number
+}
+/** Where a Cat was, as shown, when the layer was last cleared. */
+type Was = Point & Omit<Shown, "sprite">
 /** What a press began on: a Hand Cat, or a Seat (and whoever sits there). */
 type PressTarget = { cat: CatId } | { seat: number }
 /** How a scoring sequence ends: played out, skipped, or overtaken by a new one. */
 type Ending = "played" | "skipped" | "overtaken"
-
-/** Where the `i`th Cat of the Hand not on the Couch sits on the rug. */
-const handSpot = (i: number) => ({
-  x: 60 + (i % HAND_COLUMNS) * 90,
-  y: HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
-})
 
 /** Splits sorted Seats into stretches of consecutive Seats. */
 const contiguous = (seats: number[]) =>
@@ -145,10 +170,10 @@ export class CouchScene extends Phaser.Scene {
   private press: { target: PressTarget; at: Point } | null = null
   /** The Cat being dragged, following the pointer. */
   private dragging: CatId | null = null
-  /** Every Cat drawn, so it can be dragged or moved from where it was. */
-  private sprites = new Map<CatId, Phaser.GameObjects.Container>()
-  /** Where each Cat was drawn before a rearrangement, to move it from there. */
-  private movedFrom = new Map<CatId, Point>()
+  /** Every Cat drawn, so it can be dragged or moved on from where it was. */
+  private shown = new Map<CatId, Shown>()
+  /** Where each Cat was when the layer was last cleared, to move on from there. */
+  private movedFrom = new Map<CatId, Was>()
   /** The Run as last drawn: where a Play's scoring sequence starts from. */
   private lastDrawn!: Run
   /** The scoring sequence playing out, if any. */
@@ -159,6 +184,7 @@ export class CouchScene extends Phaser.Scene {
   /** The sign naming tonight's Disaster, when there is one. */
   private disasterSign: Phaser.GameObjects.Container | null = null
   private seatX: number[] = []
+  private rugX!: Record<RugRow, number[]>
 
   constructor() {
     super("couch")
@@ -177,12 +203,13 @@ export class CouchScene extends Phaser.Scene {
     this.redrawing = null
     this.press = null
     this.dragging = null
-    this.sprites.clear()
+    this.shown.clear()
     this.movedFrom.clear()
     this.scoring = null
     this.bedtime = null
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.seatX = seatX(session.run.config.seats)
+    this.rugX = rugX(rugSlots(session.run))
     this.lastDrawn = session.run
     this.drawRoom()
     this.layer = this.add.container()
@@ -194,6 +221,19 @@ export class CouchScene extends Phaser.Scene {
           this.startPress(pointer, { seat })
         )
     })
+    // Each rug slot answers for whichever Cat lounges there, however it is
+    // moving; the front row over the back.
+    for (const row of ["back", "front"] as const)
+      this.rugX[row].forEach((_, slot) => {
+        const { x, y, size } = this.spot({ on: "rug", row, slot })
+        this.add
+          .zone(x, y + RUG_AREA.dy, RUG_AREA.w, size + RUG_AREA.extra)
+          .setInteractive({ useHandCursor: true })
+          .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+            const cat = this.loungingAt(row, slot)
+            if (cat) this.startPress(pointer, { cat })
+          })
+      })
     this.add
       .zone(PLAY_BUTTON.x, PLAY_BUTTON.y, PLAY_BUTTON.w, PLAY_BUTTON.h)
       .setInteractive({ useHandCursor: true })
@@ -256,6 +296,32 @@ export class CouchScene extends Phaser.Scene {
     if (session.run.status !== "playing") presentation.update({ asleep: true })
   }
 
+  /** Where a Cat is shown for a placement. */
+  private spot(placement: Placement): Spot {
+    if (placement.on === "couch")
+      return {
+        x: this.seatX[placement.seat],
+        y: SEAT_Y - 12,
+        size: SEATED_SIZE
+      }
+    const { y, size } = RUG_ROWS[placement.row]
+    return { x: this.rugX[placement.row][placement.slot], y, size }
+  }
+
+  /** The Cat lounging in a rug slot now, if any. */
+  private loungingAt(row: RugRow, slot: number) {
+    return stage(session.run).cats.find(
+      ({ placement: p }) => p.on === "rug" && p.row === row && p.slot === slot
+    )?.cat
+  }
+
+  /** Staged Cats in drawing order, back to front: the Couch, then the rug. */
+  private byDepth(cats: StagedCat[]) {
+    return cats
+      .map((staged) => ({ ...staged, spot: this.spot(staged.placement) }))
+      .sort((a, b) => a.spot.y - b.spot.y)
+  }
+
   private worldPoint(pointer: Phaser.Input.Pointer): Point {
     const { x, y } = this.cameras.main.getWorldPoint(pointer.x, pointer.y)
     return { x, y }
@@ -279,7 +345,7 @@ export class CouchScene extends Phaser.Scene {
   private movePress(pointer: Phaser.Input.Pointer) {
     const at = this.worldPoint(pointer)
     if (this.dragging) {
-      this.sprites.get(this.dragging)?.setPosition(at.x, at.y)
+      this.shown.get(this.dragging)?.sprite.setPosition(at.x, at.y)
       return
     }
     const { press } = this
@@ -296,7 +362,7 @@ export class CouchScene extends Phaser.Scene {
     this.held = null
     this.dragging = cat
     this.draw()
-    this.sprites.get(cat)?.setPosition(at.x, at.y).setScale(1.1)
+    this.shown.get(cat)?.sprite.setPosition(at.x, at.y).setScale(1.1)
   }
 
   /** A press let go: a dragged Cat drops, otherwise it was a tap. */
@@ -332,23 +398,16 @@ export class CouchScene extends Phaser.Scene {
         ? { type: "place", cat, seat }
         : seat === null && from !== -1
           ? { type: "unseat", cat }
-          : null,
-      { cat, at }
+          : null
     )
   }
 
   /**
-   * Applies a Couch action with every Cat moving from where it was drawn, a
-   * dropped Cat from where it was let go; with no action, or a rejected one,
-   * the Cats move back.
+   * Applies a Couch action, every Cat moving on from where it is, a dropped
+   * Cat from where it was let go; with no action, or a rejected one, the Cats
+   * move back.
    */
-  private rearrange(
-    action: Action | null,
-    dropped?: { cat: CatId; at: Point }
-  ) {
-    for (const [cat, sprite] of this.sprites)
-      this.movedFrom.set(cat, { x: sprite.x, y: sprite.y })
-    if (dropped) this.movedFrom.set(dropped.cat, dropped.at)
+  private rearrange(action: Action | null) {
     if (!action || !session.apply(action).ok) {
       this.draw()
       // A Seat refused while tonight's Couch holds fewer Cats than it has
@@ -357,7 +416,6 @@ export class CouchScene extends Phaser.Scene {
       if (action?.type === "place" && night.catsPerPlay < night.couch.length)
         this.nudgeDisasterSign()
     }
-    this.movedFrom.clear()
   }
 
   private tapSeat(seat: number) {
@@ -439,22 +497,35 @@ export class CouchScene extends Phaser.Scene {
     )
   }
 
-  /** The static living room: wall, window, rug, and the Couch itself. */
+  /**
+   * The static living room: wall, window, rug, and the Couch itself, a
+   * cushion on each Seat.
+   */
   private drawRoom() {
     addArt(this, art.room.wall)
     addArt(this, art.room.rug, WIDTH / 2, RUG_Y)
-    // Window with a moon, since every Night is spent indoors; the Shelf is
-    // its sill. The moon keeps to the first Night's crescent for now.
+    // Window with a moon, since every Night is spent indoors, above the
+    // Shelf. The moon keeps to the first Night's crescent for now.
     addArt(this, art.room.window, WIDTH / 2, WINDOW_Y)
     addArt(this, moonArt(1), MOON.x, MOON.y)
     addArt(this, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y)
+    for (const x of this.seatX) addArt(this, art.room.cushion, x, CUSHION_Y)
   }
 
-  /** Empties the layer the Run is drawn on, returning how to add to it. */
+  /**
+   * Empties the layer the Run is drawn on, noting where each Cat was so it
+   * can move on from there; returns how to add to the layer.
+   */
   private clearLayer(): Add {
+    this.movedFrom = new Map(
+      [...this.shown].map(([cat, { sprite, on, size }]) => [
+        cat,
+        { x: sprite.x, y: sprite.y, on, size }
+      ])
+    )
     this.tweens.killTweensOf(this.layer.list)
     this.layer.removeAll(true)
-    this.sprites.clear()
+    this.shown.clear()
     return (object) => {
       this.layer.add(object)
       return object
@@ -462,38 +533,104 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * Draws a Cat at its spot, moving from wherever it was before the last
-   * rearrangement; a Cat arriving on a Seat snaps into it with a bounce.
+   * Draws a Cat at its placement, `lift` above it, moving on from wherever
+   * it was before the layer was cleared. A Cat new to the room drops in.
    */
-  private drawCatAt(
-    add: Add,
-    cat: Cat,
-    size: number,
-    to: Point,
-    seated: boolean
-  ) {
+  private drawCatAt(add: Add, cat: Cat, placement: Placement, lift = 0) {
+    const { x, y, size } = this.spot(placement)
+    const to = { x, y: y - lift }
     const sprite = add(drawCat(this, cat, size)).setPosition(to.x, to.y)
-    this.sprites.set(cat.id, sprite)
+    this.shown.set(cat.id, { sprite, on: placement.on, size })
+    // A dragged Cat follows the pointer instead.
+    if (cat.id === this.dragging) return sprite
     const from = this.movedFrom.get(cat.id)
-    if (!from || (from.x === to.x && from.y === to.y)) return sprite
-    sprite.setPosition(from.x, from.y)
+    // Drawn for the first time, the room is as it is; after that, new Cats arrive.
+    if (!from) {
+      if (this.movedFrom.size > 0) this.arrive(sprite)
+    } else if (from.x !== to.x || from.y !== to.y)
+      this.hop(sprite, from, to, placement.on, size)
+    return sprite
+  }
+
+  /**
+   * A Cat hops from where it was, in an arc highest between the rug and the
+   * Couch, growing or shrinking to its new size; landing on a Seat, or back
+   * on the rug from the Couch, it squashes into place.
+   */
+  private hop(
+    sprite: Phaser.GameObjects.Container,
+    from: Was,
+    to: Point,
+    on: Placement["on"],
+    size: number
+  ) {
+    const distance = Phaser.Math.Distance.BetweenPoints(from, to)
+    const height =
+      from.on !== on ? HOP_HEIGHT : Math.min(HOP_HEIGHT, distance * 0.25)
+    const duration = from.on !== on ? 280 : 200
+    const lands = on === "couch" || from.on !== on
+    sprite.setPosition(from.x, from.y).setScale(from.size / size)
+    // Hopping between the rug and the Couch, a Cat passes over the others.
+    if (from.on !== on) this.layer.bringToTop(sprite)
     this.tweens.add({
       targets: sprite,
       x: to.x,
-      y: to.y,
-      duration: seated ? 170 : 220,
-      ease: seated ? "Quad.easeIn" : "Quad.easeOut"
+      scale: 1,
+      duration,
+      onUpdate: (tween) => {
+        const t = tween.progress
+        sprite.y = from.y + (to.y - from.y) * t - height * Math.sin(Math.PI * t)
+      },
+      onComplete: () => {
+        sprite.setY(to.y)
+        if (lands)
+          this.tweens.add({
+            targets: sprite,
+            scaleX: { from: 1.22, to: 1 },
+            scaleY: { from: 0.8, to: 1 },
+            duration: 420,
+            ease: "Bounce.easeOut"
+          })
+      }
     })
-    if (seated)
-      this.tweens.add({
-        targets: sprite,
-        scaleX: { from: 1.22, to: 1 },
-        scaleY: { from: 0.8, to: 1 },
-        delay: 170,
-        duration: 420,
-        ease: "Bounce.easeOut"
-      })
-    return sprite
+  }
+
+  /** A Cat new to the room, drawn or sent back to the Hand, drops in. */
+  private arrive(sprite: Phaser.GameObjects.Container) {
+    this.tweens.add({
+      targets: sprite,
+      y: { from: sprite.y - 30, to: sprite.y },
+      alpha: { from: 0, to: 1 },
+      duration: 360,
+      ease: "Bounce.easeOut"
+    })
+  }
+
+  /** A Cat's shadow on the rug, where it rests. */
+  private drawShadow(add: Add, { x, y, size }: Spot) {
+    add(
+      this.add.ellipse(x, y + size * 0.3, size * 0.9, size * 0.2, 0x5a2a1e)
+    ).setAlpha(0.28)
+  }
+
+  /**
+   * A soft glow behind a Cat: warm for the one picked up, cool, and ringed,
+   * for one chosen to Redraw, like one about to leave.
+   */
+  private drawGlow(add: Add, { x, y, size }: Spot, colour: number) {
+    const glow = add(this.add.graphics())
+    for (const [spread, alpha] of [
+      [1.35, 0.25],
+      [1.2, 0.35],
+      [1.05, 0.5]
+    ])
+      glow
+        .fillStyle(colour, alpha)
+        .fillEllipse(x, y, size * spread, size * spread)
+    if (colour === CHOSEN_GLOW)
+      glow
+        .lineStyle(3, 0x4f79a8, 1)
+        .strokeEllipse(x, y, size * 1.15, size * 1.15)
   }
 
   /**
@@ -605,7 +742,6 @@ export class CouchScene extends Phaser.Scene {
   private draw(fallingAsleep = false) {
     const add = this.clearLayer()
     const { run } = session
-    const { night } = run
     const catById = new Map(run.roster.map((cat) => [cat.id, cat]))
     this.drawHud(run, add)
 
@@ -626,51 +762,35 @@ export class CouchScene extends Phaser.Scene {
       onTap: (position) => this.tapShelfPosition(position)
     })
 
-    // A Cat chosen to Redraw glows cool, like one about to leave.
     const chosen = new Set(this.redrawing)
-    const markChosen = (x: number, y: number) => {
-      const mark = add(this.add.graphics())
-      mark
-        .fillStyle(0xc9dcf2, 0.95)
-        .fillRoundedRect(x - 40, y - 52, 80, 100, 16)
-      mark
-        .lineStyle(3, 0x4f79a8, 1)
-        .strokeRoundedRect(x - 40, y - 52, 80, 100, 16)
-    }
+    const staged = this.byDepth(stage(run).cats)
 
     // Seated Cats with their live Personality bonus floating above, inside
     // whichever Gatherings they form. A Cat being dragged leaves its labels.
     this.drawGatherings(add, preview.gatherings, "behind")
-    for (const event of preview.scoringEvents) {
-      // A Cat's Repeats score where it sits; it is drawn once.
-      if (event.source !== "seat") continue
-      const cat = catById.get(event.cat)!
-      const x = this.seatX[event.seat]
-      if (chosen.has(event.cat)) markChosen(x, SEAT_Y - 4)
-      this.drawCatAt(add, cat, 64, { x, y: SEAT_Y - 12 }, true)
-      if (event.cat === this.dragging) continue
+    for (const { cat: id, placement, spot } of staged) {
+      if (placement.on !== "couch") continue
+      const cat = catById.get(id)!
+      const { x } = spot
+      if (chosen.has(id)) this.drawGlow(add, spot, CHOSEN_GLOW)
+      this.drawCatAt(add, cat, placement)
+      if (id === this.dragging) continue
       this.drawGrowth(add, cat, x - 22, SEAT_Y - 44)
       add(
         this.add
-          .text(
-            x,
-            SEAT_Y + 38,
-            cat.name,
-            font(11, chosen.has(event.cat) ? "#4a3426" : "#f6f1e4")
-          )
+          .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
           .setOrigin(0.5)
       )
       // With Repeats, how many times the Cat will score.
-      const scores = preview.scoringEvents.filter(
-        (e) => e.cat === event.cat
-      ).length
+      const scores = preview.scoringEvents.filter((e) => e.cat === id)
+      const { bonus } = scores[0]
       add(
         this.add
           .text(
             x,
             SEAT_Y - 72,
-            `+${event.bonus}${scores > 1 ? ` ×${scores}` : ""}`,
-            font(18, event.bonus > 0 ? "#c2410c" : "#b9a58f", "800")
+            `+${bonus}${scores.length > 1 ? ` ×${scores.length}` : ""}`,
+            font(18, bonus > 0 ? "#c2410c" : "#b9a58f", "800")
           )
           .setOrigin(0.5)
       )
@@ -709,40 +829,31 @@ export class CouchScene extends Phaser.Scene {
           .setOrigin(0.5)
       )
 
-    // The Hand's Cats not yet on the Couch.
-    const seated = new Set(night.couch)
-    night.hand
-      .filter((id) => !seated.has(id))
-      .forEach((id, i) => {
-        const cat = catById.get(id)!
-        const { x, y } = handSpot(i)
-        const held = id === this.held
-        if (chosen.has(id)) markChosen(x, y - 10)
-        if (held) {
-          const glow = add(this.add.graphics())
-          glow
-            .fillStyle(0xfff4c2, 0.9)
-            .fillRoundedRect(x - 42, y - 62, 84, 104, 16)
-        }
-        this.drawCatAt(add, cat, 72, { x, y: y - (held ? 10 : 0) }, false)
-          .setSize(84, 100)
-          .setInteractive({ useHandCursor: true })
-          .on("pointerdown", (pointer: Phaser.Input.Pointer) =>
-            this.startPress(pointer, { cat: id })
+    // The Hand's Cats not yet on the Couch, lounging on the rug; the one
+    // picked up lifts and glows.
+    for (const { cat: id, placement, spot } of staged) {
+      if (placement.on !== "rug") continue
+      const cat = catById.get(id)!
+      const { x, y, size } = spot
+      const held = id === this.held
+      this.drawShadow(add, spot)
+      if (chosen.has(id)) this.drawGlow(add, spot, CHOSEN_GLOW)
+      if (held) this.drawGlow(add, { ...spot, y: y - LIFT }, HELD_GLOW)
+      this.drawCatAt(add, cat, placement, held ? LIFT : 0)
+      if (id === this.dragging) continue
+      this.drawGrowth(add, cat, x - size * 0.36, y - size * 0.55)
+      add(
+        this.add
+          .text(
+            x,
+            y + size * 0.42,
+            cat.name,
+            font(placement.row === "front" ? 12 : 11, "#fdf6ea")
           )
-        if (id === this.dragging) return
-        this.drawGrowth(add, cat, x - 26, y - 40)
-        add(
-          this.add
-            .text(
-              x,
-              y + 30,
-              cat.name,
-              font(12, held || chosen.has(id) ? "#4a3426" : "#fdf6ea")
-            )
-            .setOrigin(0.5)
-        )
-      })
+          .setOrigin(0.5)
+          .setStroke("#7a3526", 3)
+      )
+    }
 
     // Play: "Get Comfy", dimmed until a Cat is on the Couch; while choosing
     // Cats to Redraw it backs out instead. Beside it, Redraw, then the swap.
@@ -762,8 +873,8 @@ export class CouchScene extends Phaser.Scene {
       add
     )
     // A Cat being dragged is carried over everything else.
-    const carried = this.dragging && this.sprites.get(this.dragging)
-    if (carried) this.layer.bringToTop(carried)
+    const carried = this.dragging && this.shown.get(this.dragging)
+    if (carried) this.layer.bringToTop(carried.sprite)
   }
 
   private drawButton(
@@ -792,23 +903,9 @@ export class CouchScene extends Phaser.Scene {
    * the last Play's Cats on the Couch and the rest of the Hand on the rug.
    */
   private drawAsleep(add: Add, catById: Map<CatId, Cat>, animate: boolean) {
-    const { night } = session.run
-    const sleepers: { cat: Cat; x: number; y: number; size: number }[] = []
-    this.lastCouch.forEach((id, seat) => {
-      if (id)
-        sleepers.push({
-          cat: catById.get(id)!,
-          x: this.seatX[seat],
-          y: SEAT_Y - 12,
-          size: 64
-        })
-    })
-    const onCouch = new Set(this.lastCouch)
-    night.hand
-      .filter((id) => !onCouch.has(id))
-      .forEach((id, i) => {
-        sleepers.push({ cat: catById.get(id)!, ...handSpot(i), size: 72 })
-      })
+    const sleepers = this.byDepth(stage(session.run, this.lastCouch).cats).map(
+      ({ cat, spot }) => ({ cat: catById.get(cat)!, ...spot })
+    )
 
     const dusk = add(
       this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x1b1633).setOrigin(0)
@@ -959,30 +1056,37 @@ export class CouchScene extends Phaser.Scene {
     const catById = new Map(before.roster.map((cat) => [cat.id, cat]))
     this.lastCouch = before.night.couch
 
-    // The committed Couch, and the rest of the Hand waiting on the rug.
+    // The committed Couch, and the rest of the Hand waiting on the rug,
+    // where it settles from once the sequence is over.
     const seated = new Map<number, Phaser.GameObjects.Container>()
-    before.night.couch.forEach((id, seat) => {
-      if (!id) return
+    for (const { cat: id, placement, spot } of this.byDepth(
+      stage(before).cats
+    )) {
       const cat = catById.get(id)!
-      const x = this.seatX[seat]
-      seated.set(seat, add(drawCat(this, cat, 64)).setPosition(x, SEAT_Y - 12))
-      add(
-        this.add
-          .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
-          .setOrigin(0.5)
-      )
-    })
-    const onCouch = new Set(before.night.couch)
-    before.night.hand
-      .filter((id) => !onCouch.has(id))
-      .forEach((id, i) => {
-        const cat = catById.get(id)!
-        const { x, y } = handSpot(i)
-        add(drawCat(this, cat, 72)).setPosition(x, y)
+      const { x, y, size } = spot
+      if (placement.on === "rug") this.drawShadow(add, spot)
+      const sprite = add(drawCat(this, cat, size)).setPosition(x, y)
+      this.shown.set(id, { sprite, on: placement.on, size })
+      if (placement.on === "couch") {
+        seated.set(placement.seat, sprite)
         add(
-          this.add.text(x, y + 30, cat.name, font(12, "#fdf6ea")).setOrigin(0.5)
+          this.add
+            .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
+            .setOrigin(0.5)
         )
-      })
+      } else
+        add(
+          this.add
+            .text(
+              x,
+              y + size * 0.42,
+              cat.name,
+              font(placement.row === "front" ? 12 : 11, "#fdf6ea")
+            )
+            .setOrigin(0.5)
+            .setStroke("#7a3526", 3)
+        )
+    }
     this.drawButton(PLAY_BUTTON, "Get Comfy", false, add)
     this.drawButton(REDRAW_BUTTON, "Redraw", false, add)
     const shelved = drawShelf(this, add, {

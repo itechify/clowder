@@ -13,3 +13,16 @@ export const shelfX = (positions: number) =>
     { length: positions },
     (_, position) => 20 + ((WIDTH - 40) / positions) * (position + 0.5)
   )
+
+/**
+ * Slot centres along the rug's two rows, `slots` to a row and staggered: each
+ * back-row slot falls between two front-row slots, so a full Hand fits across.
+ */
+export function rugX(slots: number) {
+  const step = (WIDTH - 96) / (2 * slots - 1)
+  const along = (k: number) => 48 + step * k
+  return {
+    front: Array.from({ length: slots }, (_, slot) => along(2 * slot)),
+    back: Array.from({ length: slots }, (_, slot) => along(2 * slot + 1))
+  }
+}

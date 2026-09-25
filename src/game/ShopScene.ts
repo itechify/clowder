@@ -28,7 +28,7 @@ const TREAT_TOTAL = { x: 105, y: 338, w: 170, h: 40 }
 const REROLL_BUTTON = { x: 285, y: 338, w: 170, h: 40 }
 const SHELF_LABEL_Y = 376
 /** The top of the Shelf's plank. */
-const SHELF_Y = 442
+const SHELF_Y = 436
 const SHELF_CAT_SIZE = 44
 const FLOOR_Y = 470
 const ROSTER_LABEL_Y = 490

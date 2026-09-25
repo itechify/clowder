@@ -90,6 +90,7 @@ describe("the art manifest", () => {
         "room/wall",
         "room/window",
         "room/couch",
+        "room/cushion",
         "room/rug",
         "room/shelf",
         "room/treatJar",
