@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   type Action,
   applyAction,
+  defaultConfig,
   type Run,
   restoreRun,
   serialiseRun,
@@ -87,12 +88,39 @@ describe("saving and resuming a Run", () => {
 
     expect(end.night.number).toBe(2)
   })
+
+  it("resumes a Disaster Night exactly as it would have gone on", () => {
+    // Every Play clears its Night, so full Couches reach Night 3 at once.
+    let run = startRun(1, { ...defaultConfig, basePurr: 1_000_000 })
+    while (run.night.disaster === null) {
+      for (const step of [...playFive, play]) run = accepted(run, step(run)).run
+      run = accepted(run, { type: "leaveShop" }).run
+    }
+
+    const end = expectResumesIdentically(run, [...playFive, play])
+
+    expect(end.shop).not.toBeNull()
+  })
 })
 
 describe("a save that cannot be resumed", () => {
   it("is refused when it is not a save at all", () => {
     for (const saved of ["", "not json", "null", "42", "[]", "{}"])
       expect(restoreRun(saved)).toBeUndefined()
+  })
+
+  it("is refused when it was saved before Disasters", () => {
+    const save = JSON.parse(serialiseRun(startRun(1)))
+    const { run } = save
+    delete run.disasters
+    delete run.night.disaster
+    delete run.night.catsPerPlay
+    delete run.config.disasterNights
+    delete run.config.disasterTargetFactor
+    delete run.config.clearReward.disaster
+    save.version = 1
+
+    expect(restoreRun(JSON.stringify(save))).toBeUndefined()
   })
 
   it("is refused when it was saved by an incompatible version", () => {
