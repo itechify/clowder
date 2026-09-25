@@ -2,7 +2,13 @@ import { expect, test } from "@playwright/test"
 import { artManifest } from "../src/art/manifest"
 import { boot } from "./scene"
 
-test("shows delivered art for every art key, none on its placeholder", async ({
+/**
+ * Keys kept on their code-drawn fallback for good, since Astra couldn't
+ * produce them consistently (option D, ADR-0005). None so far.
+ */
+const codeDrawnForGood = new Set<string>()
+
+test("shows every art key's delivered image, unless it is code-drawn for good", async ({
   page
 }) => {
   await boot(page, 7)
@@ -13,6 +19,11 @@ test("shows delivered art for every art key, none on its placeholder", async ({
     keys
   )
   expect(sources).toEqual(
-    Object.fromEntries(keys.map((key) => [key, "delivered"]))
+    Object.fromEntries(
+      keys.map((key) => [
+        key,
+        codeDrawnForGood.has(key) ? "fallback" : "delivered"
+      ])
+    )
   )
 })

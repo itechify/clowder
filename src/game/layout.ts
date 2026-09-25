@@ -21,13 +21,13 @@ export const shelfX = (positions: number) =>
  * the move evenly. Returns their centres, in the order given, and the `scale`
  * they are shown at, below 1 only if they cannot all fit at full size.
  */
-export function inRow(
+export function layOutRow(
   labels: { wanted: number; width: number }[],
   { left, right, gap }: { left: number; right: number; gap: number }
-): { x: number[]; scale: number } {
-  const room = right - left - gap * (labels.length - 1)
+): { centres: number[]; scale: number } {
+  const free = right - left - gap * (labels.length - 1)
   const total = labels.reduce((sum, { width }) => sum + width, 0)
-  const scale = Math.min(1, room / total)
+  const scale = Math.min(1, free / total)
   const order = labels
     .map((label, i) => ({ ...label, i, width: label.width * scale }))
     .sort((a, b) => a.wanted - b.wanted)
@@ -68,15 +68,15 @@ export function inRow(
     clusters.push(cluster)
   }
 
-  const x: number[] = []
+  const centres: number[] = []
   for (const cluster of clusters) {
     let from = cluster.centre - cluster.width / 2
     for (const { i, width } of cluster.labels) {
-      x[i] = from + width / 2
+      centres[i] = from + width / 2
       from += width + gap
     }
   }
-  return { x, scale }
+  return { centres, scale }
 }
 
 /**

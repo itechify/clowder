@@ -38,7 +38,7 @@ import { drawCat, drawHouseCat } from "./characters"
 import { choreograph, countedUp, type Step, skippedCues } from "./choreography"
 import { effectConfig } from "./effectConfig"
 import { display, font, numbers, OUTLINE } from "./fonts"
-import { HEIGHT, inRow, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
+import { HEIGHT, layOutRow, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { INK } from "./roomArt"
 import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
@@ -100,8 +100,11 @@ const LIFT = 14
 const HOP_HEIGHT = 46
 /** Where Gathering names sit, side by side just above the purr meter. */
 const GATHERING_NAME_Y = 248
-/** Each Gathering name's pill: its padding either side, height, and the gap between pills. */
-const GATHERING_PILL = { padding: 9, height: 24, gap: 6 }
+/**
+ * Each Gathering name's pill: its padding either side, its height, the gap
+ * between pills, and how far in from the room's sides they keep.
+ */
+const GATHERING_PILL = { padding: 9, height: 24, gap: 6, margin: 8 }
 /**
  * The colours numbers pop up in as a Play scores: Purr, Mult, then a House
  * Cat's Repeats, The Void's growth, and Freya's hearts.
@@ -1138,13 +1141,21 @@ export class CouchScene extends Phaser.Scene {
     const labels = row.map(({ name, mult }) =>
       this.add.text(0, GATHERING_NAME_Y, `${name} +${mult}`, numbers(14))
     )
-    const { x, scale } = inRow(
+    const pillWidth = (label: Phaser.GameObjects.Text) =>
+      label.width + 2 * GATHERING_PILL.padding
+    const { centres, scale } = layOutRow(
       row.map(({ seats }, i) => ({
         wanted: (this.seatX[seats[0]] + this.seatX[seats.at(-1)!]) / 2,
-        width: labels[i].width + 2 * GATHERING_PILL.padding
+        width: pillWidth(labels[i])
       })),
-      { left: 8, right: WIDTH - 8, gap: GATHERING_PILL.gap }
+      {
+        left: GATHERING_PILL.margin,
+        right: WIDTH - GATHERING_PILL.margin,
+        gap: GATHERING_PILL.gap
+      }
     )
+    // Only the names of the Gatherings being drawn show; the rest of the row
+    // was measured to keep their places.
     const shown = new Set(active.map(({ gathering }) => gathering))
     row.forEach(({ gathering }, i) => {
       const label = labels[i]
@@ -1152,11 +1163,12 @@ export class CouchScene extends Phaser.Scene {
         label.destroy()
         return
       }
-      label.setOrigin(0.5).setPosition(x[i], GATHERING_NAME_Y).setScale(scale)
-      const width = (label.width + 2 * GATHERING_PILL.padding) * scale
+      const x = centres[i]
+      label.setOrigin(0.5).setPosition(x, GATHERING_NAME_Y).setScale(scale)
+      const width = pillWidth(label) * scale
       const height = GATHERING_PILL.height * scale
       const pill = [
-        x[i] - width / 2,
+        x - width / 2,
         GATHERING_NAME_Y - height / 2,
         width,
         height,
