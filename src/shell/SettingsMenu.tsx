@@ -54,6 +54,55 @@ export function SettingsMenu() {
                 </label>
               ))}
             </fieldset>
+            <fieldset className="levels">
+              <legend>Sound</legend>
+              <VolumeSlider
+                label="Music"
+                volume={settings.musicVolume}
+                onChange={(volume) => settings.setMusicVolume(volume)}
+              />
+              <VolumeSlider
+                label="Sound effects"
+                volume={settings.sfxVolume}
+                onChange={(volume) => settings.setSfxVolume(volume)}
+              />
+            </fieldset>
+            <div className="toggles">
+              <label>
+                Mute
+                <input
+                  type="checkbox"
+                  checked={settings.muted}
+                  onChange={(event) => settings.setMuted(event.target.checked)}
+                />
+              </label>
+              <label>
+                <span>
+                  Haptics
+                  {!settings.hapticsAvailable && (
+                    <small>Not available on this device</small>
+                  )}
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.haptics}
+                  disabled={!settings.hapticsAvailable}
+                  onChange={(event) =>
+                    settings.setHaptics(event.target.checked)
+                  }
+                />
+              </label>
+              <label>
+                Reduced motion
+                <input
+                  type="checkbox"
+                  checked={settings.reducedMotion}
+                  onChange={(event) =>
+                    settings.setReducedMotion(event.target.checked)
+                  }
+                />
+              </label>
+            </div>
             <button type="button" onClick={() => setOpen(false)}>
               Done
             </button>
@@ -61,5 +110,30 @@ export function SettingsMenu() {
         </div>
       )}
     </>
+  )
+}
+
+/** A volume from silent to full, shown as a percentage. */
+function VolumeSlider({
+  label,
+  volume,
+  onChange
+}: {
+  label: string
+  volume: number
+  onChange: (volume: number) => void
+}) {
+  return (
+    <label>
+      {label}
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={5}
+        value={Math.round(volume * 100)}
+        onChange={(event) => onChange(event.target.valueAsNumber / 100)}
+      />
+    </label>
   )
 }

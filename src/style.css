@@ -26,6 +26,9 @@ body,
 
 .panel {
   width: min(320px, 84vw);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  box-sizing: border-box;
   padding: 28px 24px;
   border-radius: 24px;
   background: #fdf6ea;
@@ -244,6 +247,101 @@ body,
 }
 
 .choices label:has(input:focus-visible) {
+  outline: 3px solid #e8893a;
+  outline-offset: 2px;
+}
+
+.levels,
+.toggles {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 22px;
+  padding: 0;
+  border: 0;
+}
+
+.levels legend {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.levels label,
+.toggles label {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 22px;
+  background: #e8dccb;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.levels label {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  align-items: center;
+}
+
+.levels input {
+  width: 100%;
+  margin: 0;
+  accent-color: #4a3426;
+}
+
+.toggles label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.toggles small {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9c8672;
+}
+
+.toggles label:has(input:disabled) {
+  color: #9c8672;
+  cursor: default;
+}
+
+/* A pill switch: a thumb on the right when on. */
+.toggles input {
+  appearance: none;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border-radius: 999px;
+  background: #c9b8a3;
+  cursor: inherit;
+}
+
+.toggles input::before {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 3px;
+  border-radius: 50%;
+  background: #fdf6ea;
+}
+
+.toggles input:checked {
+  background: #4a3426;
+}
+
+.toggles input:checked::before {
+  translate: 18px 0;
+}
+
+.toggles input:focus-visible {
   outline: 3px solid #e8893a;
   outline-offset: 2px;
 }

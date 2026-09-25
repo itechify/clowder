@@ -8,6 +8,12 @@ export async function boot(page: Page, seed: number) {
   await page.waitForFunction(() => "__clowder" in window)
 }
 
+/** Opens the Settings menu, returning it. */
+export async function openSettings(page: Page) {
+  await page.getByRole("button", { name: "Settings" }).click()
+  return page.getByRole("dialog", { name: "Settings" })
+}
+
 /** Where a point in the scene's 390×844 portrait layout is on the page. */
 export async function onPage(page: Page, x: number, y: number) {
   const box = (await page.locator("#game canvas").boundingBox())!
@@ -54,7 +60,7 @@ export const shop = {
   offer: (i: number): [number, number] => [56 + i * 92.5, 286],
   /** A House Cat at the `position`th position on the Shelf. */
   shelf: (position: number): [number, number] => [64 + position * 87.5, 422],
-  reroll: [195, 338] as [number, number],
+  reroll: [285, 338] as [number, number],
   rehome: [105, 790] as [number, number],
   leave: [285, 790] as [number, number]
 }
