@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**53 of 91 images delivered; 38 still on fallback.**
+**91 of 91 images delivered; 0 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 38 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 38 of 38 |
 
 ## How to generate and deliver
 
@@ -775,48 +775,48 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 
 ## 4. The room, badges, UI furniture, and Gathering overlays
 
-- [ ] `art/raw/badge/orange.png`
-- [ ] `art/raw/badge/black.png`
-- [ ] `art/raw/badge/white.png`
-- [ ] `art/raw/badge/gray.png`
-- [ ] `art/raw/badge/calico.png`
-- [ ] `art/raw/room/wall.png`
-- [ ] `art/raw/room/window.png`
-- [ ] `art/raw/room/moon/1.png`
-- [ ] `art/raw/room/moon/2.png`
-- [ ] `art/raw/room/moon/3.png`
-- [ ] `art/raw/room/moon/4.png`
-- [ ] `art/raw/room/moon/5.png`
-- [ ] `art/raw/room/moon/6.png`
-- [ ] `art/raw/room/moon/7.png`
-- [ ] `art/raw/room/moon/8.png`
-- [ ] `art/raw/room/moon/9.png`
-- [ ] `art/raw/room/couch.png`
-- [ ] `art/raw/room/seatPad.png`
-- [ ] `art/raw/room/rug.png`
-- [ ] `art/raw/room/shelf.png`
-- [ ] `art/raw/room/treatJar.png`
-- [ ] `art/raw/room/disasterSign.png`
-- [ ] `art/raw/ui/playButton/ready.png`
-- [ ] `art/raw/ui/redrawButton/ready.png`
-- [ ] `art/raw/ui/pip/full.png`
-- [ ] `art/raw/ui/purrMeter/full.png`
-- [ ] `art/raw/ui/playButton/disabled.png`
-- [ ] `art/raw/ui/redrawButton/disabled.png`
-- [ ] `art/raw/ui/pip/spent.png`
-- [ ] `art/raw/ui/purrMeter/empty.png`
-- [ ] `art/raw/gathering/cuddlePuddle/3.png`
-- [ ] `art/raw/gathering/cuddlePuddle/4.png`
-- [ ] `art/raw/gathering/cuddlePuddle/5.png`
-- [ ] `art/raw/gathering/varietyPack/4.png`
-- [ ] `art/raw/gathering/varietyPack/5.png`
-- [ ] `art/raw/gathering/napClub.png`
-- [ ] `art/raw/gathering/personalSpace.png`
-- [ ] `art/raw/gathering/fullSofa.png`
+- [x] `art/raw/badge/orange.png`
+- [x] `art/raw/badge/black.png`
+- [x] `art/raw/badge/white.png`
+- [x] `art/raw/badge/gray.png`
+- [x] `art/raw/badge/calico.png`
+- [x] `art/raw/room/wall.png`
+- [x] `art/raw/room/window.png`
+- [x] `art/raw/room/moon/1.png`
+- [x] `art/raw/room/moon/2.png`
+- [x] `art/raw/room/moon/3.png`
+- [x] `art/raw/room/moon/4.png`
+- [x] `art/raw/room/moon/5.png`
+- [x] `art/raw/room/moon/6.png`
+- [x] `art/raw/room/moon/7.png`
+- [x] `art/raw/room/moon/8.png`
+- [x] `art/raw/room/moon/9.png`
+- [x] `art/raw/room/couch.png`
+- [x] `art/raw/room/seatPad.png`
+- [x] `art/raw/room/rug.png`
+- [x] `art/raw/room/shelf.png`
+- [x] `art/raw/room/treatJar.png`
+- [x] `art/raw/room/disasterSign.png`
+- [x] `art/raw/ui/playButton/ready.png`
+- [x] `art/raw/ui/redrawButton/ready.png`
+- [x] `art/raw/ui/pip/full.png`
+- [x] `art/raw/ui/purrMeter/full.png`
+- [x] `art/raw/ui/playButton/disabled.png`
+- [x] `art/raw/ui/redrawButton/disabled.png`
+- [x] `art/raw/ui/pip/spent.png`
+- [x] `art/raw/ui/purrMeter/empty.png`
+- [x] `art/raw/gathering/cuddlePuddle/3.png`
+- [x] `art/raw/gathering/cuddlePuddle/4.png`
+- [x] `art/raw/gathering/cuddlePuddle/5.png`
+- [x] `art/raw/gathering/varietyPack/4.png`
+- [x] `art/raw/gathering/varietyPack/5.png`
+- [x] `art/raw/gathering/napClub.png`
+- [x] `art/raw/gathering/personalSpace.png`
+- [x] `art/raw/gathering/fullSofa.png`
 
 ### Orange Coat badge: `art/raw/badge/orange.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `badge/orange`
 - Size: 128×128
@@ -829,7 +829,7 @@ A small round badge for a orange Cat: a ginger orange disc with a sun in bold co
 
 ### Black Coat badge: `art/raw/badge/black.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `badge/black`
 - Size: 128×128
@@ -842,7 +842,7 @@ A small round badge for a black Cat: a black disc with a crescent moon in bold c
 
 ### White Coat badge: `art/raw/badge/white.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `badge/white`
 - Size: 128×128
@@ -855,7 +855,7 @@ A small round badge for a white Cat: a white disc with a snowflake in bold contr
 
 ### Gray Coat badge: `art/raw/badge/gray.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `badge/gray`
 - Size: 128×128
@@ -868,7 +868,7 @@ A small round badge for a gray Cat: a smoky gray disc with a diamond in bold con
 
 ### Calico Coat badge: `art/raw/badge/calico.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `badge/calico`
 - Size: 128×128
@@ -881,7 +881,7 @@ A small round badge for a calico Cat: a orange, black, and white patchwork disc 
 
 ### Wall: `art/raw/room/wall.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/wall`
 - Size: 1170×2532
@@ -894,7 +894,7 @@ The back wall and floor of a cozy living room at night, seen straight on: warm c
 
 ### Window: `art/raw/room/window.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/window`
 - Size: 516×240
@@ -907,7 +907,7 @@ A window with a cream-painted frame and a single vertical mullion, showing a dee
 
 ### Moon, Night 1 of 9: `art/raw/room/moon/1.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/1`
 - Size: 96×96
@@ -920,7 +920,7 @@ The moon through the window on Night 1 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 2 of 9: `art/raw/room/moon/2.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/2`
 - Size: 96×96
@@ -933,7 +933,7 @@ The moon through the window on Night 2 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 3 of 9: `art/raw/room/moon/3.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/3`
 - Size: 96×96
@@ -946,7 +946,7 @@ The moon through the window on Night 3 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 4 of 9: `art/raw/room/moon/4.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/4`
 - Size: 96×96
@@ -959,7 +959,7 @@ The moon through the window on Night 4 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 5 of 9: `art/raw/room/moon/5.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/5`
 - Size: 96×96
@@ -972,7 +972,7 @@ The moon through the window on Night 5 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 6 of 9: `art/raw/room/moon/6.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/6`
 - Size: 96×96
@@ -985,7 +985,7 @@ The moon through the window on Night 6 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 7 of 9: `art/raw/room/moon/7.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/7`
 - Size: 96×96
@@ -998,7 +998,7 @@ The moon through the window on Night 7 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 8 of 9: `art/raw/room/moon/8.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/8`
 - Size: 96×96
@@ -1011,7 +1011,7 @@ The moon through the window on Night 8 of 9, waxing across the Run: a waxing moo
 
 ### Moon, Night 9 of 9: `art/raw/room/moon/9.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/moon/9`
 - Size: 96×96
@@ -1024,7 +1024,7 @@ The moon through the window on Night 9 of 9, waxing across the Run: a full moon,
 
 ### Couch: `art/raw/room/couch.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/couch`
 - Size: 1170×498
@@ -1037,7 +1037,7 @@ A plump sage-green sofa seen straight on, without its seat cushions: a tall, sof
 
 ### Seat pad: `art/raw/room/seatPad.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/seatPad`
 - Size: 198×114
@@ -1050,7 +1050,7 @@ A single plump, square-ish sage-green sofa seat cushion seen straight on from sl
 
 ### Rug: `art/raw/room/rug.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/rug`
 - Size: 1110×660
@@ -1063,7 +1063,7 @@ A cozy, woven terracotta rug with a cream border, seen from above at a gentle an
 
 ### Shelf: `art/raw/room/shelf.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/shelf`
 - Size: 1122×96
@@ -1076,7 +1076,7 @@ A long, narrow wooden wall shelf seen straight on: a single plank with small bra
 
 ### Treat jar: `art/raw/room/treatJar.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/treatJar`
 - Size: 132×156
@@ -1089,7 +1089,7 @@ A glass jar full of fish-shaped orange cat treats, with a red lid and no label: 
 
 ### Disaster sign: `art/raw/room/disasterSign.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/disasterSign`
 - Size: 492×186
@@ -1102,7 +1102,7 @@ A warning sign hung from a single nail by a string: a wide, rounded wooden plaqu
 
 ### Play button, ready: `art/raw/ui/playButton/ready.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/playButton/ready`
 - Size: 690×174
@@ -1115,7 +1115,7 @@ A large, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown 
 
 ### Redraw button, ready: `art/raw/ui/redrawButton/ready.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/redrawButton/ready`
 - Size: 324×174
@@ -1128,7 +1128,7 @@ A small, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown 
 
 ### Pip, full: `art/raw/ui/pip/full.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/pip/full`
 - Size: 42×42
@@ -1141,7 +1141,7 @@ A small, round pip: a glowing golden bead, full and still to spend. Transparent 
 
 ### Purr meter, full: `art/raw/ui/purrMeter/full.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/purrMeter/full`
 - Size: 900×78
@@ -1154,7 +1154,7 @@ A long, slim, rounded meter like a little bolster laid along the top of a sofa's
 
 ### Play button, disabled: `art/raw/ui/playButton/disabled.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/playButton/disabled`
 - Size: 690×174
@@ -1167,7 +1167,7 @@ A large pillowy, pill-shaped button pressed flat and faded to a dusty beige-brow
 
 ### Redraw button, disabled: `art/raw/ui/redrawButton/disabled.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/redrawButton/disabled`
 - Size: 324×174
@@ -1180,7 +1180,7 @@ A small pillowy, pill-shaped button pressed flat and faded to a dusty beige-brow
 
 ### Pip, spent: `art/raw/ui/pip/spent.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/pip/spent`
 - Size: 42×42
@@ -1193,7 +1193,7 @@ A small, round pip already spent: an empty, hollow ring. Transparent background.
 
 ### Purr meter, empty: `art/raw/ui/purrMeter/empty.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `ui/purrMeter/empty`
 - Size: 900×78
@@ -1206,7 +1206,7 @@ The same long, slim, rounded meter empty: a soft cream fabric channel with a dar
 
 ### Cuddle Puddle, across 3 Seats: `art/raw/gathering/cuddlePuddle/3.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/cuddlePuddle/3`
 - Size: 624×54
@@ -1219,7 +1219,7 @@ A long, thin strip of soft pink knitted blanket, draped across 3 Cats sitting si
 
 ### Cuddle Puddle, across 4 Seats: `art/raw/gathering/cuddlePuddle/4.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/cuddlePuddle/4`
 - Size: 834×54
@@ -1232,7 +1232,7 @@ A long, thin strip of soft pink knitted blanket, draped across 4 Cats sitting si
 
 ### Cuddle Puddle, across 5 Seats: `art/raw/gathering/cuddlePuddle/5.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/cuddlePuddle/5`
 - Size: 1044×54
@@ -1245,7 +1245,7 @@ A long, thin strip of soft pink knitted blanket, draped across 5 Cats sitting si
 
 ### Variety Pack, across 4 Seats: `art/raw/gathering/varietyPack/4.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/varietyPack/4`
 - Size: 810×42
@@ -1258,7 +1258,7 @@ A string of bunting strung across 4 seats of a sofa, hanging from its top edge, 
 
 ### Variety Pack, across 5 Seats: `art/raw/gathering/varietyPack/5.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/varietyPack/5`
 - Size: 1020×42
@@ -1271,7 +1271,7 @@ A string of bunting strung across 5 seats of a sofa, hanging from its top edge, 
 
 ### Nap Club: `art/raw/gathering/napClub.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/napClub`
 - Size: 126×72
@@ -1284,7 +1284,7 @@ Two soft, puffy periwinkle Z shapes drifting up between two sleeping Cats, one s
 
 ### Personal Space: `art/raw/gathering/personalSpace.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/personalSpace`
 - Size: 204×204
@@ -1297,7 +1297,7 @@ A round, translucent pale-blue bubble around one Cat: just the bubble, see-throu
 
 ### Full Sofa: `art/raw/gathering/fullSofa.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `gathering/fullSofa`
 - Size: 1170×498

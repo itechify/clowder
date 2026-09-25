@@ -1,0 +1,427 @@
+[
+  {
+    "key": "badge/orange",
+    "width": 128,
+    "height": 128,
+    "prompt": "Use case: stylized-concept. Generate a single production game sprite, NOT a reference sheet. Use the attached approved sheet ONLY for palette, thick dark-brown outlines and cute flat cel shading. A small round badge for an orange Cat: a ginger orange disc with a bold cream sun with eight short chunky rays and dark-brown contour in the middle. The sun shape must read at 20 pixels and in grayscale. Transparent background (real alpha). Front-on, no perspective, no shadow outside the disc, no words, signatures or watermark. One centered badge almost filling a square canvas, will be uniformly resized to 128\u00d7128. No cats or extra symbols.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-49f9d139-6b83-4730-b2eb-dcb4c7a58e4e.png"
+  },
+  {
+    "key": "badge/black",
+    "width": 128,
+    "height": 128,
+    "prompt": "Use case: stylized-concept. Single isolated production game sprite, NOT a reference sheet. A small round badge for a black Cat: a black disc with a crescent moon in bold contrast in the middle. The icon's shape must read in grayscale, for players who can't tell the colours apart. Transparent background. Front-on, with no perspective. It will be resized to exactly 128\u00d7128 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the sprite. No cats, no extra objects. The symbol must be very large, simple, bold and high contrast to read at 20px in grayscale. The round disc should nearly fill a square canvas, fully visible without clipping.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-386d876c-acec-47a2-bd46-12fdcca90d08.png"
+  },
+  {
+    "key": "badge/gray",
+    "width": 128,
+    "height": 128,
+    "prompt": "Use case: stylized-concept. Single isolated production game sprite, NOT a reference sheet. A small round badge for a gray Cat: a smoky gray disc with a diamond in bold contrast in the middle. The icon's shape must read in grayscale, for players who can't tell the colours apart. Transparent background. Front-on, with no perspective. It will be resized to exactly 128\u00d7128 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the sprite. No cats, no extra objects. The symbol must be very large, simple, bold and high contrast to read at 20px in grayscale. The round disc should nearly fill a square canvas, fully visible without clipping.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-93c700ff-adb5-440c-999b-b2e035ddf66c.png"
+  },
+  {
+    "key": "badge/calico",
+    "width": 128,
+    "height": 128,
+    "prompt": "Use case: stylized-concept. Single isolated production game sprite, NOT a reference sheet. A small round badge for a calico Cat: a orange, black, and white patchwork disc with a star in bold contrast in the middle. The icon's shape must read in grayscale, for players who can't tell the colours apart. Transparent background. Front-on, with no perspective. It will be resized to exactly 128\u00d7128 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the sprite. No cats, no extra objects. The symbol must be very large, simple, bold and high contrast to read at 20px in grayscale. The round disc should nearly fill a square canvas, fully visible without clipping.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-d9716f22-ce56-412a-98f3-832743f46558.png"
+  },
+  {
+    "key": "badge/white",
+    "width": 128,
+    "height": 128,
+    "prompt": "Use case: stylized-concept. Single isolated production game sprite, NOT a reference sheet. A small round badge for a white Cat: a white disc with a snowflake in bold contrast in the middle. The icon's shape must read in grayscale, for players who can't tell the colours apart. Transparent background. Front-on, with no perspective. It will be resized to exactly 128\u00d7128 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the sprite. No cats, no extra objects. The symbol must be very large, simple, bold and high contrast to read at 20px in grayscale. The round disc should nearly fill a square canvas, fully visible without clipping.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-969922e6-7442-4c5c-8954-55cf46b6d4df.png"
+  },
+  {
+    "key": "room/wall",
+    "width": 1170,
+    "height": 2532,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. The back wall and floor of a cozy living room at night, seen straight on: warm cream wallpaper with soft vertical stripes over the top 47%, a cream skirting board, and warm wooden floorboards below from 48% down. Keep it simple and low in detail, since the window, shelf, sofa, and rug are separate images layered over it. It fills the whole image edge to edge, fully opaque, with no furniture. Front-on, with no perspective. It will be resized to exactly 1170\u00d72532 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Generate tall portrait composition with exact aspect ratio 1170:2532. Wall-floor boundary at 48% of total image height. Opaque edge-to-edge image.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-e72d38f4-0d3d-4b33-aff2-006fccfdeaa3.png"
+  },
+  {
+    "key": "room/window",
+    "width": 516,
+    "height": 240,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A window with a cream-painted frame and a single vertical mullion, showing a deep blue night sky with a few small stars. No moon: that is a separate image. Transparent background. Front-on, with no perspective. It will be resized to exactly 516\u00d7240 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 2.150:1, so it fits a 516 by 240 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-a758a663-dc25-41b1-8333-3269d5c0bf47.png"
+  },
+  {
+    "key": "room/couch",
+    "width": 1170,
+    "height": 498,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A plump sage-green sofa seen straight on, without its seat cushions: a tall, softly tufted backrest, rounded arms at both ends, a low base where the cushions will rest, and short wooden legs. The five seat cushions are a separate image, laid over the base. Keep the top edge of the backrest plain: the game lays a meter along it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1170\u00d7498 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 2.349:1, so it fits a 1170 by 498 box without distortion.  Fill that silhouette box nearly edge to edge. Precise furniture geometry: arms are narrow, only 6% of width each; the backrest fills the upper 65% of height; cushion platform at 62% down; feet end at bottom. Five cushions will be overlaid by the game at evenly spaced positions. Do not draw cushions.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-bdc19948-a9eb-480a-bef8-2c6671edf7bc.png",
+    "rejected": true
+  },
+  {
+    "key": "room/seatPad",
+    "width": 198,
+    "height": 114,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A single plump, square-ish sage-green sofa seat cushion seen straight on from slightly above, its top face lit and its front face softly piped. Five of these sit side by side on the sofa, a Cat sitting on each. Transparent background. Front-on, with no perspective. It will be resized to exactly 198\u00d7114 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 1.737:1, so it fits a 198 by 114 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-32895023-564e-4142-b39d-66b0e0dbcdf8.png",
+    "rejected": true
+  },
+  {
+    "key": "room/rug",
+    "width": 1110,
+    "height": 660,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A cozy, woven terracotta rug with a cream border, seen from above at a gentle angle as it lies on the floor, big enough for eight Cats lounging in two rows. Transparent background. It will be resized to exactly 1110\u00d7660 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 1.682:1, so it fits a 1110 by 660 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-6cec4000-f706-4182-bb1e-f5e23856aaad.png"
+  },
+  {
+    "key": "room/shelf",
+    "width": 1122,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath. Transparent background. Front-on, with no perspective. It will be resized to exactly 1122\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 11.688:1, so it fits a 1122 by 96 box without distortion. This is an EXTREMELY LONG THIN horizontal object centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-0ad5f334-41f0-492f-a6f7-7cf6651ff7ea.png"
+  },
+  {
+    "key": "room/treatJar",
+    "width": 132,
+    "height": 156,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it. Transparent background. Front-on, with no perspective. It will be resized to exactly 132\u00d7156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 0.846:1, so it fits a 132 by 156 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-addc5f8f-ebad-4e5f-b7b2-87080fca639c.png"
+  },
+  {
+    "key": "room/disasterSign",
+    "width": 492,
+    "height": 186,
+    "prompt": "Use case: stylized-concept. Single production game asset, NOT a reference sheet. A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492\u00d7186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats or extra objects. Production sprite silhouette must have width-to-height ratio 2.645:1, so it fits a 492 by 186 box without distortion.  Fill that silhouette box nearly edge to edge. String occupies top 25% of height, blank plaque bottom 75%; leave generous unadorned central face.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-7f2a383e-a185-45d6-b3f7-7df06abe3188.png"
+  },
+  {
+    "key": "room/moon/1",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 1 of 9, waxing across the Run: a waxing moon about 11% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-63aafe0b-743e-4ee4-892a-63014bbc6c19.png"
+  },
+  {
+    "key": "room/moon/2",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 2 of 9, waxing across the Run: a waxing moon about 22% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-6a954faf-5ab1-414c-ae46-b9cb38aebd56.png"
+  },
+  {
+    "key": "room/moon/3",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 3 of 9, waxing across the Run: a waxing moon about 33% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-b9859579-aba5-48b1-80a2-bc008007e522.png"
+  },
+  {
+    "key": "room/moon/4",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 4 of 9, waxing across the Run: a waxing moon about 44% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-2bbf0184-b429-4cef-b49d-9feb3856bc61.png"
+  },
+  {
+    "key": "room/moon/5",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 5 of 9, waxing across the Run: a waxing moon about 56% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-7dd39cb3-806a-4ba9-bc36-963368b1872b.png"
+  },
+  {
+    "key": "room/moon/6",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 6 of 9, waxing across the Run: a waxing moon about 67% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-76718a38-e4d7-4264-9ebb-0514dfa6d356.png"
+  },
+  {
+    "key": "room/moon/7",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 7 of 9, waxing across the Run: a waxing moon about 78% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-60184295-2bf4-4f4d-b111-a99d4c00b22c.png"
+  },
+  {
+    "key": "room/moon/8",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 8 of 9, waxing across the Run: a waxing moon about 89% lit, lit on its right side, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-5fa5854b-95e8-4514-a118-420db5422ad2.png",
+    "rejected": true
+  },
+  {
+    "key": "room/moon/9",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. One isolated moon game sprite, NOT a reference sheet. The moon through the window on Night 9 of 9, waxing across the Run: a full moon, glowing softly. Transparent background. Front-on, with no perspective. It will be resized to exactly 96\u00d796 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the circular moon; no stars, scenery or extra objects. Keep a complete circular dark blue unlit lunar disc, with the specified fraction filled by pale warm cream light on the RIGHT, dark side on LEFT. Overall lunar disc diameter 85% of square canvas, identical size for all nine Nights. No face. Minimal details.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-8afd0c27-d2c8-449d-aa38-c6cbc68c4553.png"
+  },
+  {
+    "key": "room/seatPad",
+    "width": 198,
+    "height": 114,
+    "prompt": "Use case: stylized-concept. One SINGLE empty sage olive green seat cushion only, isolated on genuine transparent alpha. Absolutely no cats, animals, sofa frame, arms, backrest, legs, room or other objects. Rounded rectangular plump upholstered seat pad seen front-on slightly above, with a light top and piped front face. Width 1.74 times height. Thick dark-brown contour, flat cel shading with one darker olive shadow and muted olive highlight, exactly matching the attached approved style reference upholstery swatch. Shape fills its own tight 198\u00d7114 delivery box. No text or symbols. This is just one loose seat cushion, NOT a sofa.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-e663b880-f5b1-456e-9793-22fa6382e73e.png"
+  },
+  {
+    "key": "ui/playButton/ready",
+    "width": 690,
+    "height": 174,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A large, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown with a soft highlight, begging to be pressed. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 690\u00d7174 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 3.966:1, so it fits a 690 by 174 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-6a592981-b598-4b95-b7a3-a37f0613f8b8.png"
+  },
+  {
+    "key": "ui/redrawButton/ready",
+    "width": 324,
+    "height": 174,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A small, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown with a soft highlight, ready to press. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 324\u00d7174 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 1.862:1, so it fits a 324 by 174 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-15d44f10-df57-48db-a388-f6f1eaa0a320.png"
+  },
+  {
+    "key": "ui/pip/full",
+    "width": 42,
+    "height": 42,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A small, round pip: a glowing golden bead, full and still to spend. Transparent background. Front-on, with no perspective. It will be resized to exactly 42\u00d742 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 1.000:1, so it fits a 42 by 42 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-ae6e55c8-d95e-40fc-90e8-1feb798477b2.png"
+  },
+  {
+    "key": "ui/purrMeter/full",
+    "width": 900,
+    "height": 78,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A long, slim, rounded meter like a little bolster laid along the top of a sofa's backrest, filled end to end with a warm, glowing orange, like a cat's purr made visible. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900\u00d778 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 11.538:1, so it fits a 900 by 78 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-dcb093a9-9be7-47ba-ab97-ed6751024be8.png",
+    "rejected": true
+  },
+  {
+    "key": "ui/playButton/disabled",
+    "width": 690,
+    "height": 174,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A large pillowy, pill-shaped button pressed flat and faded to a dusty beige-brown, clearly not pressable. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 690\u00d7174 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 3.966:1, so it fits a 690 by 174 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-3496d6ee-bafe-4eb9-8ff5-fb4eb6906c39.png"
+  },
+  {
+    "key": "ui/redrawButton/disabled",
+    "width": 324,
+    "height": 174,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A small pillowy, pill-shaped button pressed flat and faded to a dusty beige-brown, clearly not pressable. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 324\u00d7174 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 1.862:1, so it fits a 324 by 174 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-70b8c86a-adc6-4458-88ac-afb515c33e34.png"
+  },
+  {
+    "key": "ui/pip/spent",
+    "width": 42,
+    "height": 42,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A small, round pip already spent: an empty, hollow ring. Transparent background. Front-on, with no perspective. It will be resized to exactly 42\u00d742 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 1.000:1, so it fits a 42 by 42 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-2ea3809b-0cab-45a6-9f00-14ff112040ab.png"
+  },
+  {
+    "key": "ui/purrMeter/empty",
+    "width": 900,
+    "height": 78,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. The same long, slim, rounded meter empty: a soft cream fabric channel with a darker inset where the glow will fill it, exactly the same shape and outline as the full one. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900\u00d778 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 11.538:1, so it fits a 900 by 78 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge.",
+    "references": [
+      "style-sheet.png",
+      "exec-dcb093a9-9be7-47ba-ab97-ed6751024be8.png"
+    ],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-88880d4e-9b0c-4830-b7b9-c60337f1e236.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/cuddlePuddle/3",
+    "width": 624,
+    "height": 54,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A long, thin strip of soft pink knitted blanket, draped across 3 Cats sitting side by side on a sofa: just the blanket. Transparent background. Front-on, with no perspective. It will be resized to exactly 624\u00d754 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 11.556:1, so it fits a 624 by 54 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge. Just a narrow ribbon-like strip of pink blanket with a softly scalloped hem; height is only one eighteenth of the length. Absolutely no cats or other objects.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-9a41b49a-121d-4629-9277-bbd62b0a06ff.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/cuddlePuddle/4",
+    "width": 834,
+    "height": 54,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A long, thin strip of soft pink knitted blanket, draped across 4 Cats sitting side by side on a sofa: just the blanket. Transparent background. Front-on, with no perspective. It will be resized to exactly 834\u00d754 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 15.444:1, so it fits a 834 by 54 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge. Just a narrow ribbon-like strip of pink blanket with a softly scalloped hem; height is only one eighteenth of the length. Absolutely no cats or other objects.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-2c1e7399-4246-4736-83ca-45e637236748.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/cuddlePuddle/5",
+    "width": 1044,
+    "height": 54,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A long, thin strip of soft pink knitted blanket, draped across 5 Cats sitting side by side on a sofa: just the blanket. Transparent background. Front-on, with no perspective. It will be resized to exactly 1044\u00d754 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 19.333:1, so it fits a 1044 by 54 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge. Just a narrow ribbon-like strip of pink blanket with a softly scalloped hem; height is only one eighteenth of the length. Absolutely no cats or other objects.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-d23ef2c5-c982-4bd6-8a69-d779c18b6a6b.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/varietyPack/4",
+    "width": 810,
+    "height": 42,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A string of bunting strung across 4 seats of a sofa, hanging from its top edge, with small triangle flags in turn orange, black, white, gray, and calico. Transparent background. Front-on, with no perspective. It will be resized to exactly 810\u00d742 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 19.286:1, so it fits a 810 by 42 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge. String is almost straight and horizontal, with tiny flat triangle flags just below it. No draped sag. No cats, sofa or other objects.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-2c8b81e4-17c4-46c6-9279-29a4658cdf84.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/varietyPack/5",
+    "width": 1020,
+    "height": 42,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A string of bunting strung across 5 seats of a sofa, hanging from its top edge, with small triangle flags in turn orange, black, white, gray, and calico. Transparent background. Front-on, with no perspective. It will be resized to exactly 1020\u00d742 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 24.286:1, so it fits a 1020 by 42 box without distortion. This is an EXTREMELY LONG THIN horizontal strip centred across a landscape canvas, with generous transparent space above and below, not a thick or square object. Fill that silhouette box nearly edge to edge. String is almost straight and horizontal, with tiny flat triangle flags just below it. No draped sag. No cats, sofa or other objects.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-5b20cf0f-380f-482c-8e77-3c8a78edcd9d.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/napClub",
+    "width": 126,
+    "height": 72,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. Two soft, puffy periwinkle Z shapes drifting up between two sleeping Cats, one small and one large. Transparent background. Front-on, with no perspective. It will be resized to exactly 126\u00d772 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 1.750:1, so it fits a 126 by 72 box without distortion.  Fill that silhouette box nearly edge to edge.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-4b3fda10-4735-4bae-abe4-62f27616ef59.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/personalSpace",
+    "width": 204,
+    "height": 204,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A round, translucent pale-blue bubble around one Cat: just the bubble, see-through in the middle. Transparent background. Front-on, with no perspective. It will be resized to exactly 204\u00d7204 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 1.000:1, so it fits a 204 by 204 box without distortion.  Fill that silhouette box nearly edge to edge. The entire centre is 100% transparent to reveal game characters below; only draw a thin glowing edge ring, with no fill whatsoever.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-c5831aba-0149-4374-93d3-1b2264d9e0fa.png"
+  },
+  {
+    "key": "gathering/fullSofa",
+    "width": 1170,
+    "height": 498,
+    "prompt": "Use case: stylized-concept. One isolated production game sprite, NOT a reference sheet. A warm golden glow tracing the outline of a whole sofa, as a rounded rectangle of light, to lay over the sofa exactly. Transparent background. Front-on, with no perspective. It will be resized to exactly 1170\u00d7498 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Real transparent alpha outside the object, no cast shadow, no cats, no sofa or extra objects. Production sprite silhouette must have width-to-height ratio 2.349:1, so it fits a 1170 by 498 box without distortion.  Fill that silhouette box nearly edge to edge. The entire centre is 100% transparent to reveal game characters below; only draw a thin glowing edge ring, with no fill whatsoever.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-91c82e4f-be75-4096-9210-b1bd9dfc6712.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/cuddlePuddle/3",
+    "width": 624,
+    "height": 54,
+    "prompt": "Use case: stylized-concept. Production game sprite. Draw ONLY a narrow horizontal pink knitted fabric ribbon with a very shallow wavy hem and a dark brown outline. 1900 pixels wide and exactly 164 pixels high, centered in a 2048\u00d71024 transparent landscape canvas. Top and bottom edges are nearly straight. The fabric ribbon occupies ONLY y=430 through y=594. NO hanging ends, NO deep folds, NO draping. Tiny knit stitches and one soft pink shadow tone. It is a narrow blanket-edge overlay across 3 Seats, but do NOT draw any seats, cats, furniture or other objects. Everything outside the ribbon is fully transparent. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-482b4a01-b352-4309-b739-6f763fbce2ce.png"
+  },
+  {
+    "key": "gathering/cuddlePuddle/4",
+    "width": 834,
+    "height": 54,
+    "prompt": "Use case: stylized-concept. Production game sprite. Draw ONLY a narrow horizontal pink knitted fabric ribbon with a very shallow wavy hem and a dark brown outline. 1900 pixels wide and exactly 123 pixels high, centered in a 2048\u00d71024 transparent landscape canvas. Top and bottom edges are nearly straight. The fabric ribbon occupies ONLY y=451 through y=574. NO hanging ends, NO deep folds, NO draping. Tiny knit stitches and one soft pink shadow tone. It is a narrow blanket-edge overlay across 4 Seats, but do NOT draw any seats, cats, furniture or other objects. Everything outside the ribbon is fully transparent. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-dcbf645f-185a-48fb-9d47-ed009a6a15fa.png"
+  },
+  {
+    "key": "gathering/cuddlePuddle/5",
+    "width": 1044,
+    "height": 54,
+    "prompt": "Use case: stylized-concept. Production game sprite. Draw ONLY a narrow horizontal pink knitted fabric ribbon with a very shallow wavy hem and a dark brown outline. 1900 pixels wide and exactly 98 pixels high, centered in a 2048\u00d71024 transparent landscape canvas. Top and bottom edges are nearly straight. The fabric ribbon occupies ONLY y=463 through y=561. NO hanging ends, NO deep folds, NO draping. Tiny knit stitches and one soft pink shadow tone. It is a narrow blanket-edge overlay across 5 Seats, but do NOT draw any seats, cats, furniture or other objects. Everything outside the ribbon is fully transparent. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-67dd913b-9599-4b52-9274-d7753edb2b3c.png"
+  },
+  {
+    "key": "gathering/varietyPack/4",
+    "width": 810,
+    "height": 42,
+    "prompt": "Use case: stylized-concept. Production game sprite. Draw ONLY one very long nearly straight horizontal dark-brown string bearing many TINY triangular flags cycling ginger orange, black, cream white, gray, calico patches. Entire object 1900 pixels wide and exactly 99 pixels high centered in a 2048\u00d71024 transparent canvas. Each flag is at most 87px tall, many tiny flags, not five giant flags. Keep ALL visible pixels within y=463 and y=562. No finials or hanging ties. A flat bunting line, NO deep sag. No cats, sofa or scenery. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-8327b327-08c9-49db-a108-0f89bc8ff686.png"
+  },
+  {
+    "key": "gathering/varietyPack/5",
+    "width": 1020,
+    "height": 42,
+    "prompt": "Use case: stylized-concept. Production game sprite. Draw ONLY one very long nearly straight horizontal dark-brown string bearing many TINY triangular flags cycling ginger orange, black, cream white, gray, calico patches. Entire object 1900 pixels wide and exactly 78 pixels high centered in a 2048\u00d71024 transparent canvas. Each flag is at most 66px tall, many tiny flags, not five giant flags. Keep ALL visible pixels within y=473 and y=551. No finials or hanging ties. A flat bunting line, NO deep sag. No cats, sofa or scenery. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-fd532fc1-bde7-403a-a3db-20785a5ed104.png"
+  },
+  {
+    "key": "gathering/napClub",
+    "width": 126,
+    "height": 72,
+    "prompt": "Use case: stylized-concept. Production game sprite. Only two rounded periwinkle letter Z shapes, one small at lower left and one bigger at upper right, isolated on transparent background. Wide composition fitting 126\u00d772 shape. Thick dark-brown outlines, one lighter lavender highlight. No animals, no cat faces, no bodies, no sofa, no other objects at all. Just two Z glyphs for a sleeping effect. The reference is style only, do not reproduce its cats. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-977d7e79-f7ed-41de-b613-2df85e4c9c8c.png"
+  },
+  {
+    "key": "room/moon/8",
+    "width": 96,
+    "height": 96,
+    "prompt": "Use case: stylized-concept. Production game sprite. One almost FULL MOON, a nearly all cream circular disc with ONLY a very narrow dark navy crescent hugging its LEFT outer edge, about 11% of area dark, 89% cream lit. It must look almost full, NOT half and NOT two-thirds lit. Thick dark-brown outline, two soft tan crater circles, warm pale cream face. No face, stars or scenery. The circle nearly fills a transparent square. Moon on Night 8 of 9. Match attached approved reference's flat cel shading, cute rounded shapes, warm palette and bold dark-brown outlines. No text except the two Zs when requested. Genuine alpha background.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-86f37363-ff93-413e-9cc8-c9ba8a160e5f.png"
+  },
+  {
+    "key": "ui/purrMeter/full",
+    "width": 900,
+    "height": 78,
+    "prompt": "Use case: stylized-concept. Single production game progress-meter sprite, matching approved style sheet. An extremely long thin rounded rectangular orange glowing fabric bolster, warm cream edge and dark brown outline. Entire shape 1900 pixels wide and 164 pixels high centred on a 2048\u00d71024 genuine transparent canvas. Visible pixels ONLY within y=430 to y=594. Plain rounded capsule silhouette, filled end-to-end warm orange, subtle thin pale-orange top highlight, one darker orange lower shadow. NO paw decorations, finials, symbols, text, tick marks, animals, furniture, shadows outside or other objects. The silhouette must be 11.54 times as wide as tall. For a 900\u00d778 game sprite.",
+    "references": ["style-sheet.png"],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-ba07b115-9b70-47dc-9935-b2bcc6cd0be3.png"
+  },
+  {
+    "key": "ui/purrMeter/empty",
+    "width": 900,
+    "height": 78,
+    "prompt": "Use case: precise-object-edit. Image 1 is the approved style reference only. Image 2 is the exact FULL progress meter edit target. Produce its EMPTY counterpart. Preserve the exact position, size, rounded capsule silhouette, outer cream edge, dark brown outline and transparent background of Image 2. Change ONLY the orange interior to a soft dusty beige inset fabric channel. No orange glow. No text, paw decorations, animals, symbols or new objects. It must overlay Image 2 exactly, pixel for pixel at its outer silhouette. Do not alter the canvas or proportions.",
+    "references": [
+      "style-sheet.png",
+      "exec-ba07b115-9b70-47dc-9935-b2bcc6cd0be3.png"
+    ],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-bc0c1cc3-fd87-4caf-885d-07488bdc78d2.png"
+  },
+  {
+    "key": "gathering/fullSofa",
+    "width": 1170,
+    "height": 498,
+    "prompt": "Use case: stylized-concept. Production Gathering effect overlay for a game. Draw ONLY a very thin, subtle, translucent warm golden rounded rectangle outline on an otherwise completely transparent background, no fill. Canvas target 1170\u00d7498: line centre runs from x=9 to x=1161 and y=9 to y=489; rounded corners radius 65 pixels. Stroke only 6 pixels wide at this target size with a gentle 3 pixel diffuse glow, low opacity approximately 50%. The whole effect must reach nearly every edge of its 2.35:1 bounding box, very wide rectangle, not square, not a thick decorative frame. NO dark outline, NO external rays, NO sparkles, NO paw decorations, NO cats, NO furniture, NO words. Centre must be 100% alpha-transparent. This sits behind small white Cat name text so it must not overpower names. Match attached reference's warm gold palette only; effect should be subtle light, not a solid object.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-aad03c38-dae5-4a13-92c8-ba5bac39d9c1.png",
+    "rejected": true
+  },
+  {
+    "key": "room/couch",
+    "width": 1170,
+    "height": 498,
+    "prompt": "Use case: precise-object-edit. Fix the geometry of the FIRST attached image, the empty sofa frame game sprite. The SECOND image is the separately rendered seat cushion for material reference only; do not draw any cushion into the output. Preserve the first image's 1170\u00d7498 canvas, transparent background, outer silhouette, sage-olive palette, thick dark-brown outline, tufted back and wooden feet. The game overlays five cushions with top edges at y=246 and bottom edges at y=327 on this canvas. They currently float above the sofa frame. Raise the sofa's horizontal support deck and front fascia so the cushions will sit on it: top edge of the front vertical base fascia must be at y=320, extending down to existing y=443, with a continuous top shelf surface spanning x=60 through x=1110 behind it, from y=246 through y=320. Raise the bottom edge of the backrest to y=246 accordingly. NO black void between deck and front fascia. Narrow the inside of each arm to x=60 at left and x=1110 at right so all five separately rendered cushions can sit side by side. Keep outside arm contours and feet in place. Output ONLY the empty sofa frame. No cushions, cats, words, arrows, guides or dimensions in the image. Important: front fascia should be taller than in the original, with top edge raised to meet the separately overlaid cushions.",
+    "references": [
+      "art/raw/room/couch.png (first delivered version)",
+      "art/raw/room/seatPad.png",
+      "art/reference/style-sheet.png"
+    ],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-d4d1bbf6-2b0a-4c19-9c2f-ba47bb02f0fd.png",
+    "rejected": true
+  },
+  {
+    "key": "gathering/fullSofa",
+    "width": 1170,
+    "height": 498,
+    "prompt": "Use case: stylized-concept. One thin warm golden rounded rectangular light halo, transparent center and transparent exterior, no objects. It is a game overlay around a wide sofa. The visible OUTER BOUNDING BOX of the halo must be exactly 1900 pixels WIDE by 670 pixels HIGH on a 2048\u00d71024 transparent canvas. This is a wide 2.84:1 rectangle, NOT a square and NOT 2.35:1. Center at (1024,512), so the halo spans x=74..1974 and y=177..847. Rounded corner radius 100px, glowing line about 8px wide with a gentle translucent fringe. Warm pale gold, approximately 50% alpha, very subtle. No fill inside at all, center entirely alpha zero. No dark outlines, stars, sparkles, rays, furniture, animals, text or other details. Reference only for the warm golden palette. The intended delivered sprite has its halo at bottom of a 1170\u00d7498 transparent canvas with 84 transparent rows at top, so its upper edge aligns with a sofa back below a separately rendered meter.",
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-53202d90-65e3-4a70-83d2-142dcf724e48.png"
+  },
+  {
+    "prompt": "Use case: precise-object-edit. Edit target is the first reference, the existing Clowder couch sprite on its transparent 1170x498 canvas. Second reference is the approved style sheet for style only. Make exactly one geometry correction: raise the top edge of the five-panel sage-green backrest by about 50 pixels, using the currently transparent headroom above it. The current top is near y=72: move that to y=22. Extend ONLY the upper part of the backrest panels and their seams, preserving their hand-drawn rounded outline. Preserve every lower feature at the same coordinates: arms start near y=185, seat deck at y=297, front fascia starts near y=333, feet end y=497. Preserve width, colors, upholstery shading, button tufts, empty flat seat deck, and high front fascia. NO seat cushions, NO cats, NO meter, NO text, NO background. Output the complete couch with genuine transparency, same 1170x498 composition, no crop, no stretching. This taller backrest will sit immediately under a separately rendered bolster meter; lower geometry must stay fixed so separate cushions continue resting on the support deck.",
+    "references": [
+      "/home/jjd/.t3/worktrees/clowder/t3code-efefd161/art/raw/room/couch.png",
+      "/home/jjd/.t3/worktrees/clowder/t3code-efefd161/art/reference/style-sheet.png"
+    ],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-0614811d-ad48-4c55-bbd0-12c3d939a946.png",
+    "key": "room/couch",
+    "width": 1170,
+    "height": 498,
+    "rejected": true,
+    "rejectionReason": "The backrest-only edit also shifted the lower support geometry; retain the prior couch correction that meets the seat pads."
+  },
+  {
+    "prompt": "Use case: precise-object-edit. First image is the EDIT TARGET: Clowder's sage-green couch sprite, transparent canvas 1170x498. Second image is only the approved STYLE REFERENCE. Correct the fit of the arms: the current arms are much too wide, causing separately-rendered cushions to overlap them. Make both arms about HALF their current horizontal thickness, keeping their outer edges where they are at x=0 and x=1170. The inside edge of the left arm must be at x=60 (5% of total width) throughout the seat area; the right inside edge at x=1110 (95%). Thus there must be a wide clear seat opening from x=60 to1110, especially between y=245 and y=335. Extend the flat seat deck and front fascia sideways to meet these slimmer arms. Arms should still look softly rounded and upholstered, with a narrow roll at their top. Preserve all vertical positions from the target: transparent headroom, top of backrest near y=72, arm tops near185, deck near297, front fascia top near333, feet at497. Keep existing sage color, five tufted back panels, dark-brown outlines, simple highlights, and short wooden feet. Do NOT add cushions, cats, pillows, meter, text or other objects. The whole 1170x498 canvas including transparent padding must be retained, genuine transparent background. Only narrow the arms and widen the clear deck/fascia opening; do not shift the deck down.",
+    "references": [
+      "/home/jjd/.t3/worktrees/clowder/t3code-efefd161/art/raw/room/couch.png",
+      "/home/jjd/.t3/worktrees/clowder/t3code-efefd161/art/reference/style-sheet.png"
+    ],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-2ba97832-4bc4-4574-ab75-a372b3373e23.png",
+    "key": "room/couch",
+    "width": 1170,
+    "height": 498,
+    "normalization": "Crop visible silhouette (alpha > 2), resize uniformly to 1170x411, pad on 1170x498 at x=0,y=70. Align fascia beneath the existing cushion bottoms."
+  }
+]
