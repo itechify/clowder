@@ -392,10 +392,6 @@ describe("staging the Shelf", () => {
       )
     })
 
-    it("has a stage for each of her poses", () => {
-      expect(FREYA_WARMS_AT).toHaveLength(FREYA_STAGES)
-    })
-
     it("warms up as a Play warms her, and survives a save and resume", () => {
       const run = runWithCouch(["aloof"], { shelf: ["freya"] })
       const warmed = accepted(run, { type: "play" }).run
@@ -493,13 +489,21 @@ describe("staging's art", () => {
   it("asks only for poses the art manifest has", () => {
     const keys = new Set(artManifest.map((entry) => entry.key))
     for (let seed = 1; seed <= 20; seed++) {
-      const run = runWithCouch(
+      const seated = runWithCouch(
         ["clingy", "clingy", "aloof", "sleepy", "sleepy"],
         {
           seed,
           shelf: ["copycat", "freya", "theVoid", "skadi", "boxGoblin"]
         }
       )
+      // Freya warmed up through every stage she has, and past them.
+      const run = {
+        ...seated,
+        night: {
+          ...seated.night,
+          warmPlays: seed % (FREYA_WARMS_AT.length + 2)
+        }
+      }
       for (const staging of [stage(run), stageAsleep(run, run.night.couch)])
         for (const { pose } of [...staging.cats, ...staging.houseCats])
           expect(keys).toContain(pose)

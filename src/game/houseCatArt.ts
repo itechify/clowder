@@ -64,21 +64,35 @@ function drawHeart(g: Graphics, x: number, y: number, r: number, fill: number) {
   )
 }
 
-/** Skadi at rest, lying on her side, relaxed and content, looking out. */
-function skadiOnHerSide(g: Graphics, size: number) {
-  const fill = 0x9a8f86
-  const outline = 0x5e554e
-  const belly = 0xf6eee4
-  const bodyY = size * 0.26
-  // Her tail curled along the plank...
+/** A tail `trace`d twice, as thick as fur at `size`: outline, then fill. */
+function drawTail(
+  g: Graphics,
+  size: number,
+  fill: number,
+  outline: number,
+  trace: () => void
+) {
   for (const [width, colour] of [
     [0.08, outline],
     [0.05, fill]
   ]) {
-    g.lineStyle(size * width, colour, 1).beginPath()
+    g.lineStyle(size * width, colour, 1)
+    trace()
+  }
+}
+
+const SKADI = { fill: 0x9a8f86, outline: 0x5e554e, belly: 0xf6eee4 }
+
+/** Skadi at rest, lying on her side, relaxed and content, looking out. */
+function skadiOnHerSide(g: Graphics, size: number) {
+  const { fill, outline, belly } = SKADI
+  const bodyY = size * 0.26
+  // Her tail curled up behind her...
+  drawTail(g, size, fill, outline, () => {
+    g.beginPath()
     g.arc(size * 0.38, bodyY, size * 0.1, 0.5 * Math.PI, 1.6 * Math.PI, true)
     g.strokePath()
-  }
+  })
   // ...her long, lazy body, belly toward the viewer...
   g.fillStyle(fill, 1).lineStyle(2, outline, 1)
   g.fillEllipse(size * 0.06, bodyY, size * 0.68, size * 0.26)
@@ -115,9 +129,7 @@ function skadiOnHerSide(g: Graphics, size: number) {
 
 /** Skadi rolled right over, when Belly Up triggers. */
 function skadiBellyUp(g: Graphics, size: number) {
-  const fill = 0x9a8f86
-  const outline = 0x5e554e
-  const belly = 0xf6eee4
+  const { fill, outline, belly } = SKADI
   const bodyY = size * 0.22
   // Paws in the air...
   g.lineStyle(size * 0.09, outline, 1)
@@ -139,7 +151,7 @@ function skadiBellyUp(g: Graphics, size: number) {
     size * 0.44,
     size * 0.17
   )
-  // Her head upside down at the end of the Couch, ears pointing down.
+  // Her head upside down at one end, ears pointing down.
   const r = size * 0.17
   const headX = -size * 0.36
   const headY = bodyY + size * 0.02
@@ -162,8 +174,8 @@ function skadiBellyUp(g: Graphics, size: number) {
 /** How far Freya has warmed up in a pose, from reserved (0) to affectionate (1). */
 function freyaWarmth(pose: HouseCatPose) {
   const stage = pose.match(/^warming(\d+)$/)?.[1]
-  if (stage) return Number(stage) / FREYA_STAGES
-  // Her triggered pose is a warm moment, most of the way there.
+  if (stage) return Math.min(1, Number(stage) / FREYA_STAGES)
+  // Her triggered pose is a warm moment, glimpsed while still reserved.
   return pose === "triggered" ? 2 / 3 : 0
 }
 
@@ -287,11 +299,7 @@ const looks: Record<
       g.strokePath()
     } else {
       // ...until it goes up like a question mark.
-      for (const [width, colour] of [
-        [0.08, outline],
-        [0.05, fill]
-      ]) {
-        g.lineStyle(size * width, colour, 1)
+      drawTail(g, size, fill, outline, () => {
         g.lineBetween(-size * 0.2, size * 0.3, -size * 0.3, -size * 0.04)
         g.beginPath()
         g.arc(
@@ -302,7 +310,7 @@ const looks: Record<
           2 * Math.PI
         )
         g.strokePath()
-      }
+      })
     }
     // Peeking back over her shoulder at first, blushing, then facing the
     // viewer with softening eyes and a shy smile, then eyes closed happily.
@@ -556,12 +564,12 @@ export const HOUSE_CAT_BASE = 0.45
 /**
  * Draws a code-drawn House Cat in `pose`, centred on (0, 0), about `size`
  * pixels across, sitting with its base `HOUSE_CAT_BASE` × `size` below the
- * centre. Skadi and Freya have their signature poses drawn; any other pose
- * not yet drawn is shown as the House Cat at rest.
+ * centre. Skadi's and Freya's poses are each drawn, Skadi's triggered one as
+ * her belly-up roll; the other House Cats are drawn at rest in every pose.
  */
 export const paintHouseCat = (
   g: Graphics,
   houseCat: HouseCatId,
   size: number,
-  pose: HouseCatPose = "idle"
+  pose: HouseCatPose
 ) => looks[houseCat](g, size, pose)

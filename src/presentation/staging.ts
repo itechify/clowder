@@ -224,8 +224,8 @@ function placed(run: Run, couch: readonly (CatId | null)[]) {
  */
 export const FREYA_WARMS_AT = [1.5, 2, 2.5] as const
 
-/** Freya at rest, as far as her × has warmed her up. */
-function freyaPose(times: number): HouseCatPose {
+/** Freya as far as her × has warmed her up: reserved, or a warming stage. */
+export function freyaPose(times: number): HouseCatPose {
   const stage = FREYA_WARMS_AT.filter((at) => times >= at).length
   return stage === 0 ? "idle" : `warming${stage}`
 }

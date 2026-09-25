@@ -511,17 +511,40 @@ describe("House Cats' triggered poses", () => {
     ])
   })
 
-  it("warm Freya up through her × in one go", () => {
-    // An Aloof Cat alone warms Freya up, then she multiplies the Mult.
+  it("warm Freya up to her next stage through her × in one go", () => {
+    // An Aloof Cat alone warms Freya up to ×1.5, then she multiplies the Mult.
     const script = choreograph(playOf(["aloof"], { shelf: ["freya"] }), plain)
 
     expect(script.poses).toEqual([
       {
         houseCat: "freya",
-        pose: "houseCat/freya/triggered",
+        pose: "houseCat/freya/warming1",
         from: during(script, "houseCatWarmedUp").from,
         to: during(script, "timesEffect").to
       }
+    ])
+  })
+
+  it("show Freya at the stage her × reaches this Play, never cooler", () => {
+    // Warmed by two Plays already, a third takes her to ×2.5.
+    const run = runWithCouch(["aloof"], { shelf: ["freya"] })
+    const { events } = accepted(
+      { ...run, night: { ...run.night, warmPlays: 2 } },
+      { type: "play" }
+    )
+    const script = choreograph({ events, target: run.night.target }, plain)
+
+    expect(script.poses.map(({ pose }) => pose)).toEqual([
+      "houseCat/freya/warming3"
+    ])
+  })
+
+  it("give Freya a warm moment while she is still reserved", () => {
+    // A Clingy Cat warms no one, so her × stays at ×1.
+    const script = choreograph(playOf(["clingy"], { shelf: ["freya"] }), plain)
+
+    expect(script.poses.map(({ pose }) => pose)).toEqual([
+      "houseCat/freya/triggered"
     ])
   })
 })
