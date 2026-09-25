@@ -6,6 +6,7 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
+import { artTexture, delivered } from "./art"
 import { presentation } from "./presentation"
 import { session } from "./session"
 
@@ -18,6 +19,8 @@ export type DebugHook = {
   scoring: () => boolean
   /** The keys of the scenes showing now, such as "couch" or "shop". */
   scenes: () => string[]
+  /** Shows an art key's image, reporting whether it is delivered or code-drawn. */
+  art: (key: string) => "delivered" | "fallback"
   /** Every piece of text the showing scenes draw, in drawing order. */
   texts: () => string[]
 }
@@ -41,6 +44,10 @@ export function installDebugHook(game: Phaser.Game) {
     start: (seed) => session.start(seed),
     scoring: () => presentation.scoring,
     scenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
+    art: (key) => {
+      artTexture(game.scene.getScenes(true)[0], key)
+      return delivered(game.textures, key) ? "delivered" : "fallback"
+    },
     texts: () =>
       game.scene
         .getScenes(true)

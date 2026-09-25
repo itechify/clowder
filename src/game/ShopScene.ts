@@ -12,9 +12,9 @@ import {
   personalities,
   rehomeRefund
 } from "../engine"
-import { DISASTER_RED, font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
-import { drawCat } from "./catArt"
-import { drawHouseCat } from "./houseCatArt"
+import { DISASTER_RED, font } from "./CouchScene"
+import { drawCat, drawHouseCat } from "./characters"
+import { HEIGHT, RESOLUTION, WIDTH } from "./layout"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 import { drawTreat } from "./treatArt"

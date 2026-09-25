@@ -1,4 +1,5 @@
 import type Phaser from "phaser"
+import { art } from "../art/manifest"
 import {
   type Action,
   clearTreats,
@@ -8,17 +9,12 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
-import { font, WIDTH } from "./CouchScene"
-import { drawHouseCat } from "./houseCatArt"
+import { addArt } from "./art"
+import { font } from "./CouchScene"
+import { drawHouseCat } from "./characters"
+import { shelfX, WIDTH } from "./layout"
 
 type Add = <T extends Phaser.GameObjects.GameObject>(object: T) => T
-
-/** Position centres, spread evenly along the Shelf. */
-export const shelfX = (positions: number) =>
-  Array.from(
-    { length: positions },
-    (_, position) => 20 + ((WIDTH - 40) / positions) * (position + 0.5)
-  )
 
 /** Where a House Cat of `size` sits on a Shelf whose plank's top is at `y`. */
 export const onShelf = (y: number, size: number) => y - size * 0.45
@@ -85,12 +81,10 @@ export function drawShelf(
   const xs = shelfX(run.config.shelfSize)
   const width = (WIDTH - 40) / xs.length
   const sitY = onShelf(y, size)
+  // The plank's brackets fall between positions, clear of the names beneath
+  // the House Cats.
+  add(addArt(scene, art.room.shelf, WIDTH / 2, y))
   const g = add(scene.add.graphics())
-  g.fillStyle(0x8a5a3b, 1).fillRoundedRect(12, y, WIDTH - 24, 10, 3)
-  // Brackets between positions, clear of the names beneath the House Cats.
-  g.fillStyle(0x6e4630, 1)
-  for (let position = 1; position < xs.length; position += 2)
-    g.fillRect((xs[position - 1] + xs[position]) / 2 - 4, y + 10, 8, 14)
 
   const sprites = new Map<HouseCatId, Phaser.GameObjects.Container>()
   const copied = copying(run.shelf)

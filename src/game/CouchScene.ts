@@ -1,4 +1,5 @@
 import Phaser from "phaser"
+import { art, gatheringArt, moonArt } from "../art/manifest"
 import {
   type Action,
   type ActiveGathering,
@@ -15,21 +16,26 @@ import {
   type ScoreBreakdown
 } from "../engine"
 import { settings } from "../shell/settings"
-import { drawCat } from "./catArt"
+import { addArt } from "./art"
+import { drawCat } from "./characters"
+import { HEIGHT, RESOLUTION, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
-
-/** The portrait layout's logical size; the canvas renders it at `RESOLUTION`×. */
-export const WIDTH = 390
-export const HEIGHT = 844
-export const RESOLUTION = 2
 
 /** The top of the Shelf's plank, a windowsill above the Couch. */
 const SHELF_Y = 186
 const SHELF_CAT_SIZE = 48
 /** Centre of tonight's Disaster sign, between the Draw pile and the Redraws. */
 const DISASTER_SIGN = { x: 208, y: 101 }
+/** Where the window's centre, its moon, the Couch's feet, and the rug's centre are. */
+const WINDOW_Y = 151
+const MOON = { x: 245, y: 136 }
+const COUCH_FLOOR_Y = 428
+/** A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from its top. */
+const FULL_SOFA_Y = 337
+const BUNTING_Y = 249
+const RUG_Y = 627.5
 const SEAT_Y = 352
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
@@ -67,10 +73,6 @@ const handSpot = (i: number) => ({
   x: 60 + (i % HAND_COLUMNS) * 90,
   y: HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
 })
-
-/** Seat centres, spread evenly between the Couch's arms. */
-const seatX = (seats: number) =>
-  Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
 /** Splits sorted Seats into stretches of consecutive Seats. */
 const contiguous = (seats: number[]) =>
@@ -439,32 +441,13 @@ export class CouchScene extends Phaser.Scene {
 
   /** The static living room: wall, window, rug, and the Couch itself. */
   private drawRoom() {
-    const g = this.add.graphics()
-    g.fillStyle(0xf3dfc1, 1).fillRect(0, 0, WIDTH, HEIGHT)
-    g.fillStyle(0xe9cfa9, 1)
-    for (let x = 12; x < WIDTH; x += 36) g.fillRect(x, 0, 12, 470)
-    g.fillStyle(0xb98b62, 1).fillRect(0, 470, WIDTH, HEIGHT - 470)
-    g.fillStyle(0xa47650, 1).fillRect(0, 470, WIDTH, 8)
-    g.fillStyle(0xd46a4f, 1).fillRoundedRect(20, 505, WIDTH - 40, 245, 28)
-    g.lineStyle(3, 0xf0b28c, 1).strokeRoundedRect(32, 517, WIDTH - 64, 221, 22)
+    addArt(this, art.room.wall)
+    addArt(this, art.room.rug, WIDTH / 2, RUG_Y)
     // Window with a moon, since every Night is spent indoors; the Shelf is
-    // its sill.
-    g.fillStyle(0x2d3561, 1).fillRoundedRect(115, 116, 160, SHELF_Y - 116, 8)
-    g.fillStyle(0xf6ecc9, 1).fillCircle(245, 136, 12)
-    g.fillStyle(0x2d3561, 1).fillCircle(251, 132, 10)
-    g.lineStyle(6, 0xfaf3e6, 1)
-    g.strokeRoundedRect(115, 116, 160, SHELF_Y - 116, 8)
-    g.lineBetween(195, 116, 195, SHELF_Y)
-    // Couch: back, five cushions, arms.
-    g.fillStyle(0x6f8f72, 1).fillRoundedRect(8, 262, WIDTH - 16, 112, 22)
-    g.fillStyle(0x5c7a5f, 1).fillRoundedRect(8, 372, WIDTH - 16, 40, 12)
-    for (const x of this.seatX)
-      g.fillStyle(0x86a888, 1).fillRoundedRect(x - 33, 300, 66, 80, 14)
-    g.fillStyle(0x587558, 1)
-    g.fillRoundedRect(0, 300, 22, 110, 10)
-    g.fillRoundedRect(WIDTH - 22, 300, 22, 110, 10)
-    g.fillStyle(0x4a3426, 1)
-    g.fillRect(24, 410, 10, 18).fillRect(WIDTH - 34, 410, 10, 18)
+    // its sill. The moon keeps to the first Night's crescent for now.
+    addArt(this, art.room.window, WIDTH / 2, WINDOW_Y)
+    addArt(this, moonArt(1), MOON.x, MOON.y)
+    addArt(this, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y)
   }
 
   /** Empties the layer the Run is drawn on, returning how to add to it. */
@@ -789,15 +772,9 @@ export class CouchScene extends Phaser.Scene {
     ready: boolean,
     add: Add
   ) {
-    add(this.add.graphics())
-      .fillStyle(ready ? 0x4a3426 : 0x9c8672, 1)
-      .fillRoundedRect(
-        area.x - area.w / 2,
-        area.y - area.h / 2,
-        area.w,
-        area.h,
-        29
-      )
+    const button =
+      area === PLAY_BUTTON ? art.playButton(ready) : art.redrawButton(ready)
+    add(addArt(this, button, area.x, area.y))
     add(
       this.add
         .text(
@@ -902,64 +879,35 @@ export class CouchScene extends Phaser.Scene {
     layer: "behind" | "over",
     stack = 0
   ) {
-    const g = add(this.add.graphics())
+    const overlay = (key: string, x: number, y: number) =>
+      add(addArt(this, key, x, y))
+    /** Midway along a stretch of Seats. */
+    const across = (seats: number[]) =>
+      (this.seatX[seats[0]] + this.seatX[seats.at(-1)!]) / 2
     for (const { gathering, seats } of active) {
       const groups = contiguous(seats)
+      const span = seats.at(-1)! - seats[0] + 1
       if (layer === "behind") {
         if (gathering === "fullSofa")
-          g.lineStyle(5, 0xf6c453, 0.9).strokeRoundedRect(
-            4,
-            258,
-            WIDTH - 8,
-            158,
-            24
-          )
+          overlay(gatheringArt(gathering), WIDTH / 2, FULL_SOFA_Y)
         if (gathering === "personalSpace")
           for (const seat of seats)
-            g.fillStyle(0xdff1f7, 0.35)
-              .fillCircle(this.seatX[seat], SEAT_Y - 14, 32)
-              .lineStyle(2, 0xa7d3e3, 0.9)
-              .strokeCircle(this.seatX[seat], SEAT_Y - 14, 32)
-        if (gathering === "varietyPack") {
-          const from = this.seatX[seats[0]] - 30
-          const to = this.seatX[seats.at(-1)!] + 30
-          const flags = [0xe8893a, 0x2e2a30, 0xf4efe6, 0x8d9099, 0xd46a4f]
-          g.lineStyle(2, 0x7a5a3c, 1).lineBetween(from, 250, to, 250)
-          for (let x = from + 8, i = 0; x < to - 8; x += 18, i++)
-            g.fillStyle(flags[i % flags.length], 1).fillTriangle(
-              x - 6,
-              250,
-              x + 6,
-              250,
-              x,
-              262
-            )
-        }
+            overlay(gatheringArt(gathering), this.seatX[seat], SEAT_Y - 14)
+        if (gathering === "varietyPack")
+          overlay(gatheringArt(gathering, span), across(seats), BUNTING_Y)
       } else {
         if (gathering === "cuddlePuddle")
-          for (const group of groups) {
-            const from = this.seatX[group[0]] - 34
-            const width = this.seatX[group.at(-1)!] + 34 - from
-            g.fillStyle(0xf2c6c2, 0.95).fillRoundedRect(
-              from,
-              SEAT_Y + 12,
-              width,
-              18,
-              8
+          for (const group of groups)
+            overlay(
+              gatheringArt(gathering, group.length),
+              across(group),
+              SEAT_Y + 21
             )
-            g.lineStyle(2, 0xd98f8a, 1)
-            for (let x = from + 12; x < from + width - 6; x += 16)
-              g.lineBetween(x, SEAT_Y + 15, x, SEAT_Y + 27)
-          }
         if (gathering === "napClub")
           for (const group of groups)
             for (const seat of group.slice(1)) {
               const x = (this.seatX[seat - 1] + this.seatX[seat]) / 2
-              const z = add(
-                this.add
-                  .text(x, SEAT_Y - 52, "z Z", font(15, "#6b7fd7", "900"))
-                  .setOrigin(0.5)
-              )
+              const z = overlay(gatheringArt(gathering), x, SEAT_Y - 52)
               this.tweens.add({
                 targets: z,
                 y: SEAT_Y - 58,

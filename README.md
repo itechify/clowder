@@ -19,12 +19,21 @@ pnpm deploy       # build and publish to Cloudflare via Wrangler
 `?seed=<n>` in the URL starts a reproducible Run. In development builds,
 `window.__clowder` exposes the Run to end-to-end tests.
 
+## Art
+
+Every image is named by a key in the art manifest (`src/art/manifest.ts`,
+ADR-0005). To deliver one, save a PNG of exactly its canvas size as
+`art/raw/<key>.png`, for example `art/raw/cat/orange/clingy/content.png`; the
+game uses it in place of the code-drawn fallback with no code change. The dev
+server reloads when one lands, and the build packs them into WebP atlases. A
+file named for no key, or the wrong size, fails the build.
+
 ## Installing and offline play
 
 Production builds are an installable PWA: `vite-plugin-pwa` generates the
 manifest and a Workbox service worker that precaches the whole game, and
-`scripts/check-precache.mjs` fails the build if any shipped file is missing
-from the precache. The shell offers to install where the browser supports it
+`scripts/check-precache.ts` fails the build if any shipped file is missing
+from the precache, any file is over 2 MiB, or the whole game is over 15 MB. The shell offers to install where the browser supports it
 and asks before a new version takes over (`src/shell/pwa.ts`). The service
 worker is not registered in development. `pnpm icons` regenerates the icons in
 `public/`: simplified 16/32px favicons, 192/512px app icons, a 180px Apple
