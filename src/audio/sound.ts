@@ -6,6 +6,9 @@ import { voices } from "./voices"
 /** The interactions a browser lets start audio; a touch counts only once lifted. */
 const UNLOCKING_EVENTS = ["pointerdown", "pointerup", "touchend", "keydown"]
 
+/** How many recent cues the log keeps, for end-to-end tests. */
+const LOG_LENGTH = 1000
+
 /** How quickly a volume change settles, in seconds; quick, but without a click. */
 const LEVEL_SMOOTHING = 0.03
 
@@ -15,7 +18,7 @@ const LEVEL_SMOOTHING = 0.03
  * the Music and SFX volumes and mute apply as soon as they change.
  */
 export class Sound {
-  /** Every cue the game has asked for, in order, heard or not. */
+  /** The cues the game has asked for lately, in order, heard or not. */
   readonly log: Cue[] = []
   /** The theme for what is showing, which plays whenever audio can. */
   theme: ThemeName | null = null
@@ -24,10 +27,7 @@ export class Sound {
   private sfx: GainNode | null = null
   private stopTheme: (() => void) | null = null
 
-  constructor(
-    private settings: Settings,
-    private createContext = () => new AudioContext()
-  ) {
+  constructor(private settings: Settings) {
     settings.on(() => this.setLevels())
   }
 
@@ -57,6 +57,7 @@ export class Sound {
   /** Sounds a cue; before audio has started, it is only logged. */
   cue(cue: Cue) {
     this.log.push(cue)
+    if (this.log.length > LOG_LENGTH) this.log.shift()
     if (!this.context || !this.sfx || !this.unlocked) return
     voices[cue.name](
       {
@@ -80,7 +81,7 @@ export class Sound {
   private async unlock() {
     if (!this.context) {
       try {
-        this.context = this.createContext()
+        this.context = new AudioContext()
       } catch {
         // No Web Audio here: the game plays on in silence.
         return
@@ -90,6 +91,8 @@ export class Sound {
       this.music.connect(this.context.destination)
       this.sfx.connect(this.context.destination)
       this.setLevels()
+      // Music changed while audio was paused starts once it resumes.
+      this.context.addEventListener("statechange", () => this.startTheme())
     }
     await this.context.resume().catch(() => {})
     this.startTheme()

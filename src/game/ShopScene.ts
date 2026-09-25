@@ -536,7 +536,7 @@ export class ShopScene extends Phaser.Scene {
   /**
    * A pill button. Any change to the player's Treats shows as a treat and a
    * signed amount; a cost the player cannot afford is outlined in red. Tapped,
-   * one that spends Treats sounds like a purchase.
+   * one that spends Treats sounds like Treats being spent.
    */
   private button(
     area: Area,
@@ -590,7 +590,7 @@ export class ShopScene extends Phaser.Scene {
         .setSize(area.w, area.h)
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
-          sound.cue({ name: treats && treats < 0 ? "shopPurchase" : "uiTap" })
+          sound.cue({ name: treats && treats < 0 ? "treatsSpent" : "uiTap" })
           onTap()
         })
   }

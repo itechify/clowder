@@ -1,9 +1,10 @@
 import type { ThemeName } from "../audio/cues"
 import type { Run } from "../engine"
+import type { SceneKey } from "./presentation"
 
 /** What is showing: the scene on screen, if any, and whether the household sleeps. */
 export type Showing = {
-  scene: "couch" | "shop" | null
+  scene: SceneKey | null
   run: Run
   asleep: boolean
 }

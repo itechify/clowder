@@ -19,7 +19,7 @@ import {
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
 import { drawCat } from "./characters"
-import { choreograph, type Step } from "./choreography"
+import { choreograph, type Step, skippedCues } from "./choreography"
 import { HEIGHT, RESOLUTION, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { session } from "./session"
@@ -1179,12 +1179,12 @@ export class CouchScene extends Phaser.Scene {
       }
     }
     /** How many steps have played out, sounds and all. */
-    let heard = 0
+    let stepsPlayed = 0
     script.steps.forEach((step, i) => {
       const show = animate(step)
       timers.push(
         this.time.delayedCall(step.at, () => {
-          heard = i + 1
+          stepsPlayed = i + 1
           for (const cue of step.cues) sound.cue(cue)
           show()
         })
@@ -1200,13 +1200,8 @@ export class CouchScene extends Phaser.Scene {
       // Played out, a banner may take its bow; cut short, it goes at once.
       if (ending !== "played") for (const dismiss of banners) dismiss()
       // Skipped, the sequence still sounds how it ends, if it hadn't yet.
-      if (ending === "skipped") {
-        const finale = script.steps
-          .slice(heard)
-          .reverse()
-          .find((step) => step.cues.length > 0)
-        for (const cue of finale?.cues ?? []) sound.cue(cue)
-      }
+      if (ending === "skipped")
+        for (const cue of skippedCues(script, stepsPlayed)) sound.cue(cue)
       this.skipArea.disableInteractive()
       presentation.update({ scoring: false })
       // Overtaken, the next sequence or draw shows what comes after.
@@ -1224,7 +1219,7 @@ export class CouchScene extends Phaser.Scene {
     }
     const sequence = { finish }
     this.scoring = sequence
-    timers.push(this.time.delayedCall(script.length, () => finish("played")))
+    timers.push(this.time.delayedCall(script.duration, () => finish("played")))
     this.skipArea.setInteractive()
     presentation.update({ scoring: true })
   }

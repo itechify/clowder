@@ -36,7 +36,7 @@ function arpeggio(
 }
 
 export const voices: Record<CueName, Voice> = {
-  // A soft pop onto a cushion.
+  // A soft pop onto a Seat.
   catSeated: (out) =>
     tone(out, {
       wave: "sine",
@@ -112,7 +112,7 @@ export const voices: Record<CueName, Voice> = {
       level: 0.3
     }),
   // Two bright notes, like a till.
-  shopPurchase: (out) => {
+  treatsSpent: (out) => {
     tone(out, { wave: "square", note: 83, duration: 0.08, level: 0.15 })
     tone(out, {
       wave: "square",

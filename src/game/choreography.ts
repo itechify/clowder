@@ -1,4 +1,4 @@
-import type { Cue } from "../audio/cues"
+import type { Cue, CueName } from "../audio/cues"
 import type { RunEvent } from "../engine"
 import type { ScoringSpeed } from "../shell/settings"
 
@@ -14,7 +14,7 @@ export type Step = {
 export type Script = {
   steps: Step[]
   /** How long the whole sequence lasts, in ms. */
-  length: number
+  duration: number
 }
 
 /** The settings a scoring sequence follows. */
@@ -83,5 +83,18 @@ export function choreograph(
     steps.push({ at: time / scoringSpeed, event, cues: cuesFor(event) })
     time += beat
   }
-  return { steps, length: (time + TAIL) / scoringSpeed }
+  return { steps, duration: (time + TAIL) / scoringSpeed }
 }
+
+/** The cues that tell how a Play ended: its Score, then its Night's end. */
+const endings: CueName[] = ["scoreLanded", "nightCleared", "nightLost"]
+
+/**
+ * What a sequence skipped after `played` steps still sounds: how the Play
+ * ended, as far as it had not sounded yet.
+ */
+export const skippedCues = (script: Script, played: number): Cue[] =>
+  script.steps
+    .slice(played)
+    .flatMap((step) => step.cues)
+    .filter((cue) => endings.includes(cue.name))

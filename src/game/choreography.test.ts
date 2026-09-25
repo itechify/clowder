@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { accepted, runWithCouch } from "../engine/testing"
-import { choreograph } from "./choreography"
+import { choreograph, skippedCues } from "./choreography"
 
 /** The events a Play of this Couch returns. */
 function playOf(...args: Parameters<typeof runWithCouch>) {
@@ -69,13 +69,35 @@ describe("a Play's pacing", () => {
     const script = choreograph(events, { scoringSpeed: 1 })
 
     expect(script.steps.map((step) => step.at)).toEqual([250, 630, 1630])
-    expect(script.length).toBe(2430)
+    expect(script.duration).toBe(2430)
   })
 
   it("plays faster at a faster scoring speed", () => {
     const script = choreograph(events, { scoringSpeed: 4 })
 
     expect(script.steps.map((step) => step.at)).toEqual([62.5, 157.5, 407.5])
-    expect(script.length).toBe(607.5)
+    expect(script.duration).toBe(607.5)
+  })
+})
+
+describe("a skipped Play", () => {
+  // One Orange Cat clears the first Night when the Target is low enough.
+  const events = playOf(["orange clingy"], { config: { firstTarget: 1 } })
+  const script = choreograph(events, { scoringSpeed: 1 })
+  const at = (name: string) =>
+    script.steps.findIndex((step) => step.cues.some((cue) => cue.name === name))
+
+  it("still sounds its Score landing and how the Night ends", () => {
+    expect(skippedCues(script, 1)).toEqual([
+      { name: "scoreLanded" },
+      { name: "nightCleared" }
+    ])
+  })
+
+  it("sounds only what it has not sounded yet", () => {
+    expect(skippedCues(script, at("scoreLanded") + 1)).toEqual([
+      { name: "nightCleared" }
+    ])
+    expect(skippedCues(script, script.steps.length)).toEqual([])
   })
 })

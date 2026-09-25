@@ -12,7 +12,8 @@ export const cueNames = [
   "scoreLanded",
   "nightCleared",
   "nightLost",
-  "shopPurchase",
+  /** Treats spent in the Shop. */
+  "treatsSpent",
   "uiTap"
 ] as const
 

@@ -1,10 +1,13 @@
+/** The scenes that show a Run, by their Phaser keys. */
+export type SceneKey = "couch" | "shop"
+
 /**
  * What the scene is in the middle of showing, for the shell and end-to-end
  * tests to wait on. The Run itself lives in the Session; this is presentation.
  */
 class Presentation {
   /** The scene showing the Run, once one has started. */
-  scene: "couch" | "shop" | null = null
+  scene: SceneKey | null = null
   /** A Play's scoring sequence is playing out. */
   scoring = false
   /** The Run is over and the household has fallen asleep. */
