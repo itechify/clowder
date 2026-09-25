@@ -2,12 +2,12 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**24 of 91 images delivered; 67 still on fallback.**
+**53 of 91 images delivered; 38 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
-| 2. Cat poses | 0 of 29 |
+| 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
 | 4. The room, badges, UI furniture, and Gathering overlays | 0 of 38 |
 
@@ -55,39 +55,39 @@ An orange tabby Cat: bright ginger fur with darker orange stripes and a cream mu
 
 ## 2. Cat poses
 
-- [ ] `art/raw/cat/orange/clingy/reacting.png`
-- [ ] `art/raw/cat/orange/aloof/content.png`
-- [ ] `art/raw/cat/orange/aloof/reacting.png`
-- [ ] `art/raw/cat/orange/sleepy/content.png`
-- [ ] `art/raw/cat/orange/sleepy/reacting.png`
-- [ ] `art/raw/cat/black/clingy/content.png`
-- [ ] `art/raw/cat/black/clingy/reacting.png`
-- [ ] `art/raw/cat/black/aloof/content.png`
-- [ ] `art/raw/cat/black/aloof/reacting.png`
-- [ ] `art/raw/cat/black/sleepy/content.png`
-- [ ] `art/raw/cat/black/sleepy/reacting.png`
-- [ ] `art/raw/cat/white/clingy/content.png`
-- [ ] `art/raw/cat/white/clingy/reacting.png`
-- [ ] `art/raw/cat/white/aloof/content.png`
-- [ ] `art/raw/cat/white/aloof/reacting.png`
-- [ ] `art/raw/cat/white/sleepy/content.png`
-- [ ] `art/raw/cat/white/sleepy/reacting.png`
-- [ ] `art/raw/cat/gray/clingy/content.png`
-- [ ] `art/raw/cat/gray/clingy/reacting.png`
-- [ ] `art/raw/cat/gray/aloof/content.png`
-- [ ] `art/raw/cat/gray/aloof/reacting.png`
-- [ ] `art/raw/cat/gray/sleepy/content.png`
-- [ ] `art/raw/cat/gray/sleepy/reacting.png`
-- [ ] `art/raw/cat/calico/clingy/content.png`
-- [ ] `art/raw/cat/calico/clingy/reacting.png`
-- [ ] `art/raw/cat/calico/aloof/content.png`
-- [ ] `art/raw/cat/calico/aloof/reacting.png`
-- [ ] `art/raw/cat/calico/sleepy/content.png`
-- [ ] `art/raw/cat/calico/sleepy/reacting.png`
+- [x] `art/raw/cat/orange/clingy/reacting.png`
+- [x] `art/raw/cat/orange/aloof/content.png`
+- [x] `art/raw/cat/orange/aloof/reacting.png`
+- [x] `art/raw/cat/orange/sleepy/content.png`
+- [x] `art/raw/cat/orange/sleepy/reacting.png`
+- [x] `art/raw/cat/black/clingy/content.png`
+- [x] `art/raw/cat/black/clingy/reacting.png`
+- [x] `art/raw/cat/black/aloof/content.png`
+- [x] `art/raw/cat/black/aloof/reacting.png`
+- [x] `art/raw/cat/black/sleepy/content.png`
+- [x] `art/raw/cat/black/sleepy/reacting.png`
+- [x] `art/raw/cat/white/clingy/content.png`
+- [x] `art/raw/cat/white/clingy/reacting.png`
+- [x] `art/raw/cat/white/aloof/content.png`
+- [x] `art/raw/cat/white/aloof/reacting.png`
+- [x] `art/raw/cat/white/sleepy/content.png`
+- [x] `art/raw/cat/white/sleepy/reacting.png`
+- [x] `art/raw/cat/gray/clingy/content.png`
+- [x] `art/raw/cat/gray/clingy/reacting.png`
+- [x] `art/raw/cat/gray/aloof/content.png`
+- [x] `art/raw/cat/gray/aloof/reacting.png`
+- [x] `art/raw/cat/gray/sleepy/content.png`
+- [x] `art/raw/cat/gray/sleepy/reacting.png`
+- [x] `art/raw/cat/calico/clingy/content.png`
+- [x] `art/raw/cat/calico/clingy/reacting.png`
+- [x] `art/raw/cat/calico/aloof/content.png`
+- [x] `art/raw/cat/calico/aloof/reacting.png`
+- [x] `art/raw/cat/calico/sleepy/content.png`
+- [x] `art/raw/cat/calico/sleepy/reacting.png`
 
 ### Orange Clingy Cat, reacting: `art/raw/cat/orange/clingy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/orange/clingy/reacting`
 - Size: 512×512
@@ -100,7 +100,7 @@ An orange tabby Cat: bright ginger fur with darker orange stripes and a cream mu
 
 ### Orange Aloof Cat, content: `art/raw/cat/orange/aloof/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/orange/aloof/content`
 - Size: 512×512
@@ -113,7 +113,7 @@ An orange tabby Cat: bright ginger fur with darker orange stripes and a cream mu
 
 ### Orange Aloof Cat, reacting: `art/raw/cat/orange/aloof/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/orange/aloof/reacting`
 - Size: 512×512
@@ -126,7 +126,7 @@ An orange tabby Cat: bright ginger fur with darker orange stripes and a cream mu
 
 ### Orange Sleepy Cat, content: `art/raw/cat/orange/sleepy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/orange/sleepy/content`
 - Size: 512×512
@@ -139,7 +139,7 @@ An orange tabby Cat: bright ginger fur with darker orange stripes and a cream mu
 
 ### Orange Sleepy Cat, reacting: `art/raw/cat/orange/sleepy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/orange/sleepy/reacting`
 - Size: 512×512
@@ -152,7 +152,7 @@ An orange tabby Cat: bright ginger fur with darker orange stripes and a cream mu
 
 ### Black Clingy Cat, content: `art/raw/cat/black/clingy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/black/clingy/content`
 - Size: 512×512
@@ -165,7 +165,7 @@ A black Cat: glossy solid black fur with cool blue-gray highlights, so its shape
 
 ### Black Clingy Cat, reacting: `art/raw/cat/black/clingy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/black/clingy/reacting`
 - Size: 512×512
@@ -178,7 +178,7 @@ A black Cat: glossy solid black fur with cool blue-gray highlights, so its shape
 
 ### Black Aloof Cat, content: `art/raw/cat/black/aloof/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/black/aloof/content`
 - Size: 512×512
@@ -191,7 +191,7 @@ A black Cat: glossy solid black fur with cool blue-gray highlights, so its shape
 
 ### Black Aloof Cat, reacting: `art/raw/cat/black/aloof/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/black/aloof/reacting`
 - Size: 512×512
@@ -204,7 +204,7 @@ A black Cat: glossy solid black fur with cool blue-gray highlights, so its shape
 
 ### Black Sleepy Cat, content: `art/raw/cat/black/sleepy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/black/sleepy/content`
 - Size: 512×512
@@ -217,7 +217,7 @@ A black Cat: glossy solid black fur with cool blue-gray highlights, so its shape
 
 ### Black Sleepy Cat, reacting: `art/raw/cat/black/sleepy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/black/sleepy/reacting`
 - Size: 512×512
@@ -230,7 +230,7 @@ A black Cat: glossy solid black fur with cool blue-gray highlights, so its shape
 
 ### White Clingy Cat, content: `art/raw/cat/white/clingy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/white/clingy/content`
 - Size: 512×512
@@ -243,7 +243,7 @@ A white Cat: fluffy pure white fur with pink ears, nose, and toe beans. Clingy, 
 
 ### White Clingy Cat, reacting: `art/raw/cat/white/clingy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/white/clingy/reacting`
 - Size: 512×512
@@ -256,7 +256,7 @@ A white Cat: fluffy pure white fur with pink ears, nose, and toe beans. Clingy, 
 
 ### White Aloof Cat, content: `art/raw/cat/white/aloof/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/white/aloof/content`
 - Size: 512×512
@@ -269,7 +269,7 @@ A white Cat: fluffy pure white fur with pink ears, nose, and toe beans. Aloof, c
 
 ### White Aloof Cat, reacting: `art/raw/cat/white/aloof/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/white/aloof/reacting`
 - Size: 512×512
@@ -282,7 +282,7 @@ A white Cat: fluffy pure white fur with pink ears, nose, and toe beans. Aloof, o
 
 ### White Sleepy Cat, content: `art/raw/cat/white/sleepy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/white/sleepy/content`
 - Size: 512×512
@@ -295,7 +295,7 @@ A white Cat: fluffy pure white fur with pink ears, nose, and toe beans. Sleepy, 
 
 ### White Sleepy Cat, reacting: `art/raw/cat/white/sleepy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/white/sleepy/reacting`
 - Size: 512×512
@@ -308,7 +308,7 @@ A white Cat: fluffy pure white fur with pink ears, nose, and toe beans. Sleepy, 
 
 ### Gray Clingy Cat, content: `art/raw/cat/gray/clingy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/gray/clingy/content`
 - Size: 512×512
@@ -321,7 +321,7 @@ A gray Cat: soft, smoky blue-gray fur with a paler chest. Clingy, content: sitti
 
 ### Gray Clingy Cat, reacting: `art/raw/cat/gray/clingy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/gray/clingy/reacting`
 - Size: 512×512
@@ -334,7 +334,7 @@ A gray Cat: soft, smoky blue-gray fur with a paler chest. Clingy, delighted by c
 
 ### Gray Aloof Cat, content: `art/raw/cat/gray/aloof/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/gray/aloof/content`
 - Size: 512×512
@@ -347,7 +347,7 @@ A gray Cat: soft, smoky blue-gray fur with a paler chest. Aloof, content: sittin
 
 ### Gray Aloof Cat, reacting: `art/raw/cat/gray/aloof/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/gray/aloof/reacting`
 - Size: 512×512
@@ -360,7 +360,7 @@ A gray Cat: soft, smoky blue-gray fur with a paler chest. Aloof, offended by com
 
 ### Gray Sleepy Cat, content: `art/raw/cat/gray/sleepy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/gray/sleepy/content`
 - Size: 512×512
@@ -373,7 +373,7 @@ A gray Cat: soft, smoky blue-gray fur with a paler chest. Sleepy, content: loafe
 
 ### Gray Sleepy Cat, reacting: `art/raw/cat/gray/sleepy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/gray/sleepy/reacting`
 - Size: 512×512
@@ -386,7 +386,7 @@ A gray Cat: soft, smoky blue-gray fur with a paler chest. Sleepy, sharing a nap:
 
 ### Calico Clingy Cat, content: `art/raw/cat/calico/clingy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/calico/clingy/content`
 - Size: 512×512
@@ -399,7 +399,7 @@ A calico Cat: white fur with bold patches of orange and black. Clingy, content: 
 
 ### Calico Clingy Cat, reacting: `art/raw/cat/calico/clingy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/calico/clingy/reacting`
 - Size: 512×512
@@ -412,7 +412,7 @@ A calico Cat: white fur with bold patches of orange and black. Clingy, delighted
 
 ### Calico Aloof Cat, content: `art/raw/cat/calico/aloof/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/calico/aloof/content`
 - Size: 512×512
@@ -425,7 +425,7 @@ A calico Cat: white fur with bold patches of orange and black. Aloof, content: s
 
 ### Calico Aloof Cat, reacting: `art/raw/cat/calico/aloof/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/calico/aloof/reacting`
 - Size: 512×512
@@ -438,7 +438,7 @@ A calico Cat: white fur with bold patches of orange and black. Aloof, offended b
 
 ### Calico Sleepy Cat, content: `art/raw/cat/calico/sleepy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/calico/sleepy/content`
 - Size: 512×512
@@ -451,7 +451,7 @@ A calico Cat: white fur with bold patches of orange and black. Sleepy, content: 
 
 ### Calico Sleepy Cat, reacting: `art/raw/cat/calico/sleepy/reacting.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/calico/sleepy/reacting`
 - Size: 512×512
