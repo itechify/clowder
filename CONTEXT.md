@@ -42,6 +42,10 @@ _Avoid_: Color, suit
 A Cat's seating preference, which grants bonus Purr depending on its Neighbors: Clingy, Aloof, or Sleepy.
 _Avoid_: Trait, temperament
 
+**Kind**:
+The pairing of a Coat and a Personality, such as Orange Clingy; there are fifteen.
+_Avoid_: Type, breed, combination
+
 **House Cat**:
 A named character that sits on the Shelf for the rest of the Run and modifies scoring; never drawn or played.
 _Avoid_: Joker, relic, modifier
@@ -107,7 +111,8 @@ _Avoid_: Retrigger
 ## Shop
 
 **Shop**:
-The visit between Nights where Treats are spent.
+The visit between Nights where Treats are spent, held in the living room by day.
+_Avoid_: Day, Morning, store
 
 **Adopt**:
 Add a Cat to the Roster from the Shop.
@@ -120,3 +125,17 @@ _Avoid_: Sell, destroy, delete
 **Recruit**:
 Add a House Cat to the Shelf from the Shop.
 _Avoid_: Buy, equip
+
+## End of a Run
+
+**Results**:
+How the household did, shown in the living room once every Cat has fallen asleep at the end of a Run.
+_Avoid_: Game over, summary
+
+**Best Play**:
+The single highest-scoring Play of the Run, remembered as its Couch looked then.
+_Avoid_: High score, top Play
+
+**Star Cat**:
+The Cat still in the Roster that has contributed the most Purr across the Run.
+_Avoid_: MVP, best Cat
