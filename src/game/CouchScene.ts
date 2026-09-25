@@ -62,6 +62,8 @@ const TREAT_JAR = { x: 362, y: 60 }
 const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
 /** How far above the jar's base its mouth is, where treats rain in. */
 const JAR_MOUTH = 44
+/** How long the jar bobs as each treat lands in it, at 1×. */
+const JAR_BOB_MS = 120
 /** The Disaster sign's nail, and how wide its words may run inside its border. */
 const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
 const PURR_METER = { x: WIDTH / 2, y: 264 }
@@ -197,7 +199,7 @@ function multBreakdown({
   return `${times.length ? `(${added})` : added}${times.join("")} = ${mult.toFixed(1)} Mult`
 }
 
-/** Purr × Mult, as the preview and the scoring sequence both show it. */
+/** Purr × Mult, as the preview shows it. */
 const purrTimesMult = (purr: number, mult: number) =>
   `${purr} Purr × ${mult.toFixed(1)}`
 
@@ -1251,23 +1253,15 @@ export class CouchScene extends Phaser.Scene {
     }
     /** Mult slams into its total in red, a × harder, and lands with its step's impact. */
     const slamMult = (mult: number, step: Step) => {
-      const hard = step.slam === "times"
+      const { scale, ms } = effectConfig.slams[step.slam ?? "mult"]
       multTotal.setText(mult.toFixed(1)).setColor(POP.mult)
-      bump(multTotal, hard ? 2.4 : 1.7, hard ? 200 : 150, "Cubic.easeIn").on(
-        "complete",
-        () => {
-          impact(
-            step,
-            { x: multTotal.x + multTotal.width / 2, y: PREVIEW_Y },
-            burst.mult
-          )
-          this.tweens.add({
-            targets: multTotal,
-            scale: { from: 1.08, to: 1 },
-            duration: beat(260),
-            onComplete: () => multTotal.setColor("#fdf6ea")
-          })
-        }
+      impact(
+        step,
+        { x: multTotal.x + multTotal.width / 2, y: PREVIEW_Y },
+        burst.mult
+      )
+      bump(multTotal, scale, ms, "Cubic.easeIn").on("complete", () =>
+        multTotal.setColor("#fdf6ea")
       )
     }
     const pop = (
@@ -1303,10 +1297,11 @@ export class CouchScene extends Phaser.Scene {
           .text(x, SEAT_Y - 72, `+${purr}`, numbers(24, POP.purr))
           .setOrigin(0.5)
       )
+      // Arriving within its Cat's beat, before the next Cat scores.
       this.tweens.add({
         targets: text,
         scale: { from: 0.4, to: 1 },
-        duration: beat(200),
+        duration: beat(140),
         ease: "Back.easeOut"
       })
       this.tweens.add({
@@ -1315,8 +1310,8 @@ export class CouchScene extends Phaser.Scene {
         y: PREVIEW_Y,
         scale: 0.6,
         alpha: 0.5,
-        delay: beat(200),
-        duration: beat(260),
+        delay: beat(140),
+        duration: beat(200),
         ease: "Cubic.easeIn",
         onComplete: () => {
           text.destroy()
@@ -1367,12 +1362,13 @@ export class CouchScene extends Phaser.Scene {
     const rattle = (id: HouseCatId) => {
       const sprite = showing.get(id)
       if (!sprite) return
+      const { degrees, ms, repeats } = effectConfig.rattle
       this.tweens.add({
         targets: sprite,
-        angle: { from: -7, to: 7 },
-        duration: beat(50),
+        angle: { from: -degrees, to: degrees },
+        duration: beat(ms),
         yoyo: true,
-        repeat: 3,
+        repeat: repeats,
         onComplete: () => sprite.setAngle(0)
       })
     }
@@ -1388,12 +1384,12 @@ export class CouchScene extends Phaser.Scene {
           SHELF_CAT_SIZE * 1.5,
           GLOW.held
         )
-      ).setAlpha(Math.min(1, alpha * 2))
+      ).setAlpha(Math.min(1, alpha * effectConfig.glow.perFlash))
       this.layer.moveBelow<Phaser.GameObjects.GameObject>(light, sprite)
       this.tweens.add({
         targets: light,
         alpha: 0,
-        duration: beat(600),
+        duration: beat(effectConfig.glow.ms),
         onComplete: () => light.destroy()
       })
     }
@@ -1504,7 +1500,8 @@ export class CouchScene extends Phaser.Scene {
           // catching fire.
           return () => {
             scoreTotal.setText(`${event.score}`)
-            bump(scoreTotal, 1.7, 300, "Back.easeOut")
+            const { thump } = effectConfig
+            bump(scoreTotal, thump.scale, thump.ms, "Back.easeOut")
             impact(step, { x: WIDTH / 2, y: SCORE_Y }, burst.landed)
             if (step.fire) fire(this, add, PURR_METER, room.meterWidth)
             counters.push(
@@ -1532,7 +1529,8 @@ export class CouchScene extends Phaser.Scene {
               rain(this, add, {
                 ...drops,
                 into: { x: TREAT_JAR.x, y: TREAT_JAR.y - JAR_MOUTH },
-                jar: room.jar
+                jar: room.jar,
+                bob: beat(JAR_BOB_MS)
               })
           return () => {
             pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24)

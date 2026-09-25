@@ -2,7 +2,12 @@ import { houseCatArt } from "../art/manifest"
 import type { Cue, CueName } from "../audio/cues"
 import type { HouseCatId, RunEvent } from "../engine"
 import type { ScoringSpeed } from "../shell/settings"
-import { type EffectConfig, effectConfig, type Impact } from "./effectConfig"
+import {
+  type EffectConfig,
+  effectConfig,
+  type Impact,
+  noImpact
+} from "./effectConfig"
 
 /** Mult slamming into the Mult total: added, or multiplied by a × effect. */
 export type Slam = "mult" | "times"
@@ -92,12 +97,17 @@ export function choreograph(
   config: EffectConfig = effectConfig
 ): Script {
   // Reduced motion keeps every number and cue, and particles only softened.
-  const soften = (count: number) =>
+  const softened = (count: number) =>
     reducedMotion ? Math.ceil(count * config.reducedParticles) : count
-  const felt = ({ shake, flash, particles, haptic }: Impact): Impact => ({
+  const asSettingsAllow = ({
+    shake,
+    flash,
+    particles,
+    haptic
+  }: Impact): Impact => ({
     shake: reducedMotion ? 0 : shake,
     flash: reducedMotion ? 0 : flash,
-    particles: soften(particles),
+    particles: softened(particles),
     haptic: haptics ? haptic : null
   })
 
@@ -131,55 +141,55 @@ export function choreograph(
   const steps: Step[] = []
   const poses: PoseWindow[] = []
   /** Holds a House Cat's triggered pose, running on from one still held. */
-  const trigger = (houseCat: HouseCatId, from: number, to: number) => {
+  const holdPose = (houseCat: HouseCatId, from: number, to: number) => {
     const held = poses.findLast((window) => window.houseCat === houseCat)
     if (held && held.to >= from) held.to = Math.max(held.to, to)
     else poses.push({ houseCat, pose: triggeredPose(houseCat), from, to })
   }
   let time = LEAD_IN
-  // Effects escalate with the Play's Score so far, as a share of the Target.
-  let score = 0
+  /** A step leading into `event`'s own, holding the sequence for `ms` at 1×. */
+  const prelude = (
+    event: RunEvent,
+    ms: number,
+    shows: Pick<Step, "countUp" | "rain">
+  ) => {
+    steps.push({
+      at: time / scoringSpeed,
+      event,
+      prelude: true,
+      cues: [],
+      ...shows,
+      ...noImpact
+    })
+    time += ms
+  }
+  // Effects escalate with how big the Play has grown so far, as a share of
+  // the Target: its running Purr × Mult, then the Score the engine gives.
+  let size = 0
   for (const event of events) {
     const beat = beats[event.type]
     if (beat === undefined) continue
-    if ("tally" in event)
-      score = Math.floor(event.tally.purr * event.tally.mult)
-    if (event.type === "scoreTotal") score = event.score
-    const tier = tierOf(score / target, config)
+    if ("tally" in event) size = event.tally.purr * event.tally.mult
+    if (event.type === "scoreTotal") size = event.score
+    const tier = tierOf(size / target, config)
     const { intensity } = tier
     // The Score counts up before it lands...
-    if (event.type === "scoreTotal") {
-      const countUp = {
-        to: event.score,
-        duration: tier.countUp / scoringSpeed,
-        power: config.countUpPower
-      }
-      steps.push({
-        at: time / scoringSpeed,
-        event,
-        prelude: true,
-        cues: [],
-        countUp,
-        ...still
+    if (event.type === "scoreTotal")
+      prelude(event, tier.countUp, {
+        countUp: {
+          to: event.score,
+          duration: tier.countUp / scoringSpeed,
+          power: config.countUpPower
+        }
       })
-      time += tier.countUp
-    }
     // ...and Treats rain into the jar before they are paid.
-    if (event.type === "treatsAwarded") {
-      const rain = {
-        drops: soften(Math.min(event.treats, config.rain.maxDrops)),
-        duration: config.rain.ms / scoringSpeed
-      }
-      steps.push({
-        at: time / scoringSpeed,
-        event,
-        prelude: true,
-        cues: [],
-        rain,
-        ...still
+    if (event.type === "treatsAwarded")
+      prelude(event, config.rain.ms, {
+        rain: {
+          drops: softened(Math.min(event.treats, config.rain.maxDrops)),
+          duration: config.rain.ms / scoringSpeed
+        }
       })
-      time += config.rain.ms
-    }
     const slam = slamOf(event)
     const fire =
       event.type === "scoreTotal" && event.score >= config.fireAt * target
@@ -189,7 +199,7 @@ export function choreograph(
       cues: cuesFor(event),
       ...(slam ? { slam } : {}),
       ...(fire && !reducedMotion ? { fire } : {}),
-      ...felt(
+      ...asSettingsAllow(
         escalate(
           slam ? config[slam] : fire ? config.fire : impactOf(event, config),
           intensity
@@ -197,7 +207,7 @@ export function choreograph(
       )
     })
     for (const houseCat of firing(event))
-      trigger(houseCat, time / scoringSpeed, (time + beat) / scoringSpeed)
+      holdPose(houseCat, time / scoringSpeed, (time + beat) / scoringSpeed)
     time += beat
   }
   return { steps, poses, duration: (time + TAIL) / scoringSpeed }
@@ -242,8 +252,6 @@ function slamOf(event: RunEvent): Slam | undefined {
   }
 }
 
-const still: Impact = { shake: 0, flash: 0, particles: 0, haptic: null }
-
 /** How hard an event that slams nothing hits. */
 function impactOf(event: RunEvent, config: EffectConfig): Impact {
   switch (event.type) {
@@ -255,7 +263,7 @@ function impactOf(event: RunEvent, config: EffectConfig): Impact {
     case "nightCleared":
       return config.cleared
     default:
-      return still
+      return noImpact
   }
 }
 

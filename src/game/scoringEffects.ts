@@ -106,7 +106,7 @@ export function fire(scene: Phaser.Scene, add: Add, at: Point, width: number) {
 
 /**
  * Treats raining into the jar whose mouth is at `into`: `drops` of them,
- * spread over `duration` ms, the jar bobbing as each lands.
+ * spread over `duration` ms, the jar bobbing for `bob` ms as each lands.
  */
 export function rain(
   scene: Phaser.Scene,
@@ -115,12 +115,15 @@ export function rain(
     drops,
     duration,
     into,
-    jar
+    jar,
+    bob
   }: {
     drops: number
     duration: number
     into: Point
     jar: Phaser.GameObjects.Image
+    /** How long the jar bobs as each treat lands, in ms. */
+    bob: number
   }
 ) {
   const fall = duration * 0.45
@@ -142,7 +145,7 @@ export function rain(
         scene.tweens.add({
           targets: jar,
           scaleY: { from: scaleY * 0.92, to: scaleY },
-          duration: 120,
+          duration: bob,
           ease: "Quad.easeOut"
         })
       }

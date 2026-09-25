@@ -468,7 +468,7 @@ describe("House Cats' triggered poses", () => {
     ])
   })
 
-  it("trigger a Copycat as itself, after whomever it copies", () => {
+  it("switch a Copycat as itself, after whomever it copies", () => {
     const script = choreograph(
       playOf(["clingy", "clingy", "clingy"], {
         shelf: ["boxGoblin", "copycat"]

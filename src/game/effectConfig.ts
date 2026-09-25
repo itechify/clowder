@@ -27,12 +27,26 @@ export type EffectConfig = {
   cleared: Impact
   /** Treats raining into the jar before the payout: the most drops, and how long they fall at 1×. */
   rain: { maxDrops: number; ms: number }
+  /**
+   * How far the Mult total swells as Mult slams into it, and how long it
+   * takes to come down, at 1×; a × slams bigger.
+   */
+  slams: { mult: Swell; times: Swell }
+  /** How far the Score swells as it lands with a thump. */
+  thump: Swell
+  /** A × House Cat rattling as the room shakes (Box Goblin's box): how far it tips, each way, how often. */
+  rattle: { degrees: number; ms: number; repeats: number }
+  /** A × House Cat glowing as the room flashes (Freya warming): its brightness per flash, and its fade. */
+  glow: { perFlash: number; ms: number }
   /** How long a shake and a flash last at 1×, in ms. */
   shakeMs: number
   flashMs: number
   /** Reduced motion keeps this share of particles, softened but never gone. */
   reducedParticles: number
 }
+
+/** A number swelling to `scale` times its size, back to its own over `ms` at 1×. */
+export type Swell = { scale: number; ms: number }
 
 /**
  * One step's physical effects at the lowest tier: how hard the camera shakes
@@ -46,7 +60,13 @@ export type Impact = {
   haptic: readonly number[] | null
 }
 
-const none: Impact = { shake: 0, flash: 0, particles: 0, haptic: null }
+/** A step that shakes, flashes, bursts, and pulses nothing. */
+export const noImpact: Impact = {
+  shake: 0,
+  flash: 0,
+  particles: 0,
+  haptic: null
+}
 
 export const effectConfig: EffectConfig = {
   tiers: [
@@ -57,14 +77,18 @@ export const effectConfig: EffectConfig = {
   ],
   fireAt: 1,
   countUpPower: 3,
-  scored: { ...none, particles: 4 },
-  mult: { ...none, shake: 0.003, particles: 6 },
+  scored: { ...noImpact, particles: 4 },
+  mult: { ...noImpact, shake: 0.003, particles: 6 },
   times: { shake: 0.006, flash: 0.2, particles: 10, haptic: [20] },
   landed: { shake: 0.004, flash: 0, particles: 16, haptic: [20] },
   // Fire always lands at the top tier, so these are multiplied most.
   fire: { shake: 0.01, flash: 0.3, particles: 36, haptic: [40, 30, 60] },
-  cleared: { ...none, haptic: [30, 40, 30] },
+  cleared: { ...noImpact, haptic: [30, 40, 30] },
   rain: { maxDrops: 16, ms: 900 },
+  slams: { mult: { scale: 1.7, ms: 150 }, times: { scale: 2.4, ms: 200 } },
+  thump: { scale: 1.7, ms: 300 },
+  rattle: { degrees: 7, ms: 50, repeats: 3 },
+  glow: { perFlash: 2, ms: 600 },
   shakeMs: 220,
   flashMs: 260,
   reducedParticles: 0.3
