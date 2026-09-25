@@ -1,6 +1,7 @@
 // Fails the build unless the service worker precaches every file the game
 // ships, each within the precache's size limit and all within the install
-// budget, so a missed glob or oversized art can't break offline play.
+// budget, so a missed glob or oversized art can't break offline play; and
+// unless it ships no recorded sound, since all sound is synthesized (ADR-0004).
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { join, relative } from "node:path"

@@ -56,4 +56,11 @@ describe("checking the precache", () => {
       "Not built: manifest.webmanifest"
     ])
   })
+
+  it("fails on a shipped audio file, since all sound is synthesized", () => {
+    const shipped = [...essentials, { file: "assets/purr.mp3", size: 20_000 }]
+    expect(precacheProblems(shipped, everything(shipped))).toEqual([
+      "Audio file shipped (ADR-0004): assets/purr.mp3"
+    ])
+  })
 })

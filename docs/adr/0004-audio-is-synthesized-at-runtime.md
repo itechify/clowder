@@ -1,0 +1,3 @@
+# Audio is synthesized at runtime, with no audio files
+
+All music and sound effects are generated in the browser with Web Audio: music as note data played on synthesizers, sound effects from oscillators, filters, and noise, following the pattern of the author's other Phaser project. This keeps the offline PWA download small, avoids licensing and precache size limits, and makes pitch-laddered scoring sounds trivial. The cost is that cat vocalizations are stylized chirps and trills rather than realistic meows; we accepted that for the game's look, and would add a few recorded samples only if playtesting shows the synthesized ones fail.
