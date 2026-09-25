@@ -7,6 +7,11 @@ export {
 } from "./actions"
 export { type Config, defaultConfig } from "./config"
 export { type Coat, coats } from "./content/coats"
+export {
+  type Disaster,
+  type DisasterId,
+  disasterById
+} from "./content/disasters"
 export type { GatheringId } from "./content/gatherings"
 export {
   type Personality,

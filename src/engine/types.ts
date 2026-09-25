@@ -1,5 +1,6 @@
 import type { Config } from "./config"
 import type { Coat } from "./content/coats"
+import type { DisasterId } from "./content/disasters"
 import type { GatheringId } from "./content/gatherings"
 import type { Personality } from "./content/personalities"
 import type { RngState } from "./rng"
@@ -19,7 +20,11 @@ export type NightStatus = "playing" | "cleared" | "lost"
 
 export type Night = {
   number: number
+  /** The Disaster changing this Night's rules, if it is a Disaster Night. */
+  disaster: DisasterId | null
   target: number
+  /** The most Cats the Couch may hold at once this Night. */
+  catsPerPlay: number
   /** Scores of this Night's Plays so far, summed. */
   score: number
   playsLeft: number
@@ -41,6 +46,8 @@ export type Shop = {
   catRehomesLeft: number
   /** What the next Reroll costs; it rises with each Reroll this visit. */
   rerollPrice: number
+  /** The Disaster the next Night brings, revealed so the player can prepare. */
+  nextDisaster: DisasterId | null
 }
 
 /** A Run is plain, serialisable data; every rule reads it and none mutate it. */
@@ -53,6 +60,8 @@ export type Run = {
   /** Cats created this Run, Roster and Shop offers alike; numbers new ids. */
   catsCreated: number
   night: Night
+  /** The Disasters in the order this Run meets them, one per Disaster Night. */
+  disasters: DisasterId[]
   /** Open between a cleared Night and the next; null during a Night. */
   shop: Shop | null
   /** Gatherings activated by any Play so far this Run, in discovery order. */

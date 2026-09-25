@@ -1,13 +1,18 @@
 import { type Config, defaultConfig } from "./config"
 import { catNames } from "./content/catNames"
 import { coats } from "./content/coats"
+import { type DisasterId, disasterById, disasters } from "./content/disasters"
 import { personalities } from "./content/personalities"
 import { shuffle } from "./rng"
 import { noStats } from "./stats"
 import type { Cat, Night, Run } from "./types"
 
 export function startRun(seed: number, config: Config = defaultConfig): Run {
-  const [names, rng] = shuffle(seed | 0, catNames)
+  const [names, afterNames] = shuffle(seed | 0, catNames)
+  const [order, rng] = shuffle(
+    afterNames,
+    disasters.map((disaster) => disaster.id)
+  )
   const roster: Cat[] = []
   for (const coat of coats)
     for (const personality of personalities)
@@ -26,6 +31,7 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
       rng,
       roster,
       catsCreated: roster.length,
+      disasters: order,
       shop: null,
       discoveredGatherings: [],
       status: "playing",
@@ -36,6 +42,14 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
   )
 }
 
+/** The Disaster the given Night brings, if it is a Disaster Night. */
+export function disasterOn(
+  run: Pick<Run, "config" | "disasters">,
+  night: number
+): DisasterId | null {
+  return run.disasters[run.config.disasterNights.indexOf(night)] ?? null
+}
+
 /** Shuffles the whole Roster into a fresh Draw pile and draws a Hand. */
 export function startNight(run: Omit<Run, "night">, number: number): Run {
   const { config, roster } = run
@@ -43,14 +57,25 @@ export function startNight(run: Omit<Run, "night">, number: number): Run {
     run.rng,
     roster.map((cat) => cat.id)
   )
+  const disaster = disasterOn(run, number)
+  const rules = {
+    catsPerPlay: config.seats,
+    plays: config.playsPerNight,
+    redraws: config.redrawsPerNight,
+    ...(disaster && disasterById(disaster).changes)
+  }
   const night: Night = {
     number,
+    disaster,
     target: Math.round(
-      config.firstTarget * config.targetGrowth ** (number - 1)
+      config.firstTarget *
+        config.targetGrowth ** (number - 1) *
+        (disaster ? config.disasterTargetFactor : 1)
     ),
+    catsPerPlay: rules.catsPerPlay,
     score: 0,
-    playsLeft: config.playsPerNight,
-    redrawsLeft: config.redrawsPerNight,
+    playsLeft: rules.plays,
+    redrawsLeft: rules.redraws,
     drawPile: shuffled.slice(config.handSize),
     hand: shuffled.slice(0, config.handSize),
     couch: Array.from({ length: config.seats }, () => null),

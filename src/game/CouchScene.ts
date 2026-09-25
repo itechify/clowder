@@ -5,6 +5,8 @@ import {
   applyAction,
   type Cat,
   type CatId,
+  type DisasterId,
+  disasterById,
   previewPlay,
   type Run,
   type RunEvent
@@ -109,6 +111,8 @@ export class CouchScene extends Phaser.Scene {
   private bedtime: Phaser.Time.TimerEvent | null = null
   private skipArea!: Phaser.GameObjects.Zone
   private layer!: Phaser.GameObjects.Container
+  /** The sign naming tonight's Disaster, when there is one. */
+  private disasterSign: Phaser.GameObjects.Container | null = null
   private seatX: number[] = []
 
   constructor() {
@@ -289,7 +293,11 @@ export class CouchScene extends Phaser.Scene {
     for (const [cat, sprite] of this.sprites)
       this.movedFrom.set(cat, { x: sprite.x, y: sprite.y })
     if (dropped) this.movedFrom.set(dropped.cat, dropped.at)
-    if (!action || !session.apply(action).ok) this.draw()
+    if (!action || !session.apply(action).ok) {
+      this.draw()
+      // A Seat refused on a Disaster Night points at the rule refusing it.
+      if (action?.type === "place") this.nudgeDisasterSign()
+    }
     this.movedFrom.clear()
   }
 
@@ -482,7 +490,37 @@ export class CouchScene extends Phaser.Scene {
         .text(WIDTH - 20, 94, `Redraws ${night.redrawsLeft}`, font(15))
         .setOrigin(1, 0)
     )
+    this.disasterSign = night.disaster
+      ? add(this.drawDisasterSign(night.disaster))
+      : null
     return showScore
+  }
+
+  /** A sign on the wall naming tonight's Disaster and the rule it changes. */
+  private drawDisasterSign(id: DisasterId) {
+    const { name, rule } = disasterById(id)
+    const texts = [
+      this.add.text(12, 8, "Disaster!", font(12, "#f6c9a8", "800")),
+      this.add.text(12, 24, name, font(17, "#fdf6ea", "800")),
+      this.add.text(12, 47, rule, font(13, "#fdf6ea"))
+    ]
+    const w = Math.max(...texts.map((text) => text.width)) + 24
+    const board = this.add.graphics()
+    board.fillStyle(0x8a3a2e, 1).fillRoundedRect(0, 0, w, 70, 12)
+    board.lineStyle(3, 0xf0b28c, 1).strokeRoundedRect(0, 0, w, 70, 12)
+    return this.add.container(20, 120, [board, ...texts])
+  }
+
+  /** Gives the Disaster sign a shake, when tonight has one. */
+  private nudgeDisasterSign() {
+    const sign = this.disasterSign
+    if (!sign) return
+    this.tweens.add({
+      targets: sign,
+      x: { from: sign.x - 6, to: sign.x },
+      duration: 320,
+      ease: "Elastic.easeOut"
+    })
   }
 
   /**
