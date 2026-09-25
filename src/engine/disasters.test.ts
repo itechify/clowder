@@ -204,6 +204,7 @@ describe("clearing a Disaster Night", () => {
       type: "treatsAwarded",
       forNight: 6,
       forUnusedPlays,
+      forHouseCats: [],
       treats: 6 + forUnusedPlays
     })
     expect(paid).toEqual({

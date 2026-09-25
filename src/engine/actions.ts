@@ -1,9 +1,15 @@
-import type { HouseCatId } from "./content/houseCats"
+import {
+  clearTreats,
+  type HouseCatId,
+  type HouseCatTreats
+} from "./content/houseCats"
 import {
   type ActiveGathering,
+  type Growth,
   previewPlay,
   type ScoringEvent,
   type TimesEffect,
+  type WarmUp,
   type WholePlayEffect
 } from "./scoring"
 import {
@@ -36,7 +42,12 @@ export type RunEvent =
     } & ActiveGathering)
   | ({ type: "wholePlayEffect"; tally: Tally } & WholePlayEffect)
   | ({ type: "catScored"; tally: Tally } & ScoringEvent)
+  /** Another, complete Scoring event for the Cat that just scored. */
+  | ({ type: "repeat"; tally: Tally } & ScoringEvent)
+  | ({ type: "houseCatWarmedUp" } & WarmUp)
   | ({ type: "timesEffect"; tally: Tally } & TimesEffect)
+  /** A played Cat grown for good, to `basePurr`, once the Play is scored. */
+  | ({ type: "catGrew"; basePurr: number } & Growth)
   | {
       type: "scoreTotal"
       purr: number
@@ -52,6 +63,8 @@ export type RunEvent =
       type: "treatsAwarded"
       forNight: number
       forUnusedPlays: number
+      /** What each paying House Cat adds, in Shelf order. */
+      forHouseCats: HouseCatTreats[]
       treats: number
     }
   | { type: "shopOpened" }
@@ -207,8 +220,15 @@ function play(run: Run): ActionResult {
     ...breakdown.scoringEvents.map((event): RunEvent => {
       tally.purr += event.purr
       tally.mult += event.mult
-      return { type: "catScored", ...event, tally: { ...tally } }
+      return {
+        type: event.source === "seat" ? "catScored" : "repeat",
+        ...event,
+        tally: { ...tally }
+      }
     }),
+    ...breakdown.warmUps.map(
+      (warmUp): RunEvent => ({ type: "houseCatWarmedUp", ...warmUp })
+    ),
     ...breakdown.timesEffects.map((effect): RunEvent => {
       tally.mult *= effect.times
       return { type: "timesEffect", ...effect, tally: { ...tally } }
@@ -221,16 +241,31 @@ function play(run: Run): ActionResult {
       nightScore: run.night.score + breakdown.score
     }
   ]
+  // Grown Cats score their new base Purr from the next Play on.
+  const grownTo = new Map<CatId, number>()
+  for (const growth of breakdown.growth) {
+    const basePurr =
+      (grownTo.get(growth.cat) ??
+        run.roster.find((cat) => cat.id === growth.cat)!.basePurr) + growth.purr
+    grownTo.set(growth.cat, basePurr)
+    events.push({ type: "catGrew", ...growth, basePurr })
+  }
+  const roster = run.roster.map((cat) => {
+    const basePurr = grownTo.get(cat.id)
+    return basePurr === undefined ? cat : { ...cat, basePurr }
+  })
   const played = run.night.couch.filter((cat) => cat !== null)
   const night: Night = {
     ...run.night,
     score: run.night.score + breakdown.score,
     playsLeft: run.night.playsLeft - 1,
+    warmPlays: run.night.warmPlays + (breakdown.warmUps.length > 0 ? 1 : 0),
     hand: run.night.hand.filter((cat) => !played.includes(cat)),
     couch: run.night.couch.map(() => null)
   }
   const scored: Run = {
     ...run,
+    roster,
     night,
     stats: recordPlay(run, breakdown),
     discoveredGatherings: [...run.discoveredGatherings, ...newlyDiscovered]
@@ -280,10 +315,14 @@ function clearNight(run: Run, events: RunEvent[]): ActionResult {
       ? reward.early
       : reward.later
   const forUnusedPlays = reward.perUnusedPlay * night.playsLeft
-  const treats = forNight + forUnusedPlays
+  const forHouseCats = clearTreats(run.shelf, night)
+  const treats = forHouseCats.reduce(
+    (sum, paid) => sum + paid.treats,
+    forNight + forUnusedPlays
+  )
   events.push(
     { type: "nightCleared", score: night.score },
-    { type: "treatsAwarded", forNight, forUnusedPlays, treats }
+    { type: "treatsAwarded", forNight, forUnusedPlays, forHouseCats, treats }
   )
   const paid: Run = {
     ...run,

@@ -33,6 +33,8 @@ export type Night = {
   score: number
   playsLeft: number
   redrawsLeft: number
+  /** This Night's Plays that warmed up a House Cat, as Freya counts them. */
+  warmPlays: number
   drawPile: CatId[]
   /** Every drawn, unplayed Cat, including those seated on the Couch. */
   hand: CatId[]

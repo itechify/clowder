@@ -264,21 +264,27 @@ export class ShopScene extends Phaser.Scene {
         return
       }
       const { name, ability } = houseCat(id)
-      add(drawHouseCat(this, id, 56)).setPosition(x, CARD_TOP + 44)
-      add(
-        this.add
-          .text(x, CARD_TOP + 90, name, font(12, "#4a3426", "800"))
-          .setOrigin(0.5)
-      )
-      add(
-        this.add
-          .text(x, CARD_TOP + 102, ability, {
-            ...font(10),
-            align: "center",
-            wordWrap: { width: cardWidth - 10 }
-          })
-          .setOrigin(0.5, 0)
-      )
+      add(drawHouseCat(this, id, 50)).setPosition(x, CARD_TOP + 40)
+      // A name with a title, like "Skadi (Belly Up)", gives the title a line.
+      const [called, title] = name.split(/ \((.*)\)$/)
+      let below = CARD_TOP + 72
+      for (const [text, style] of [
+        [called, font(12, "#4a3426", "800")],
+        [title, font(9, "#7a5a3c", "italic 700")],
+        [ability, font(10)]
+      ] as const) {
+        if (!text) continue
+        below += add(
+          this.add
+            .text(x, below, text, {
+              ...style,
+              align: "center",
+              wordWrap: { width: cardWidth - 8 }
+            })
+            .setOrigin(0.5, 0)
+            .setLineSpacing(-2)
+        ).height
+      }
       this.button(
         buttonArea(x),
         `Recruit ${run.config.shop.recruitPrices[id]}`,

@@ -90,10 +90,11 @@ describe("saving and resuming a Run", () => {
   })
 
   it("resumes with House Cats on the Shelf exactly as it would have gone on", () => {
-    const run = runInShop(1)
+    // Treats enough to Recruit whichever House Cat is offered.
+    const run = { ...runInShop(1), treats: 20 }
 
     const end = expectResumesIdentically(run, [
-      () => ({ type: "recruit", houseCat: "doNotTouch" }),
+      (r) => ({ type: "recruit", houseCat: r.shop!.houseCatOffers[0] }),
       (r) => ({ type: "reorderShelf", houseCat: r.shelf[0], position: 0 }),
       () => ({ type: "leaveShop" }),
       seatFromHand(0, 0),
@@ -179,9 +180,10 @@ describe("a damaged save", () => {
       cat: startRun(3).night.hand[0],
       seat: 2
     }).run
-    const withShelf = accepted(runInShop(1), {
+    const inShop = { ...runInShop(1), treats: 20 }
+    const withShelf = accepted(inShop, {
       type: "recruit",
-      houseCat: "doNotTouch"
+      houseCat: inShop.shop!.houseCatOffers[0]
     }).run
     for (const run of [midNight, runInShop(1), withShelf]) {
       const saved = serialiseRun(run)

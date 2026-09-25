@@ -86,7 +86,17 @@ export const defaultConfig: Config = {
     rehomeCatPrice: 1,
     catRehomesPerVisit: 1,
     houseCatOffers: 2,
-    recruitPrices: { boxGoblin: 6, doNotTouch: 5 },
+    recruitPrices: {
+      oneBraincell: 7,
+      bigLoaf: 7,
+      boxGoblin: 6,
+      doNotTouch: 5,
+      skadi: 6,
+      copycat: 8,
+      freya: 7,
+      theVoid: 6,
+      treatDealer: 5
+    },
     rerollPrice: 1,
     rerollPriceStep: 1
   }

@@ -5,10 +5,25 @@ import {
   applyAction,
   type Config,
   defaultConfig,
+  type HouseCatId,
+  houseCats,
   type Run,
   startRun
 } from "./index"
 import { accepted } from "./testing"
+
+/** Every House Cat's Recruit price set to `price`. */
+const pricedAt = (price: number) =>
+  Object.fromEntries(houseCats.map(({ id }) => [id, price])) as Record<
+    HouseCatId,
+    number
+  >
+
+/** House Cat Recruit prices, all `price`, in an otherwise default Shop. */
+const shopPricedAt = (price: number) => ({
+  ...defaultConfig.shop,
+  recruitPrices: pricedAt(price)
+})
 
 /** Plays the first Hand Cat alone; in an easy Run that clears the Night. */
 const playOne = (run: Run) => {
@@ -282,19 +297,25 @@ describe("Reroll", () => {
 
   it("offers every unowned House Cat again, but none on the Shelf", () => {
     const shop = {
-      ...defaultConfig.shop,
-      recruitPrices: { boxGoblin: 1, doNotTouch: 1 },
+      ...shopPricedAt(1),
+      houseCatOffers: houseCats.length,
       rerollPrice: 0
     }
     let run = playOne(easyRun(1, { shop })).run
-    run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
-    run = accepted(run, { type: "recruit", houseCat: "doNotTouch" }).run
-    run = accepted(run, { type: "rehome", houseCat: "doNotTouch" }).run
-    expect(run.shop!.houseCatOffers).toEqual([])
+    const [kept, rehomed] = run.shop!.houseCatOffers
+    run = accepted(run, { type: "recruit", houseCat: kept }).run
+    run = accepted(run, { type: "recruit", houseCat: rehomed }).run
+    run = accepted(run, { type: "rehome", houseCat: rehomed }).run
+    expect(run.shop!.houseCatOffers).toHaveLength(houseCats.length - 2)
 
     const after = accepted(run, { type: "reroll" }).run
 
-    expect(after.shop!.houseCatOffers).toEqual(["doNotTouch"])
+    expect([...after.shop!.houseCatOffers].sort()).toEqual(
+      houseCats
+        .map(({ id }) => id)
+        .filter((id) => id !== kept)
+        .sort()
+    )
   })
 
   it("refills an offer already Adopted", () => {
@@ -360,39 +381,43 @@ describe("Reroll", () => {
 })
 
 describe("House Cats offered to Recruit", () => {
-  it("are two House Cats", () => {
-    const run = playOne(easyRun()).run
+  it("are two different House Cats", () => {
+    const offers = playOne(easyRun()).run.shop!.houseCatOffers
 
-    expect([...run.shop!.houseCatOffers].sort()).toEqual([
-      "boxGoblin",
-      "doNotTouch"
-    ])
+    expect(offers).toHaveLength(2)
+    expect(new Set(offers).size).toBe(2)
+  })
+
+  it("may be any of the nine House Cats", () => {
+    const offered = new Set<HouseCatId>()
+    for (let seed = 1; seed <= 50; seed++)
+      for (const id of playOne(easyRun(seed)).run.shop!.houseCatOffers)
+        offered.add(id)
+
+    expect(offered.size).toBe(9)
   })
 })
 
 describe("Recruit", () => {
   it("places an offered House Cat on the Shelf for its price", () => {
-    const run = playOne(easyRun()).run
+    const run = playOne(easyRun(1, { shop: shopPricedAt(5) })).run
     expect(run.treats).toBe(5)
+    const [recruited, other] = run.shop!.houseCatOffers
 
     const { run: after, events } = accepted(run, {
       type: "recruit",
-      houseCat: "doNotTouch"
+      houseCat: recruited
     })
 
-    expect(after.shelf).toEqual(["doNotTouch"])
+    expect(after.shelf).toEqual([recruited])
     expect(after.treats).toBe(0)
-    expect(after.shop!.houseCatOffers).toEqual(["boxGoblin"])
+    expect(after.shop!.houseCatOffers).toEqual([other])
     expect(events).toEqual([
-      { type: "houseCatRecruited", houseCat: "doNotTouch", price: 5 }
+      { type: "houseCatRecruited", houseCat: recruited, price: 5 }
     ])
   })
   it("is rejected with a full Shelf", () => {
-    const shop = {
-      ...defaultConfig.shop,
-      recruitPrices: { boxGoblin: 1, doNotTouch: 1 }
-    }
-    const run = playOne(easyRun(1, { shelfSize: 1, shop })).run
+    const run = playOne(easyRun(1, { shelfSize: 1, shop: shopPricedAt(1) })).run
     const [first, second] = run.shop!.houseCatOffers
     const full = accepted(run, { type: "recruit", houseCat: first }).run
 
@@ -403,87 +428,85 @@ describe("Recruit", () => {
   })
 
   it("is rejected when Treats are insufficient", () => {
-    const run = playOne(easyRun()).run
+    const run = playOne(easyRun(1, { shop: shopPricedAt(6) })).run
+    const [offer] = run.shop!.houseCatOffers
 
-    expect(
-      applyAction(run, { type: "recruit", houseCat: "boxGoblin" }).ok
-    ).toBe(false)
+    expect(applyAction(run, { type: "recruit", houseCat: offer }).ok).toBe(
+      false
+    )
   })
 
   it("is rejected for a House Cat not on offer", () => {
-    const run = playOne(easyRun()).run
-    const recruited = accepted(run, {
-      type: "recruit",
-      houseCat: "doNotTouch"
-    }).run
+    const run = playOne(easyRun(1, { shop: shopPricedAt(1) })).run
+    const [offer] = run.shop!.houseCatOffers
+    const recruited = accepted(run, { type: "recruit", houseCat: offer }).run
 
     expect(
-      applyAction(recruited, { type: "recruit", houseCat: "doNotTouch" }).ok
+      applyAction(recruited, { type: "recruit", houseCat: offer }).ok
     ).toBe(false)
     expect(
-      applyAction(startRun(1), { type: "recruit", houseCat: "doNotTouch" }).ok
+      applyAction(startRun(1), { type: "recruit", houseCat: offer }).ok
     ).toBe(false)
   })
 
-  it("takes its price from config", () => {
+  it("takes each House Cat's price from config", () => {
+    const [first, second] = playOne(easyRun()).run.shop!.houseCatOffers
     const shop = {
       ...defaultConfig.shop,
-      recruitPrices: { boxGoblin: 2, doNotTouch: 4 }
+      recruitPrices: { ...pricedAt(4), [first]: 2 }
     }
     const run = playOne(easyRun(1, { shop })).run
 
+    expect(accepted(run, { type: "recruit", houseCat: first }).run.treats).toBe(
+      3
+    )
     expect(
-      accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run.treats
-    ).toBe(3)
+      accepted(run, { type: "recruit", houseCat: second }).run.treats
+    ).toBe(1)
   })
 
   it("keeps the House Cat on the Shelf, and out of the Shop, for the Run", () => {
-    let run = playOne(easyRun()).run
-    run = accepted(run, { type: "recruit", houseCat: "doNotTouch" }).run
+    let run = playOne(easyRun(1, { shop: shopPricedAt(1) })).run
+    const [recruited] = run.shop!.houseCatOffers
+    run = accepted(run, { type: "recruit", houseCat: recruited }).run
     run = accepted(run, { type: "leaveShop" }).run
-    expect(run.shelf).toEqual(["doNotTouch"])
+    expect(run.shelf).toEqual([recruited])
 
     for (let visit = 0; visit < 3; visit++) {
       run = playOne(run).run
-      expect(run.shop!.houseCatOffers).toEqual(["boxGoblin"])
-      run = accepted(accepted(run, { type: "reroll" }).run, {
-        type: "leaveShop"
-      }).run
+      expect(run.shop!.houseCatOffers).not.toContain(recruited)
+      run = accepted(run, { type: "reroll" }).run
+      expect(run.shop!.houseCatOffers).not.toContain(recruited)
+      run = accepted(run, { type: "leaveShop" }).run
     }
-    expect(run.shelf).toEqual(["doNotTouch"])
+    expect(run.shelf).toEqual([recruited])
   })
 })
 
 describe("Rehoming a House Cat", () => {
   /** An odd price, to show the refund rounds down. */
-  const oddPrices = {
-    ...defaultConfig.shop,
-    recruitPrices: { boxGoblin: 3, doNotTouch: 5 }
-  }
+  const oddPrices = shopPricedAt(3)
 
   it("removes it from the Shelf and refunds half its price, rounded down", () => {
     let run = playOne(easyRun(1, { shop: oddPrices })).run
-    run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
+    const [houseCat] = run.shop!.houseCatOffers
+    run = accepted(run, { type: "recruit", houseCat }).run
     expect(run.treats).toBe(2)
 
-    const { run: after, events } = accepted(run, {
-      type: "rehome",
-      houseCat: "boxGoblin"
-    })
+    const { run: after, events } = accepted(run, { type: "rehome", houseCat })
 
     expect(after.shelf).toEqual([])
     expect(after.treats).toBe(3)
-    expect(events).toEqual([
-      { type: "houseCatRehomed", houseCat: "boxGoblin", refund: 1 }
-    ])
+    expect(events).toEqual([{ type: "houseCatRehomed", houseCat, refund: 1 }])
   })
 
   it("is not limited like Rehoming a Cat", () => {
     let run = playOne(easyRun(1, { shop: oddPrices })).run
+    const [houseCat] = run.shop!.houseCatOffers
     run = accepted(run, { type: "rehome", cat: run.roster[0].id }).run
-    run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
+    run = accepted(run, { type: "recruit", houseCat }).run
 
-    const after = accepted(run, { type: "rehome", houseCat: "boxGoblin" }).run
+    const after = accepted(run, { type: "rehome", houseCat }).run
 
     expect(after.shelf).toEqual([])
     expect(after.treats).toBe(2)
