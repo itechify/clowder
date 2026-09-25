@@ -1,5 +1,10 @@
 import Phaser from "phaser"
-import type { Cat, Coat, Personality } from "../engine"
+import type { Coat, Personality } from "../engine"
+
+/** How far below its centre a Cat sits, as a fraction of its size. */
+export const CAT_BASE = 0.28
+/** A Coat badge's radius, and where it sits from its Cat's centre, by size. */
+export const BADGE = { r: 0.13, x: 0.3, y: 0.24 }
 
 const coatColour: Record<Coat, number> = {
   orange: 0xe8893a,
@@ -33,9 +38,13 @@ function ring(points: number, inner: number, radius: number) {
 
 /**
  * Each Coat has a distinct icon as well as a colour, so Coats read at a glance
- * without relying on colour vision.
+ * without relying on colour vision. Centred on (0, 0), `r` in radius.
  */
-function drawCoatIcon(g: Phaser.GameObjects.Graphics, coat: Coat, r: number) {
+export function paintCoatBadge(
+  g: Phaser.GameObjects.Graphics,
+  coat: Coat,
+  r: number
+) {
   g.fillStyle(0xfffaf0, 1).fillCircle(0, 0, r).lineStyle(2, 0x5a4636, 1)
   g.strokeCircle(0, 0, r)
   const s = r * 0.62
@@ -174,28 +183,25 @@ const pose: Record<
 }
 
 /**
- * A placeholder Cat centred on (0, 0), about `size` pixels across: a Coat
- * coloured body with a Coat icon badge and a face and pose per Personality.
- * Every Cat curls up like a Sleepy one once it is `asleep`.
+ * Draws a code-drawn Cat of a Coat and Personality centred on (0, 0), about
+ * `size` pixels across, with a face and pose per Personality, its base
+ * `CAT_BASE` × `size` below the centre. Its Coat badge is separate art.
  */
-export function drawCat(
-  scene: Phaser.Scene,
-  cat: Cat,
-  size: number,
-  { asleep = false } = {}
-): Phaser.GameObjects.Container {
-  const g = scene.add.graphics()
+export function paintCat(
+  g: Phaser.GameObjects.Graphics,
+  coat: Coat,
+  personality: Personality,
+  size: number
+) {
   const r = size * 0.24
-  // Asleep, every Cat curls up like a Sleepy one.
-  const posed: Personality = asleep ? "sleepy" : cat.personality
-  const p = pose[posed]
+  const p = pose[personality]
   const bodyW = size * 0.66
   const bodyH = size * 0.5 * p.bodyH
-  const bodyY = size * 0.28 - bodyH / 2
+  const bodyY = size * CAT_BASE - bodyH / 2
   const headX = p.headDx * size * 0.5
   const headY = bodyY + p.headDy * size * 0.5
-  const fill = coatColour[cat.coat]
-  const outline = coatOutline[cat.coat]
+  const fill = coatColour[coat]
+  const outline = coatOutline[coat]
 
   // Tail curls out behind the body.
   g.lineStyle(size * 0.08, outline, 1).beginPath()
@@ -224,7 +230,7 @@ export function drawCat(
   g.fillStyle(fill, 1)
   drawEars(g, headX, headY + r * 0.12, r * 0.72, p.tilt * size)
   g.fillCircle(headX, headY, r).strokeCircle(headX, headY, r)
-  if (cat.coat === "calico") {
+  if (coat === "calico") {
     g.fillStyle(0xe8893a, 1).fillEllipse(
       -bodyW * 0.15,
       bodyY - bodyH * 0.1,
@@ -243,8 +249,8 @@ export function drawCat(
       r * 0.4
     )
   }
-  drawFace(g, cat.coat, posed, headX, headY, r)
-  if (posed === "sleepy") {
+  drawFace(g, coat, personality, headX, headY, r)
+  if (personality === "sleepy") {
     g.lineStyle(2, 0x6b7fd7, 1)
     const zx = headX + r * 0.9
     const zy = headY - r * 1.1
@@ -253,8 +259,4 @@ export function drawCat(
     g.lineBetween(zx + z, zy, zx, zy + z)
     g.lineBetween(zx, zy + z, zx + z, zy + z)
   }
-
-  const badge = scene.add.graphics({ x: size * 0.3, y: size * 0.24 })
-  drawCoatIcon(badge, cat.coat, size * 0.13)
-  return scene.add.container(0, 0, [g, badge])
 }

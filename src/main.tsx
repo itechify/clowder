@@ -2,6 +2,7 @@ import Phaser from "phaser"
 import { useEffect, useSyncExternalStore } from "react"
 import { createRoot } from "react-dom/client"
 import { houseCat, starCat } from "./engine"
+import { BootScene } from "./game/BootScene"
 import { CouchScene, HEIGHT, RESOLUTION, WIDTH } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
 import { presentation } from "./game/presentation"
@@ -95,7 +96,7 @@ function App() {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
       },
-      scene: [CouchScene, ShopScene],
+      scene: [BootScene, CouchScene, ShopScene],
       render: { antialias: true }
     })
     if (import.meta.env.DEV) installDebugHook(game)

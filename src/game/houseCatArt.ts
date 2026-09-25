@@ -436,16 +436,15 @@ const looks: Record<HouseCatId, (g: Graphics, size: number) => void> = {
   }
 }
 
+/** How far below its centre a House Cat sits, as a fraction of its size. */
+export const HOUSE_CAT_BASE = 0.45
+
 /**
- * A placeholder House Cat centred on (0, 0), about `size` pixels across,
- * sitting with its base about `size` × 0.45 below the centre.
+ * Draws a code-drawn House Cat centred on (0, 0), about `size` pixels
+ * across, sitting with its base `HOUSE_CAT_BASE` × `size` below the centre.
  */
-export function drawHouseCat(
-  scene: Phaser.Scene,
+export const paintHouseCat = (
+  g: Graphics,
   houseCat: HouseCatId,
   size: number
-): Phaser.GameObjects.Container {
-  const g = scene.add.graphics()
-  looks[houseCat](g, size)
-  return scene.add.container(0, 0, [g])
-}
+) => looks[houseCat](g, size)

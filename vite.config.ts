@@ -1,10 +1,12 @@
 import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
 import { configDefaults } from "vitest/config"
+import { artAtlas } from "./scripts/artPlugin.ts"
 
 export default defineConfig({
   build: { chunkSizeWarningLimit: 2000 },
   plugins: [
+    artAtlas(),
     VitePWA({
       // The shell asks before a new version takes over (src/shell/pwa.ts).
       registerType: "prompt",
@@ -33,7 +35,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,png}"],
+        // Every format the game ships: code, pages, images, atlases, and fonts.
+        globPatterns: ["**/*.{js,css,html,png,webp,json,woff2,woff,ttf,svg}"],
         // scripts/check-precache.mjs fails the build if anything is left out.
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
         cleanupOutdatedCaches: true,

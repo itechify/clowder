@@ -12,8 +12,7 @@ import {
   rehomeRefund
 } from "../engine"
 import { DISASTER_RED, font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
-import { drawCat } from "./catArt"
-import { drawHouseCat } from "./houseCatArt"
+import { drawCat, drawHouseCat } from "./characters"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 
