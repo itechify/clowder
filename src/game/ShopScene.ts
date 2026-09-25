@@ -5,9 +5,10 @@ import {
   type Cat,
   type CatId,
   coats,
+  disasterById,
   personalities
 } from "../engine"
-import { font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
+import { DISASTER_RED, font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
 import { drawCat } from "./catArt"
 import { session } from "./session"
 
@@ -111,14 +112,32 @@ export class ShopScene extends Phaser.Scene {
         .text(WIDTH - 20, 26, `Treats ${run.treats}`, font(18))
         .setOrigin(1, 0)
     )
+    const next = run.night.number + 1
+    const disaster = shop.nextDisaster && disasterById(shop.nextDisaster)
     add(
       this.add.text(
         20,
-        60,
-        `Night ${run.night.number} cleared. Night ${run.night.number + 1} is next.`,
+        disaster ? 50 : 60,
+        `Night ${run.night.number} cleared. Night ${next} is ${disaster ? "a Disaster!" : "next."}`,
         font(15)
       )
     )
+    // The Disaster ahead, revealed now so the household can prepare for it.
+    if (disaster) {
+      add(this.add.graphics())
+        .fillStyle(DISASTER_RED, 1)
+        .fillRoundedRect(14, 72, WIDTH - 28, 24, 12)
+      add(
+        this.add
+          .text(
+            WIDTH / 2,
+            84,
+            `${disaster.name}: ${disaster.rule}`,
+            font(14, "#fdf6ea", "800")
+          )
+          .setOrigin(0.5)
+      )
+    }
 
     // Cats on offer, each with its Adopt price, in the cards they arrived in.
     if (shop.catOffers.some((cat) => !this.offerCards.includes(cat.id)))

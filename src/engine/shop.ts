@@ -3,7 +3,7 @@ import { catNames } from "./content/catNames"
 import { coats } from "./content/coats"
 import { personalities } from "./content/personalities"
 import { pick } from "./rng"
-import { startNight } from "./run"
+import { disasterOn, startNight } from "./run"
 import type { Cat, CatId, Run, Shop } from "./types"
 
 export type ShopAction =
@@ -28,7 +28,8 @@ export function openShop(run: Run): Run {
   const shop: Shop = {
     catOffers,
     catRehomesLeft: run.config.shop.catRehomesPerVisit,
-    rerollPrice: run.config.shop.rerollPrice
+    rerollPrice: run.config.shop.rerollPrice,
+    nextDisaster: disasterOn(run, run.night.number + 1)
   }
   return { ...next, shop }
 }

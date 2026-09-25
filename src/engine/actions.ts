@@ -82,6 +82,11 @@ export function applyAction(run: Run, action: Action): ActionResult {
         return reject("That Cat is not in the Hand")
       if (!Number.isInteger(action.seat) || !(action.seat in night.couch))
         return reject("There is no such Seat")
+      const seated = night.couch.filter((cat) => cat !== null).length
+      const joining =
+        !night.couch.includes(action.cat) && night.couch[action.seat] === null
+      if (joining && seated >= night.catsPerPlay)
+        return reject(`At most ${night.catsPerPlay} Cats per Play tonight`)
       // A Cat moving between Seats trades places with the Seat's occupant; a
       // Cat coming from the Hand sends the occupant back to the Hand.
       const couch = [...night.couch]
@@ -233,8 +238,11 @@ function loseRun(run: Run, events: RunEvent[]): ActionResult {
 function clearNight(run: Run, events: RunEvent[]): ActionResult {
   const { config, night } = run
   const reward = config.clearReward
-  const forNight =
-    night.number <= reward.earlyNights ? reward.early : reward.later
+  const forNight = night.disaster
+    ? reward.disaster
+    : night.number <= reward.earlyNights
+      ? reward.early
+      : reward.later
   const forUnusedPlays = reward.perUnusedPlay * night.playsLeft
   const treats = forNight + forUnusedPlays
   events.push(

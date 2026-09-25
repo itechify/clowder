@@ -40,7 +40,8 @@ function lostOnNight3() {
 
 describe("a Run's nine Nights", () => {
   it("raise the Target from 300 by ×1.6 each Night", () => {
-    let run = easyRun()
+    // Disaster Nights raise it further (see disasters.test.ts).
+    let run = easyRun(1, { disasterNights: [] })
     const targets = [run.night.target]
     for (let night = 1; night < 9; night++) {
       run = playFromHand(run).run
@@ -59,7 +60,8 @@ describe("Treats", () => {
   })
 
   it("pay 3 for clearing Nights 1–2 and 4 later, +1 per unused Play", () => {
-    let run = easyRun()
+    // Disaster Nights pay differently (see disasters.test.ts).
+    let run = easyRun(1, { disasterNights: [] })
     const payouts: number[] = []
     for (let night = 1; night <= 9; night++) {
       const before = run.treats

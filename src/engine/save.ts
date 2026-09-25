@@ -1,5 +1,6 @@
 import type { Config } from "./config"
 import { coats } from "./content/coats"
+import { disasters } from "./content/disasters"
 import { gatherings } from "./content/gatherings"
 import { personalities } from "./content/personalities"
 import type { BestPlay, RunStats } from "./stats"
@@ -9,7 +10,7 @@ import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
  * The shape of saved Runs. Bump it whenever Run state changes meaning, so a
  * save from before the change is discarded rather than resumed.
  */
-const SAVE_VERSION = 1
+const SAVE_VERSION = 2
 
 /** Run state as plain text, to keep on the device between visits. */
 export function serialiseRun(run: Run): string {
@@ -64,6 +65,8 @@ const shape =
     isRecord(value) &&
     Object.entries(checks).every(([key, check]) => (check as Check)(value[key]))
 
+const isDisaster = oneOf(disasters.map((disaster) => disaster.id))
+
 const isCat = shape<Cat>({
   id: text,
   name: text,
@@ -88,10 +91,13 @@ const isConfig = shape<Config>({
   nights: integer,
   firstTarget: finite,
   targetGrowth: finite,
+  disasterNights: list(integer),
+  disasterTargetFactor: finite,
   clearReward: shape<Config["clearReward"]>({
     early: integer,
     earlyNights: integer,
     later: integer,
+    disaster: integer,
     perUnusedPlay: integer
   }),
   shop: shape<Config["shop"]>({
@@ -110,9 +116,12 @@ const isRun = shape<Run>({
   rng: integer,
   roster: list(isCat),
   catsCreated: integer,
+  disasters: list(isDisaster),
   night: shape<Night>({
     number: integer,
+    disaster: nullable(isDisaster),
     target: integer,
+    catsPerPlay: integer,
     score: integer,
     playsLeft: integer,
     redrawsLeft: integer,
@@ -125,7 +134,8 @@ const isRun = shape<Run>({
     shape<Shop>({
       catOffers: list(isCat),
       catRehomesLeft: integer,
-      rerollPrice: integer
+      rerollPrice: integer,
+      nextDisaster: nullable(isDisaster)
     })
   ),
   discoveredGatherings: list(oneOf(gatherings.map((g) => g.id))),
