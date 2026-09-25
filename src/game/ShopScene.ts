@@ -1,4 +1,5 @@
 import Phaser from "phaser"
+import { houseCatArt } from "../art/manifest"
 import { sound } from "../audio/sound"
 import {
   type Action,
@@ -13,6 +14,7 @@ import {
   personalities,
   rehomeRefund
 } from "../engine"
+import { atRest } from "../presentation/staging"
 import { drawCat, drawHouseCat } from "./characters"
 import { font } from "./fonts"
 import { HEIGHT, RESOLUTION, WIDTH } from "./layout"
@@ -306,7 +308,10 @@ export class ShopScene extends Phaser.Scene {
         gone(x, "Adopted!")
         return
       }
-      add(drawCat(this, cat, 64)).setPosition(x, CARD_TOP + 44)
+      add(drawCat(this, cat, atRest(run, cat), 64)).setPosition(
+        x,
+        CARD_TOP + 44
+      )
       add(
         this.add
           .text(x, CARD_TOP + 90, cat.name, font(13, "#4a3426", "800"))
@@ -327,7 +332,7 @@ export class ShopScene extends Phaser.Scene {
         return
       }
       const { name, ability } = houseCat(id)
-      add(drawHouseCat(this, id, 50)).setPosition(x, CARD_TOP + 40)
+      add(drawHouseCat(this, houseCatArt(id), 50)).setPosition(x, CARD_TOP + 40)
       // A name with a title, like "Skadi (Belly Up)", gives the title a line.
       const [called, title] = name.split(/ \((.*)\)$/)
       let below = CARD_TOP + 72
@@ -421,7 +426,7 @@ export class ShopScene extends Phaser.Scene {
         add(this.add.graphics())
           .fillStyle(0xfff4c2, 0.95)
           .fillRoundedRect(x - 21, y - 20, 42, 40, 10)
-      add(drawCat(this, cat, 38))
+      add(drawCat(this, cat, atRest(run, cat), 38))
         .setPosition(x, y)
         .setSize(columnWidth, rowHeight)
         .setInteractive({ useHandCursor: true })

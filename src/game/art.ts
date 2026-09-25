@@ -1,13 +1,23 @@
 import atlas from "virtual:art-atlas"
 import type Phaser from "phaser"
+import { deliveredEyes, type Eye } from "../art/eyes"
 import {
   type ArtEntry,
   artEntry,
+  CHARACTER_BASE,
+  CHARACTER_CANVAS,
   CHARACTER_SPAN,
   ROOM_SCALE,
   sharesCharacterScale
 } from "../art/manifest"
-import { BADGE, CAT_BASE, paintCat, paintCoatBadge } from "./catArt"
+import {
+  BADGE,
+  CAT_BASE,
+  coatFill,
+  paintCat,
+  paintCoatBadge,
+  paintedEyes
+} from "./catArt"
 import { HOUSE_CAT_BASE, paintHouseCat } from "./houseCatArt"
 import { RESOLUTION } from "./layout"
 import { paintRoomArt } from "./roomArt"
@@ -63,9 +73,8 @@ function drawFallback(scene: Phaser.Scene, entry: ArtEntry) {
   g.translateCanvas(x, y).scaleCanvas(scale, scale)
   switch (entry.kind) {
     case "cat":
-      // Until reacting poses are drawn, a Cat reacts as it rests.
       g.translateCanvas(0, -size * CAT_BASE)
-      paintCat(g, entry.coat, entry.personality, size)
+      paintCat(g, entry.coat, entry.personality, size, entry.pose)
       break
     case "badge":
       paintCoatBadge(g, entry.coat, size * BADGE.r)
@@ -81,6 +90,33 @@ function drawFallback(scene: Phaser.Scene, entry: ArtEntry) {
   g.generateTexture(texture.getCanvas())
   texture.refresh()
   g.destroy()
+}
+
+/**
+ * Where a Cat pose's open eyes are on its canvas, delivered or code-drawn, for
+ * tinting and blinking them; none if its eyes are shut.
+ */
+export function catEyes(
+  textures: Phaser.Textures.TextureManager,
+  key: string
+): readonly Eye[] {
+  if (delivered(textures, key)) return deliveredEyes[key] ?? []
+  const entry = artEntry(key)
+  if (entry.kind !== "cat") return []
+  // Drawn out from its base, a code-drawn Cat is this many canvas pixels to
+  // each of its own.
+  const scale = CHARACTER_SPAN / CAT_SIZE
+  const base = {
+    x: CHARACTER_BASE.x * CHARACTER_CANVAS,
+    y: CHARACTER_BASE.y * CHARACTER_CANVAS
+  }
+  return paintedEyes(entry.personality, entry.pose, CAT_SIZE).map((eye) => ({
+    x: base.x + eye.x * scale,
+    y: base.y + (eye.y - CAT_SIZE * CAT_BASE) * scale,
+    rx: eye.rx * scale,
+    ry: eye.ry * scale,
+    lid: coatFill(entry.coat)
+  }))
 }
 
 /** The texture and frame showing a key, drawing its fallback on first use. */

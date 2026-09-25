@@ -1,9 +1,18 @@
-import type { CatId, Run } from "../engine"
+import { type CatPose, catArt, houseCatArt } from "../art/manifest"
+import {
+  type Cat,
+  type CatId,
+  copying,
+  type HouseCatId,
+  houseCat,
+  type Run
+} from "../engine"
 
 /**
  * The presentation model's staging: what the living room shows for a Run as
  * it stands, including a Couch still being arranged before a Play. Pure data
- * from Run state, so the scene only draws it and computes no layout itself.
+ * from Run state, so the scene only draws it and computes no layout, pose, or
+ * facing itself.
  */
 
 /** The rug's rows: the front row nearest the player, the back row behind it. */
@@ -14,32 +23,183 @@ export type Placement =
   | { on: "couch"; seat: number }
   | { on: "rug"; row: RugRow; position: number }
 
-export type StagedCat = { cat: CatId; placement: Placement }
+/** Which way a Cat turns; its art faces right, and is mirrored to face left. */
+export type Facing = "left" | "right"
+
+/** The eye colours a Cat may have, one each for good. */
+export const eyeTints = ["gold", "green", "blue", "copper"] as const
+export type EyeTint = (typeof eyeTints)[number]
+
+export type StagedCat = {
+  cat: CatId
+  placement: Placement
+  /** The art key of the pose it shows. */
+  pose: string
+  facing: Facing
+  eyeTint: EyeTint
+}
+
+export type StagedHouseCat = {
+  houseCat: HouseCatId
+  /** The art key of the pose it shows. */
+  pose: string
+  /** What is written beneath it: its name, and whom a Copycat copies. */
+  name: string
+  /** What it has built up so far: Freya's ×, or The Void's growth. */
+  state: string | null
+  /** A Copycat with nothing to copy does nothing. */
+  inert: boolean
+}
 
 export type Staging = {
   /** Every Cat in view: the seated Cats by Seat, then the rug's by position. */
   cats: StagedCat[]
+  /** The Shelf's House Cats, in Shelf order. */
+  houseCats: StagedHouseCat[]
 }
 
 /** How many Cats each rug row holds, so a full Hand fills both rows. */
 export const rugPositions = (run: Run) => Math.ceil(run.config.handSize / 2)
 
 /**
- * Stages the Run as it stands; or, given the `couch` of a Play already made,
- * with those Cats back on their Seats, as when the household falls asleep.
+ * A Cat's eye tint, the same wherever it is and whatever happens to it: a
+ * hash of its identity in this Run.
  */
-export function stage(
+export function eyeTint(run: Run, cat: CatId): EyeTint {
+  let hash = 0x811c9dc5
+  for (const char of `${run.seed}:${cat}`) {
+    hash ^= char.charCodeAt(0)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return eyeTints[(hash >>> 0) % eyeTints.length]
+}
+
+/**
+ * The Couch's Cats in the order they were placed, earliest first, as the
+ * Couch goes from `before` to `after`: Cats newly seated, or moved to another
+ * Seat, count as placed last, left to right; Cats that left are forgotten.
+ */
+export function seatingOrder(
+  order: readonly CatId[],
+  before: readonly (CatId | null)[],
+  after: readonly (CatId | null)[]
+): CatId[] {
+  const stayed = (cat: CatId) => before.indexOf(cat) === after.indexOf(cat)
+  return [
+    ...order.filter((cat) => after.includes(cat) && stayed(cat)),
+    ...after.filter(
+      (cat): cat is CatId =>
+        cat !== null && !(order.includes(cat) && stayed(cat))
+    )
+  ]
+}
+
+type Pose = { pose: CatPose; facing: Facing }
+
+/** How a Cat looks: its pose, which way it faces, and its eyes. */
+export type CatLook = Pick<StagedCat, "pose" | "facing" | "eyeTint">
+
+/**
+ * A Cat at rest, content and facing as drawn, as the rug and the Shop show
+ * every Cat.
+ */
+export const atRest = (run: Run, cat: Cat): CatLook => ({
+  pose: catArt(cat.coat, cat.personality, "content"),
+  facing: "right",
+  eyeTint: eyeTint(run, cat.id)
+})
+
+/**
+ * A seated Cat's pose, from the same Neighbors its Personality bonus counts:
+ * a Clingy Cat leans toward a Neighbor; an Aloof Cat is offended by one, and
+ * turns away; a Sleepy Cat curls up facing a Sleepy Neighbor. With two to
+ * choose from, it heeds the one placed most recently (the right-hand one, if
+ * that is not known).
+ */
+function seatedPose(
+  couch: readonly (Cat | null)[],
+  seat: number,
+  order: readonly CatId[]
+): Pose {
+  const cat = couch[seat]!
+  const beside = (side: Facing) => couch[seat + (side === "left" ? -1 : 1)]
+  const heeds = (neighbor: Cat | null | undefined) =>
+    !!neighbor &&
+    (cat.personality !== "sleepy" || neighbor.personality === "sleepy")
+  const sides = (["left", "right"] as const).filter((side) =>
+    heeds(beside(side))
+  )
+  if (sides.length === 0) return { pose: "content", facing: "right" }
+  const placed = (side: Facing) => order.indexOf(beside(side)!.id)
+  const toward =
+    sides.length === 2 && placed("left") > placed("right")
+      ? "left"
+      : sides.at(-1)!
+  const away: Facing = toward === "left" ? "right" : "left"
+  return {
+    pose: "reacting",
+    facing: cat.personality === "aloof" ? away : toward
+  }
+}
+
+/**
+ * Stages the Run as it stands, given the order its seated Cats were placed in
+ * (see `seatingOrder`).
+ */
+export function stage(run: Run, order: readonly CatId[] = []): Staging {
+  const byId = new Map(run.roster.map((cat) => [cat.id, cat]))
+  const couch = run.night.couch.map((id) => (id ? byId.get(id)! : null))
+  const seated = (cat: Cat, seat: number): CatLook => {
+    const { pose, facing } = seatedPose(couch, seat, order)
+    return {
+      pose: catArt(cat.coat, cat.personality, pose),
+      facing,
+      eyeTint: eyeTint(run, cat.id)
+    }
+  }
+  return {
+    cats: placed(run, run.night.couch).map(({ cat, placement }) => ({
+      cat,
+      placement,
+      ...(placement.on === "couch"
+        ? seated(byId.get(cat)!, placement.seat)
+        : atRest(run, byId.get(cat)!))
+    })),
+    houseCats: stageShelf(run)
+  }
+}
+
+/**
+ * Stages the Run once it is over, the household asleep: the last Play's
+ * `couch` back on their Seats, the rest of the Hand on the rug, every Cat
+ * curled up in its Coat's sleeping pose.
+ */
+export function stageAsleep(
   run: Run,
-  couch: readonly (CatId | null)[] = run.night.couch
+  couch: readonly (CatId | null)[]
 ): Staging {
-  const { hand } = run.night
+  const byId = new Map(run.roster.map((cat) => [cat.id, cat]))
+  return {
+    cats: placed(run, couch).map(({ cat, placement }) => ({
+      cat,
+      placement,
+      pose: catArt(byId.get(cat)!.coat, "sleepy", "content"),
+      facing: "right",
+      eyeTint: eyeTint(run, cat)
+    })),
+    houseCats: stageShelf(run)
+  }
+}
+
+/** Where each Cat in view is, with `couch`'s Cats on their Seats. */
+function placed(run: Run, couch: readonly (CatId | null)[]) {
   const perRow = rugPositions(run)
-  const seated: StagedCat[] = couch.flatMap((cat, seat) =>
-    cat ? [{ cat, placement: { on: "couch", seat } }] : []
+  const seated = couch.flatMap((cat, seat) =>
+    cat ? [{ cat, placement: { on: "couch", seat } as Placement }] : []
   )
   // The rest of the Hand lounges on the rug in Hand order, the front row
   // filling first and closing up behind any Cat that leaves it.
-  const lounging: StagedCat[] = hand
+  const lounging = run.night.hand
     .filter((cat) => !couch.includes(cat))
     .map((cat, i) => ({
       cat,
@@ -47,7 +207,36 @@ export function stage(
         on: "rug",
         row: i < perRow ? "front" : "back",
         position: i % perRow
-      }
+      } as Placement
     }))
-  return { cats: [...seated, ...lounging] }
+  return [...seated, ...lounging]
+}
+
+/**
+ * The Shelf's House Cats at rest, each with what it has built up: Freya how
+ * far she has warmed up tonight, and The Void how much base Purr it has grown
+ * the Roster's Cats. A Copycat builds up whatever it copies.
+ */
+export function stageShelf(run: Run): StagedHouseCat[] {
+  const copied = copying(run.shelf)
+  const grown = run.roster.reduce(
+    (sum, cat) => sum + Math.max(0, cat.basePurr - run.config.basePurr),
+    0
+  )
+  return run.shelf.map((id, position) => {
+    const acts = id === "copycat" ? copied[position] : id
+    const { warmsUp, times, grows } = acts ? houseCat(acts) : {}
+    // Warmed up by past Plays alone, since an empty Couch warms no one.
+    const warmth = warmsUp && times?.([], run.night)
+    return {
+      houseCat: id,
+      pose: houseCatArt(id, "idle"),
+      name:
+        id === "copycat" && acts
+          ? `Copycat as ${houseCat(acts).name}`
+          : houseCat(id).name,
+      state: warmth ? `×${warmth.toFixed(1)}` : grows ? `+${grown} Purr` : null,
+      inert: acts === null
+    }
+  })
 }

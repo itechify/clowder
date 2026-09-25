@@ -1,3 +1,5 @@
+import type { CatId } from "../engine"
+
 /** The scenes that show a Run, by their Phaser keys. */
 export type SceneKey = "couch" | "shop"
 
@@ -12,6 +14,12 @@ class Presentation {
   scoring = false
   /** The Run is over and the household has fallen asleep. */
   asleep = false
+  /**
+   * The Couch's Cats in the order they were placed, earliest first, which way
+   * they face depends on (see staging's `seatingOrder`). Not a change the
+   * shell follows.
+   */
+  seatingOrder: CatId[] = []
   /** Bumped on every change, for React's useSyncExternalStore. */
   revision = 0
   private listeners = new Set<() => void>()
