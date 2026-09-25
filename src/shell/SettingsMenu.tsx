@@ -1,4 +1,5 @@
 import { useState, useSyncExternalStore } from "react"
+import { sound } from "../audio/sound"
 import { scoringSpeeds, settings } from "./settings"
 
 /**
@@ -15,7 +16,10 @@ export function SettingsMenu() {
           type="button"
           className="settings-button"
           aria-label="Settings"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            sound.cue({ name: "uiTap" })
+            setOpen(true)
+          }}
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
@@ -103,7 +107,13 @@ export function SettingsMenu() {
                 />
               </label>
             </div>
-            <button type="button" onClick={() => setOpen(false)}>
+            <button
+              type="button"
+              onClick={() => {
+                sound.cue({ name: "uiTap" })
+                setOpen(false)
+              }}
+            >
               Done
             </button>
           </section>
