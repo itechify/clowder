@@ -1,11 +1,17 @@
 import { expect, type Page } from "@playwright/test"
 import type {} from "../src/game/debugHook"
 
-/** Opens the game on a seeded Run, with the debug hook ready. */
+/** Opens a seeded Run once its scene can receive actions from the debug hook. */
 export async function boot(page: Page, seed: number) {
   await page.goto(`/?seed=${seed}`)
   await expect(page.locator("#game canvas")).toBeVisible()
-  await page.waitForFunction(() => "__clowder" in window)
+  // The hook is installed before BootScene finishes loading the art. Acting
+  // then can skip the Couch's scoring subscription entirely.
+  await page.waitForFunction(() =>
+    window.__clowder
+      ?.scenes()
+      .some((scene) => scene === "couch" || scene === "shop")
+  )
 }
 
 /** Opens the Settings menu, returning it. */
