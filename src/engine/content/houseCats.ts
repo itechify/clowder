@@ -34,7 +34,7 @@ export type HouseCat = {
    */
   grows?: (cat: Cat, gatherings: number) => number | null
   /** Treats it pays on clearing `night`, as the Night stands when cleared. */
-  clearTreats?: (night: Night) => number | null
+  paysOnClear?: (night: Night) => number | null
   /** Whether the Play warms it up, raising its × for the rest of the Night. */
   warmsUp?: (couch: Couch) => boolean
   /** Phase 3: multiplies the Play's Mult. */
@@ -104,7 +104,7 @@ export const houseCats: readonly HouseCat[] = [
     id: "treatDealer",
     name: "Treat Dealer",
     ability: "+1 Treat per unused Redraw when a Night is cleared",
-    clearTreats: (night) => (night.redrawsLeft > 0 ? night.redrawsLeft : null)
+    paysOnClear: (night) => (night.redrawsLeft > 0 ? night.redrawsLeft : null)
   },
   {
     id: "boxGoblin",
@@ -157,7 +157,7 @@ export const clearTreats = (
   shelf: readonly HouseCatId[],
   night: Night
 ): HouseCatTreats[] =>
-  actingShelf(shelf).flatMap(({ id, name, clearTreats }) => {
-    const treats = clearTreats?.(night) ?? null
+  actingShelf(shelf).flatMap(({ id, name, paysOnClear }) => {
+    const treats = paysOnClear?.(night) ?? null
     return treats === null ? [] : [{ houseCat: id, name, treats }]
   })

@@ -12,15 +12,15 @@ export type ActiveGathering = {
   seats: number[]
 }
 
-/**
- * A House Cat adding Mult: once to the whole Play, alongside the Gatherings, or
- * to one Scoring event.
- */
-export type WholePlayEffect = {
+/** Mult a House Cat adds. */
+export type MultEffect = {
   houseCat: HouseCatId
   name: string
   mult: number
 }
+
+/** A House Cat adding Mult once to the whole Play, alongside the Gatherings. */
+export type WholePlayEffect = MultEffect
 
 /**
  * What gave a Cat its Scoring event: its Seat, when the Play scores it, or the
@@ -42,7 +42,7 @@ export type ScoringEvent = {
   /** Mult added by effects that fire when this Cat scores... */
   mult: number
   /** ...each House Cat's share of it, in Shelf order. */
-  multFrom: WholePlayEffect[]
+  multFrom: MultEffect[]
 }
 
 /** Base Purr a played Cat gains for good from a House Cat, once the Play is scored. */
