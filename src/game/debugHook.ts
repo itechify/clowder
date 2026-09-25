@@ -10,7 +10,7 @@ import {
 } from "../engine"
 import { type Staging, stage } from "../presentation/staging"
 import { artTexture, delivered } from "./art"
-import { presentation } from "./presentation"
+import { type PlayedEffect, presentation } from "./presentation"
 import { session } from "./session"
 
 export type DebugHook = {
@@ -30,6 +30,8 @@ export type DebugHook = {
   staging: () => Staging
   /** Every sound cue the game has asked for, in order. */
   cues: () => Cue[]
+  /** The effects of every scoring step the scene has played, in order. */
+  effects: () => PlayedEffect[]
   /** Whether audio has started, and the theme for what is showing. */
   audio: () => { unlocked: boolean; theme: ThemeName | null }
 }
@@ -63,6 +65,7 @@ export function installDebugHook(game: Phaser.Game) {
         .flatMap((scene) => textsIn(scene.children.list)),
     staging: () => stage(session.run, presentation.seatingOrder),
     cues: () => [...sound.log],
+    effects: () => [...presentation.effects],
     audio: () => ({ unlocked: sound.unlocked, theme: sound.theme })
   }
 }

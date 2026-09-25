@@ -34,12 +34,14 @@ import {
 } from "../presentation/staging"
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
-import { drawCat } from "./characters"
-import { choreograph, type Step, skippedCues } from "./choreography"
+import { drawCat, drawHouseCat } from "./characters"
+import { choreograph, countedUp, type Step, skippedCues } from "./choreography"
+import { effectConfig } from "./effectConfig"
 import { display, font, numbers, OUTLINE } from "./fonts"
 import { HEIGHT, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { INK } from "./roomArt"
+import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
@@ -58,6 +60,8 @@ const WINDOW = { x: 112, y: 100 }
 const MOON = { x: 155, y: 90 }
 const TREAT_JAR = { x: 362, y: 60 }
 const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
+/** How far above the jar's base its mouth is, where treats rain in. */
+const JAR_MOUTH = 44
 /** The Disaster sign's nail, and how wide its words may run inside its border. */
 const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
 const PURR_METER = { x: WIDTH / 2, y: 264 }
@@ -94,11 +98,12 @@ const HOP_HEIGHT = 46
 const GATHERING_NAME_Y = 236
 const GATHERING_NAME_STEP = 25
 /**
- * The colours numbers pop up in as a Play scores: Purr, then a House Cat's
- * Repeats, The Void's growth, and Freya's hearts.
+ * The colours numbers pop up in as a Play scores: Purr, Mult, then a House
+ * Cat's Repeats, The Void's growth, and Freya's hearts.
  */
 const POP = {
   purr: "#ffa94d",
+  mult: "#ff5a4a",
   repeat: "#c4b0ff",
   growth: "#c4b0ff",
   heart: "#ff9cbb"
@@ -106,6 +111,10 @@ const POP = {
 /** A picked-up Cat glows warm; one chosen to Redraw glows cool, ringed. */
 const GLOW = { held: 0xfff1b0, chosen: 0xa9c8ee, chosenRing: 0x4f79a8 }
 const PREVIEW_Y = 446
+/** How far either side of the tally's "×" its Purr and Mult totals sit. */
+const TALLY_GAP = 12
+/** Where a Play's Score counts up and lands, just above the tally. */
+const SCORE_Y = PREVIEW_Y - 40
 const BREAKDOWN_Y = 486
 const PLAY_BUTTON = { x: 135, y: 790, w: 230, h: 58 }
 const REDRAW_BUTTON = { x: 316, y: 790, w: 108, h: 58 }
@@ -745,7 +754,7 @@ export class CouchScene extends Phaser.Scene {
    * treat jar and its Treats, the purr meter along the Couch's back filling
    * toward the Target, and tonight's Disaster on a sign; the Plays and
    * Redraws left are pips on their buttons. Returns how to show a different
-   * Night score, for counting up during scoring.
+   * Night score and Treats, and the jar, for scoring to animate.
    */
   private drawHud(run: Run, add: Add) {
     const { night, treats, meter, drawPile, disaster } = hud(run)
@@ -765,8 +774,8 @@ export class CouchScene extends Phaser.Scene {
         )
         .setOrigin(0, 0.5)
     )
-    add(addArt(this, art.room.treatJar, TREAT_JAR.x, TREAT_JAR.y))
-    add(
+    const jar = add(addArt(this, art.room.treatJar, TREAT_JAR.x, TREAT_JAR.y))
+    const treatCount = add(
       this.add
         .text(TREAT_COUNT.x, TREAT_COUNT.y, `${treats}`, numbers(30, "#f6c453"))
         .setOrigin(1, 0.5)
@@ -788,8 +797,14 @@ export class CouchScene extends Phaser.Scene {
     showMeter(meter)
 
     this.disasterSign = disaster ? add(this.drawDisasterSign(disaster)) : null
-    return (nightScore: number) =>
-      showMeter(purrMeter(nightScore, run.night.target))
+    return {
+      showScore: (nightScore: number) =>
+        showMeter(purrMeter(nightScore, run.night.target)),
+      showTreats: (treats: number) => treatCount.setText(`${treats}`),
+      treatCount,
+      jar,
+      meterWidth: glow.displayWidth
+    }
   }
 
   /**
@@ -1140,16 +1155,19 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * Plays out a Play's events over the Couch as it was committed: Gatherings
-   * appear, each Cat scores left to right, × effects fire, and the Score
-   * counts up toward the Target; then the Night as it now stands. Its Cats
-   * keep the poses they were placed in, in `order`. Paced by the scoring speed
-   * setting; a tap skips to the end.
+   * Plays out a Play's events over the Couch as it was committed, as the
+   * choreography scripts them: Gatherings appear, each Cat scores left to
+   * right, its Purr flying into the total, Mult slamming in, × effects firing
+   * with their House Cats triggered; then the Score counts up and lands, and
+   * treats rain into the jar if the Night is cleared; then the Night as it now
+   * stands. Its Cats keep the poses they were placed in, in `order`. Paced by
+   * the scoring speed setting, and as calm as Reduced motion asks; a tap skips
+   * to the end.
    */
   private playScoring(before: Run, order: CatId[], events: RunEvent[]) {
     const beat = (ms: number) => ms / settings.scoringSpeed
     const add = this.clearLayer()
-    const showScore = this.drawHud(before, add)
+    const room = this.drawHud(before, add)
     const catById = new Map(before.roster.map((cat) => [cat.id, cat]))
     this.lastCouch = before.night.couch
 
@@ -1177,20 +1195,80 @@ export class CouchScene extends Phaser.Scene {
       size: SHELF_CAT_SIZE
     })
 
-    // Purr × Mult so far, where the preview was.
-    const tally = add(
+    // Purr × Mult so far, where the preview was: each Cat's Purr flies into
+    // the Purr total, and Mult slams into its own. The Score counts up above.
+    const purrTotal = add(
       this.add
-        .text(WIDTH / 2, PREVIEW_Y, purrTimesMult(0, 1), numbers(22))
+        .text(WIDTH / 2 - TALLY_GAP, PREVIEW_Y, "0 Purr", numbers(22))
+        .setOrigin(1, 0.5)
+    )
+    add(this.add.text(WIDTH / 2, PREVIEW_Y, "×", numbers(22)).setOrigin(0.5))
+    const multTotal = add(
+      this.add
+        .text(WIDTH / 2 + TALLY_GAP, PREVIEW_Y, "1.0", numbers(22))
+        .setOrigin(0, 0.5)
+    )
+    const scoreTotal = add(
+      this.add
+        .text(WIDTH / 2, SCORE_Y, "", numbers(34, POP.purr))
         .setOrigin(0.5)
     )
-    const showTally = (text: string) => {
-      tally.setText(text)
-      this.tweens.add({
-        targets: tally,
-        scale: { from: 1.18, to: 1 },
-        duration: beat(180),
-        ease: "Quad.easeOut"
+    const burst = {
+      purr: sparks(this, add, SPARKS.purr),
+      mult: sparks(this, add, SPARKS.mult),
+      landed: sparks(this, add, SPARKS.landed)
+    }
+    /** A number growing from `from` times its size back to its own. */
+    const bump = (
+      text: Phaser.GameObjects.Text,
+      from: number,
+      ms: number,
+      ease = "Quad.easeOut"
+    ) => {
+      this.tweens.killTweensOf(text)
+      return this.tweens.add({
+        targets: text,
+        scale: { from, to: 1 },
+        duration: beat(ms),
+        ease
       })
+    }
+    const showPurr = (purr: number) => {
+      purrTotal.setText(`${purr} Purr`)
+      bump(purrTotal, 1.18, 180)
+    }
+    /** A step landing: its sparks burst, the room shakes and flashes, and it pulses. */
+    const impact = (
+      step: Step,
+      at: Point,
+      spray: (count: number, at: Point) => void
+    ) => {
+      spray(step.particles, at)
+      if (step.shake > 0)
+        this.cameras.main.shake(beat(effectConfig.shakeMs), step.shake)
+      flash(this, add, step.flash, beat(effectConfig.flashMs))
+      if (step.haptic) pulse(step.haptic)
+    }
+    /** Mult slams into its total in red, a × harder, and lands with its step's impact. */
+    const slamMult = (mult: number, step: Step) => {
+      const hard = step.slam === "times"
+      multTotal.setText(mult.toFixed(1)).setColor(POP.mult)
+      bump(multTotal, hard ? 2.4 : 1.7, hard ? 200 : 150, "Cubic.easeIn").on(
+        "complete",
+        () => {
+          impact(
+            step,
+            { x: multTotal.x + multTotal.width / 2, y: PREVIEW_Y },
+            burst.mult
+          )
+          this.tweens.add({
+            targets: multTotal,
+            scale: { from: 1.08, to: 1 },
+            duration: beat(260),
+            onComplete: () => multTotal.setColor("#fdf6ea")
+          })
+        }
+      )
     }
     const pop = (
       x: number,
@@ -1218,17 +1296,62 @@ export class CouchScene extends Phaser.Scene {
         onComplete: () => text.destroy()
       })
     }
+    /** A Cat's Purr pops above it, then flies into the Purr total. */
+    const flyPurr = (x: number, purr: number, arrive: () => void) => {
+      const text = add(
+        this.add
+          .text(x, SEAT_Y - 72, `+${purr}`, numbers(24, POP.purr))
+          .setOrigin(0.5)
+      )
+      this.tweens.add({
+        targets: text,
+        scale: { from: 0.4, to: 1 },
+        duration: beat(200),
+        ease: "Back.easeOut"
+      })
+      this.tweens.add({
+        targets: text,
+        x: purrTotal.x - purrTotal.width / 2,
+        y: PREVIEW_Y,
+        scale: 0.6,
+        alpha: 0.5,
+        delay: beat(200),
+        duration: beat(260),
+        ease: "Cubic.easeIn",
+        onComplete: () => {
+          text.destroy()
+          arrive()
+        }
+      })
+    }
 
     /**
-     * A House Cat on the Shelf hops as its effect fires, from where it sits
-     * however quickly its effects follow one another.
+     * The House Cats on the Shelf, each shown at rest or, while its effect
+     * fires, in its triggered pose; each hops as its effect fires, from where
+     * it sits however quickly its effects follow one another.
      */
+    const showing = new Map(shelved)
     const home = new Map([...shelved].map(([id, sprite]) => [id, sprite.y]))
+    const pose = (id: HouseCatId, key: string | null) => {
+      const resting = shelved.get(id)
+      const current = showing.get(id)
+      if (!resting || !current) return
+      if (current !== resting) current.destroy()
+      resting.setVisible(key === null)
+      showing.set(
+        id,
+        key === null
+          ? resting
+          : add(drawHouseCat(this, key, SHELF_CAT_SIZE))
+              .setPosition(resting.x, home.get(id)!)
+              .setAlpha(resting.alpha)
+      )
+    }
     const hop = (id: HouseCatId, label: string, colour?: string) => {
-      const sprite = shelved.get(id)
+      const sprite = showing.get(id)
       if (!sprite) return
       this.tweens.killTweensOf(sprite)
-      sprite.setY(home.get(id)!).setScale(1)
+      sprite.setY(home.get(id)!).setScale(1).setAngle(0)
       this.tweens.add({
         targets: sprite,
         y: sprite.y - 12,
@@ -1240,9 +1363,46 @@ export class CouchScene extends Phaser.Scene {
       })
       pop(sprite.x, sprite.y - SHELF_CAT_SIZE * 0.6, label, 20, colour)
     }
+    /** A × House Cat rattles as the room shakes (Box Goblin's box)... */
+    const rattle = (id: HouseCatId) => {
+      const sprite = showing.get(id)
+      if (!sprite) return
+      this.tweens.add({
+        targets: sprite,
+        angle: { from: -7, to: 7 },
+        duration: beat(50),
+        yoyo: true,
+        repeat: 3,
+        onComplete: () => sprite.setAngle(0)
+      })
+    }
+    /** ...and glows as it flashes (Freya warming). */
+    const glow = (id: HouseCatId, alpha: number) => {
+      const sprite = showing.get(id)
+      if (!sprite) return
+      const light = add(
+        this.add.ellipse(
+          sprite.x,
+          sprite.y,
+          SHELF_CAT_SIZE * 1.5,
+          SHELF_CAT_SIZE * 1.5,
+          GLOW.held
+        )
+      ).setAlpha(Math.min(1, alpha * 2))
+      this.layer.moveBelow<Phaser.GameObjects.GameObject>(light, sprite)
+      this.tweens.add({
+        targets: light,
+        alpha: 0,
+        duration: beat(600),
+        onComplete: () => light.destroy()
+      })
+    }
 
     // Each event gets a beat of its own, in order, with its sounds.
-    const script = choreograph(events, settings)
+    const script = choreograph(
+      { events, target: before.night.target },
+      settings
+    )
     const timers: Phaser.Time.TimerEvent[] = []
     const counters: Phaser.Tweens.Tween[] = []
     let gatherings = 0
@@ -1250,7 +1410,8 @@ export class CouchScene extends Phaser.Scene {
     const banners: (() => void)[] = []
     let bannersFreeAt = 0
     /** How a step shows, worked out as the sequence is laid out. */
-    const animate = ({ at, event }: Step): (() => void) => {
+    const animate = (step: Step): (() => void) => {
+      const { at, event } = step
       switch (event.type) {
         case "gatheringActivated": {
           const stack = gatherings++
@@ -1260,42 +1421,40 @@ export class CouchScene extends Phaser.Scene {
             if (event.firstTime)
               banners.push(this.discover(event.name, wait, beat))
             this.revealGathering(add, event, stack, beat)
-            showTally(purrTimesMult(event.tally.purr, event.tally.mult))
+            slamMult(event.tally.mult, step)
           }
         }
         case "wholePlayEffect":
           return () => {
-            hop(event.houseCat, `+${event.mult} Mult`)
-            showTally(purrTimesMult(event.tally.purr, event.tally.mult))
+            hop(event.houseCat, `+${event.mult} Mult`, POP.mult)
+            slamMult(event.tally.mult, step)
           }
         case "catScored":
         case "repeat":
           return () => {
             const x = this.seatX[event.seat]
             const sprite = seated.get(event.seat)
-            if (sprite) {
-              this.tweens.killTweensOf(sprite)
-              sprite.setPosition(x, SEAT_Y - 12).setScale(1)
-              this.tweens.add({
-                targets: sprite,
-                y: sprite.y - 14,
-                scaleX: 0.92,
-                scaleY: 1.1,
-                duration: beat(120),
-                yoyo: true,
-                ease: "Quad.easeOut"
-              })
-            }
+            if (sprite) this.scoreHop(sprite, { x, y: SEAT_Y - 12 }, beat)
             // A Repeat is the same Cat scoring again, sent by a House Cat.
             if (event.source !== "seat") {
               hop(event.source, "Repeat!")
               pop(x, SEAT_Y - 128, "Repeat!", 15, POP.repeat)
             }
-            pop(x, SEAT_Y - 72, `+${event.purr}`, 24)
-            if (event.mult) pop(x, SEAT_Y - 100, `+${event.mult} Mult`, 16)
+            flyPurr(x, event.purr, () => {
+              showPurr(event.tally.purr)
+              if (!step.slam)
+                impact(
+                  step,
+                  { x: purrTotal.x - purrTotal.width / 2, y: PREVIEW_Y },
+                  burst.purr
+                )
+            })
+            if (event.mult) {
+              pop(x, SEAT_Y - 100, `+${event.mult} Mult`, 16, POP.mult)
+              slamMult(event.tally.mult, step)
+            }
             for (const from of event.multFrom)
-              hop(from.houseCat, `+${from.mult} Mult`)
-            showTally(purrTimesMult(event.tally.purr, event.tally.mult))
+              hop(from.houseCat, `+${from.mult} Mult`, POP.mult)
           }
         case "houseCatWarmedUp":
           // Freya warms up a little more, a heart at a time.
@@ -1318,39 +1477,85 @@ export class CouchScene extends Phaser.Scene {
           }
         case "timesEffect":
           return () => {
-            hop(event.houseCat, `×${event.times.toFixed(1)}`)
-            showTally(purrTimesMult(event.tally.purr, event.tally.mult))
+            hop(event.houseCat, `×${event.times.toFixed(1)}`, POP.mult)
+            if (step.shake > 0) rattle(event.houseCat)
+            if (step.flash > 0) glow(event.houseCat, step.flash)
+            slamMult(event.tally.mult, step)
           }
-        case "scoreTotal":
+        case "scoreTotal": {
+          // The Score counts up, faster and faster...
+          const { countUp } = step
+          if (countUp)
+            return () => {
+              scoreTotal.setText("0")
+              counters.push(
+                this.tweens.addCounter({
+                  from: 0,
+                  to: countUp.duration,
+                  duration: countUp.duration,
+                  onUpdate: (tween) =>
+                    scoreTotal.setText(
+                      `${countedUp(countUp, tween.getValue()!)}`
+                    )
+                })
+              )
+            }
+          // ...then lands with a thump, and the purr meter fills, perhaps
+          // catching fire.
           return () => {
-            showTally(
-              `${purrTimesMult(event.purr, event.mult)} = ${event.score}`
-            )
-            pop(WIDTH / 2, PREVIEW_Y - 36, `${event.score}!`, 34)
+            scoreTotal.setText(`${event.score}`)
+            bump(scoreTotal, 1.7, 300, "Back.easeOut")
+            impact(step, { x: WIDTH / 2, y: SCORE_Y }, burst.landed)
+            if (step.fire) fire(this, add, PURR_METER, room.meterWidth)
             counters.push(
               this.tweens.addCounter({
                 from: before.night.score,
                 to: event.nightScore,
                 duration: beat(700),
                 ease: "Cubic.easeOut",
-                onUpdate: (tween) => showScore(Math.round(tween.getValue()!))
+                onUpdate: (tween) =>
+                  room.showScore(Math.round(tween.getValue()!))
               })
             )
           }
+        }
         case "nightCleared":
-          return () => pop(WIDTH / 2, 170, "Night cleared!", 34)
-        case "treatsAwarded":
+          return () => {
+            pop(WIDTH / 2, 170, "Night cleared!", 34)
+            impact(step, { x: WIDTH / 2, y: 170 }, burst.landed)
+          }
+        case "treatsAwarded": {
+          // Treats rain into the jar, then are paid.
+          const { rain: drops } = step
+          if (drops)
+            return () =>
+              rain(this, add, {
+                ...drops,
+                into: { x: TREAT_JAR.x, y: TREAT_JAR.y - JAR_MOUTH },
+                jar: room.jar
+              })
           return () => {
             pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24)
+            room.showTreats(before.treats + event.treats)
+            bump(room.treatCount, 1.4, 260, "Back.easeOut")
             for (const paid of event.forHouseCats)
               hop(paid.houseCat, `+${paid.treats} Treats`)
           }
+        }
         case "nightLost":
           return () => pop(WIDTH / 2, 170, "Night lost", 30)
         default:
           return () => {}
       }
     }
+    // House Cats switch to their triggered poses as their effects fire.
+    for (const window of script.poses)
+      timers.push(
+        this.time.delayedCall(window.from, () =>
+          pose(window.houseCat, window.pose)
+        ),
+        this.time.delayedCall(window.to, () => pose(window.houseCat, null))
+      )
     /** How many steps have played out, sounds and all. */
     let stepsPlayed = 0
     script.steps.forEach((step, i) => {
@@ -1359,6 +1564,7 @@ export class CouchScene extends Phaser.Scene {
         this.time.delayedCall(step.at, () => {
           stepsPlayed = i + 1
           for (const cue of step.cues) sound.cue(cue)
+          presentation.played(step)
           show()
         })
       )
@@ -1370,8 +1576,13 @@ export class CouchScene extends Phaser.Scene {
       this.scoring = null
       for (const timer of timers) timer.remove()
       for (const counter of counters) counter.stop()
-      // Played out, a banner may take its bow; cut short, it goes at once.
-      if (ending !== "played") for (const dismiss of banners) dismiss()
+      this.cameras.main.resetFX()
+      // Played out, a banner may take its bow; cut short, it goes at once,
+      // and so does any pulse.
+      if (ending !== "played") {
+        for (const dismiss of banners) dismiss()
+        if (settings.haptics) pulse([0])
+      }
       // Skipped, the sequence still sounds how it ends, if it hadn't yet.
       if (ending === "skipped")
         for (const cue of skippedCues(script, stepsPlayed)) sound.cue(cue)
@@ -1395,6 +1606,33 @@ export class CouchScene extends Phaser.Scene {
     timers.push(this.time.delayedCall(script.duration, () => finish("played")))
     this.skipArea.setInteractive()
     presentation.update({ scoring: true })
+  }
+
+  /** A Cat scoring hops up from its Seat at `rest`, and squashes as it lands. */
+  private scoreHop(
+    sprite: Phaser.GameObjects.Container,
+    rest: Point,
+    beat: (ms: number) => number
+  ) {
+    this.tweens.killTweensOf(sprite)
+    sprite.setPosition(rest.x, rest.y).setScale(1)
+    this.tweens.add({
+      targets: sprite,
+      y: rest.y - 14,
+      scaleX: 0.92,
+      scaleY: 1.1,
+      duration: beat(120),
+      yoyo: true,
+      ease: "Quad.easeOut",
+      onComplete: () =>
+        this.tweens.add({
+          targets: sprite,
+          scaleX: { from: 1.16, to: 1 },
+          scaleY: { from: 0.86, to: 1 },
+          duration: beat(200),
+          ease: "Back.easeOut"
+        })
+    })
   }
 
   /** Brings one Gathering onto the Couch mid-sequence, its name `stack` high. */

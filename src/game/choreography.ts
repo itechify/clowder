@@ -1,24 +1,65 @@
+import { houseCatArt } from "../art/manifest"
 import type { Cue, CueName } from "../audio/cues"
-import type { RunEvent } from "../engine"
+import type { HouseCatId, RunEvent } from "../engine"
 import type { ScoringSpeed } from "../shell/settings"
+import { type EffectConfig, effectConfig, type Impact } from "./effectConfig"
 
-/** One beat of a Play's scoring sequence: an engine event, and what sounds. */
+/** Mult slamming into the Mult total: added, or multiplied by a × effect. */
+export type Slam = "mult" | "times"
+
+/**
+ * One beat of a Play's scoring sequence: an engine event, what sounds, and
+ * how hard it hits.
+ */
 export type Step = {
   /** When it begins, in ms from the start of the sequence. */
   at: number
   event: RunEvent
+  /**
+   * A step leading into its event's own: the Score counting up before it
+   * lands, or Treats raining into the jar before they are paid.
+   */
+  prelude?: true
   cues: Cue[]
+  slam?: Slam
+  /** The purr meter catches fire as this Score lands. */
+  fire?: true
+  countUp?: CountUp
+  rain?: Rain
+} & Impact
+
+/** The Score counting up from 0 `to` itself over `duration` ms (see `countedUp`). */
+export type CountUp = { to: number; duration: number; power: number }
+
+/** Treats raining into the jar: how many drops, over `duration` ms. */
+export type Rain = { drops: number; duration: number }
+
+/** A House Cat shown in a pose (an art key) from `from` ms until `to`. */
+export type PoseWindow = {
+  houseCat: HouseCatId
+  pose: string
+  from: number
+  to: number
 }
 
 /** A Play's scoring sequence, as the scene plays it out. */
 export type Script = {
   steps: Step[]
+  /** When House Cats switch to their triggered pose, as their effects fire. */
+  poses: PoseWindow[]
   /** How long the whole sequence lasts, in ms. */
   duration: number
 }
 
+/** A Play to choreograph: the events it returned, and its Night's Target. */
+export type Play = { events: RunEvent[]; target: number }
+
 /** The settings a scoring sequence follows. */
-export type ChoreographySettings = { scoringSpeed: ScoringSpeed }
+export type ChoreographySettings = {
+  scoringSpeed: ScoringSpeed
+  reducedMotion: boolean
+  haptics: boolean
+}
 
 /** A moment's pause before the first step, and after the last. */
 const LEAD_IN = 250
@@ -33,7 +74,8 @@ const beats: Partial<Record<RunEvent["type"], number>> = {
   houseCatWarmedUp: 600,
   catGrew: 450,
   timesEffect: 500,
-  scoreTotal: 1000,
+  /** Once the Score has counted up, it holds for this long. */
+  scoreTotal: 700,
   nightCleared: 500,
   treatsAwarded: 500,
   nightLost: 500
@@ -45,9 +87,20 @@ const beats: Partial<Record<RunEvent["type"], number>> = {
  * makes. It computes no rule.
  */
 export function choreograph(
-  events: RunEvent[],
-  { scoringSpeed }: ChoreographySettings
+  { events, target }: Play,
+  { scoringSpeed, reducedMotion, haptics }: ChoreographySettings,
+  config: EffectConfig = effectConfig
 ): Script {
+  // Reduced motion keeps every number and cue, and particles only softened.
+  const soften = (count: number) =>
+    reducedMotion ? Math.ceil(count * config.reducedParticles) : count
+  const felt = ({ shake, flash, particles, haptic }: Impact): Impact => ({
+    shake: reducedMotion ? 0 : shake,
+    flash: reducedMotion ? 0 : flash,
+    particles: soften(particles),
+    haptic: haptics ? haptic : null
+  })
+
   // Each Scoring event, Repeats included, sounds a step higher than the last.
   let pitch = 0
   const cuesFor = (event: RunEvent): Cue[] => {
@@ -76,14 +129,158 @@ export function choreograph(
   }
 
   const steps: Step[] = []
+  const poses: PoseWindow[] = []
+  /** Holds a House Cat's triggered pose, running on from one still held. */
+  const trigger = (houseCat: HouseCatId, from: number, to: number) => {
+    const held = poses.findLast((window) => window.houseCat === houseCat)
+    if (held && held.to >= from) held.to = Math.max(held.to, to)
+    else poses.push({ houseCat, pose: triggeredPose(houseCat), from, to })
+  }
   let time = LEAD_IN
+  // Effects escalate with the Play's Score so far, as a share of the Target.
+  let score = 0
   for (const event of events) {
     const beat = beats[event.type]
     if (beat === undefined) continue
-    steps.push({ at: time / scoringSpeed, event, cues: cuesFor(event) })
+    if ("tally" in event)
+      score = Math.floor(event.tally.purr * event.tally.mult)
+    if (event.type === "scoreTotal") score = event.score
+    const tier = tierOf(score / target, config)
+    const { intensity } = tier
+    // The Score counts up before it lands...
+    if (event.type === "scoreTotal") {
+      const countUp = {
+        to: event.score,
+        duration: tier.countUp / scoringSpeed,
+        power: config.countUpPower
+      }
+      steps.push({
+        at: time / scoringSpeed,
+        event,
+        prelude: true,
+        cues: [],
+        countUp,
+        ...still
+      })
+      time += tier.countUp
+    }
+    // ...and Treats rain into the jar before they are paid.
+    if (event.type === "treatsAwarded") {
+      const rain = {
+        drops: soften(Math.min(event.treats, config.rain.maxDrops)),
+        duration: config.rain.ms / scoringSpeed
+      }
+      steps.push({
+        at: time / scoringSpeed,
+        event,
+        prelude: true,
+        cues: [],
+        rain,
+        ...still
+      })
+      time += config.rain.ms
+    }
+    const slam = slamOf(event)
+    const fire =
+      event.type === "scoreTotal" && event.score >= config.fireAt * target
+    steps.push({
+      at: time / scoringSpeed,
+      event,
+      cues: cuesFor(event),
+      ...(slam ? { slam } : {}),
+      ...(fire && !reducedMotion ? { fire } : {}),
+      ...felt(
+        escalate(
+          slam ? config[slam] : fire ? config.fire : impactOf(event, config),
+          intensity
+        )
+      )
+    })
+    for (const houseCat of firing(event))
+      trigger(houseCat, time / scoringSpeed, (time + beat) / scoringSpeed)
     time += beat
   }
-  return { steps, duration: (time + TAIL) / scoringSpeed }
+  return { steps, poses, duration: (time + TAIL) / scoringSpeed }
+}
+
+/** The House Cats whose effects an event fires, in Shelf order. */
+function firing(event: RunEvent): HouseCatId[] {
+  switch (event.type) {
+    case "wholePlayEffect":
+    case "houseCatWarmedUp":
+    case "timesEffect":
+    case "catGrew":
+      return [event.houseCat]
+    case "catScored":
+    case "repeat":
+      return [
+        ...(event.source === "seat" ? [] : [event.source]),
+        ...event.multFrom.map((from) => from.houseCat)
+      ]
+    case "treatsAwarded":
+      return event.forHouseCats.map((paid) => paid.houseCat)
+    default:
+      return []
+  }
+}
+
+/** A House Cat's pose while its effect fires; Skadi rolls belly-up. */
+const triggeredPose = (houseCat: HouseCatId) =>
+  houseCatArt(houseCat, houseCat === "skadi" ? "bellyUp" : "triggered")
+
+/** The slam an event makes, if it adds Mult or multiplies it. */
+function slamOf(event: RunEvent): Slam | undefined {
+  switch (event.type) {
+    case "gatheringActivated":
+    case "wholePlayEffect":
+      return "mult"
+    case "catScored":
+    case "repeat":
+      return event.mult ? "mult" : undefined
+    case "timesEffect":
+      return "times"
+  }
+}
+
+const still: Impact = { shake: 0, flash: 0, particles: 0, haptic: null }
+
+/** How hard an event that slams nothing hits. */
+function impactOf(event: RunEvent, config: EffectConfig): Impact {
+  switch (event.type) {
+    case "catScored":
+    case "repeat":
+      return config.scored
+    case "scoreTotal":
+      return config.landed
+    case "nightCleared":
+      return config.cleared
+    default:
+      return still
+  }
+}
+
+/** The highest escalation tier a share of the Target reaches. */
+const tierOf = (share: number, { tiers }: EffectConfig) =>
+  tiers.findLast((tier) => share >= tier.from) ?? tiers[0]
+
+/** An impact at an escalation tier's intensity. */
+const escalate = (
+  { shake, flash, particles, haptic }: Impact,
+  intensity: number
+): Impact => ({
+  shake: shake * intensity,
+  flash: Math.min(1, flash * intensity),
+  particles: Math.round(particles * intensity),
+  haptic: haptic?.map((ms) => Math.round(ms * intensity)) ?? null
+})
+
+/**
+ * The number a count-up shows `elapsed` ms in: slow at first, then faster and
+ * faster, landing exactly on the Score.
+ */
+export function countedUp({ to, duration, power }: CountUp, elapsed: number) {
+  const progress = duration > 0 ? Math.min(1, elapsed / duration) : 1
+  return Math.round(to * progress ** power)
 }
 
 /** The cues that tell how a Play ended: its Score, then its Night's end. */

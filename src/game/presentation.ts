@@ -1,4 +1,14 @@
 import type { CatId } from "../engine"
+import type { Step } from "./choreography"
+
+/** How many recent effects the log keeps, for end-to-end tests. */
+const LOG_LENGTH = 1000
+
+/** The effects of a scoring step, as the scene played them. */
+export type PlayedEffect = Pick<
+  Step,
+  "shake" | "flash" | "particles" | "haptic"
+> & { event: Step["event"]["type"]; fire: boolean }
 
 /** The scenes that show a Run, by their Phaser keys. */
 export type SceneKey = "couch" | "shop"
@@ -20,6 +30,11 @@ class Presentation {
    * shell follows.
    */
   seatingOrder: CatId[] = []
+  /**
+   * The effects of the scoring steps played lately, in order; not a change
+   * the shell follows.
+   */
+  readonly effects: PlayedEffect[] = []
   /** Bumped on every change, for React's useSyncExternalStore. */
   revision = 0
   private listeners = new Set<() => void>()
@@ -28,6 +43,19 @@ class Presentation {
     Object.assign(this, change)
     this.revision++
     for (const listener of this.listeners) listener()
+  }
+
+  /** Notes a scoring step's effects as the scene plays it. */
+  played({ event, shake, flash, particles, haptic, fire }: Step) {
+    this.effects.push({
+      event: event.type,
+      shake,
+      flash,
+      particles,
+      haptic,
+      fire: !!fire
+    })
+    if (this.effects.length > LOG_LENGTH) this.effects.shift()
   }
 
   on = (listener: () => void) => {
