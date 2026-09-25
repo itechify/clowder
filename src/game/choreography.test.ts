@@ -468,6 +468,35 @@ describe("House Cats' triggered poses", () => {
     ])
   })
 
+  it("roll Skadi belly-up only for her own Repeats, not The Big Loaf's", () => {
+    // The end-Seat Sleepy Cat scores, then repeats for The Big Loaf and
+    // Skadi in turn; the Clingy Cat in Seat 5 repeats for Skadi alone.
+    const script = choreograph(
+      playOf(["sleepy", null, null, null, "clingy"], {
+        shelf: ["bigLoaf", "skadi"]
+      }),
+      plain
+    )
+
+    expect(script.poses).toEqual([
+      {
+        houseCat: "bigLoaf",
+        pose: "houseCat/bigLoaf/triggered",
+        ...during(script, "repeat", 0)
+      },
+      {
+        houseCat: "skadi",
+        pose: "houseCat/skadi/bellyUp",
+        ...during(script, "repeat", 1)
+      },
+      {
+        houseCat: "skadi",
+        pose: "houseCat/skadi/bellyUp",
+        ...during(script, "repeat", 2)
+      }
+    ])
+  })
+
   it("switch a Copycat as itself, after whomever it copies", () => {
     const script = choreograph(
       playOf(["clingy", "clingy", "clingy"], {

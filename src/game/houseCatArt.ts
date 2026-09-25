@@ -1,4 +1,5 @@
 import type Phaser from "phaser"
+import { FREYA_STAGES, type HouseCatPose } from "../art/manifest"
 import type { HouseCatId } from "../engine"
 
 type Graphics = Phaser.GameObjects.Graphics
@@ -63,16 +64,131 @@ function drawHeart(g: Graphics, x: number, y: number, r: number, fill: number) {
   )
 }
 
+/** Skadi at rest, lying on her side, relaxed and content, looking out. */
+function skadiOnHerSide(g: Graphics, size: number) {
+  const fill = 0x9a8f86
+  const outline = 0x5e554e
+  const belly = 0xf6eee4
+  const bodyY = size * 0.26
+  // Her tail curled along the plank...
+  for (const [width, colour] of [
+    [0.08, outline],
+    [0.05, fill]
+  ]) {
+    g.lineStyle(size * width, colour, 1).beginPath()
+    g.arc(size * 0.38, bodyY, size * 0.1, 0.5 * Math.PI, 1.6 * Math.PI, true)
+    g.strokePath()
+  }
+  // ...her long, lazy body, belly toward the viewer...
+  g.fillStyle(fill, 1).lineStyle(2, outline, 1)
+  g.fillEllipse(size * 0.06, bodyY, size * 0.68, size * 0.26)
+  g.strokeEllipse(size * 0.06, bodyY, size * 0.68, size * 0.26)
+  g.fillStyle(belly, 1).fillEllipse(
+    size * 0.06,
+    bodyY + size * 0.05,
+    size * 0.46,
+    size * 0.12
+  )
+  // ...front paws stretched out ahead of her...
+  g.fillStyle(fill, 1).lineStyle(1.5, outline, 1)
+  for (const x of [-0.42, -0.34]) {
+    g.fillEllipse(size * x, bodyY + size * 0.1, size * 0.14, size * 0.07)
+    g.strokeEllipse(size * x, bodyY + size * 0.1, size * 0.14, size * 0.07)
+  }
+  // ...and her head up, looking out, content.
+  const r = size * 0.18
+  const headX = -size * 0.26
+  const headY = bodyY - size * 0.14
+  drawHead(g, headX, headY, r, fill, outline)
+  g.fillStyle(0x2b1f1a, 1)
+  g.fillEllipse(headX - r * 0.38, headY, r * 0.22, r * 0.3)
+  g.fillEllipse(headX + r * 0.38, headY, r * 0.22, r * 0.3)
+  g.fillStyle(0xe86f7e, 1).fillTriangle(
+    headX - r * 0.1,
+    headY + r * 0.3,
+    headX + r * 0.1,
+    headY + r * 0.3,
+    headX,
+    headY + r * 0.42
+  )
+}
+
+/** Skadi rolled right over, when Belly Up triggers. */
+function skadiBellyUp(g: Graphics, size: number) {
+  const fill = 0x9a8f86
+  const outline = 0x5e554e
+  const belly = 0xf6eee4
+  const bodyY = size * 0.22
+  // Paws in the air...
+  g.lineStyle(size * 0.09, outline, 1)
+  for (const x of [-0.2, -0.06, 0.1, 0.22])
+    g.lineBetween(size * x, bodyY, size * (x + 0.02), bodyY - size * 0.26)
+  g.lineStyle(size * 0.06, fill, 1)
+  for (const x of [-0.2, -0.06, 0.1, 0.22])
+    g.lineBetween(size * x, bodyY, size * (x + 0.02), bodyY - size * 0.25)
+  g.fillStyle(belly, 1)
+  for (const x of [-0.2, -0.06, 0.1, 0.22])
+    g.fillCircle(size * (x + 0.02), bodyY - size * 0.27, size * 0.045)
+  // ...and the belly, offered to all.
+  g.fillStyle(fill, 1).lineStyle(2, outline, 1)
+  g.fillEllipse(0, bodyY, size * 0.72, size * 0.3)
+  g.strokeEllipse(0, bodyY, size * 0.72, size * 0.3)
+  g.fillStyle(belly, 1).fillEllipse(
+    size * 0.02,
+    bodyY - size * 0.02,
+    size * 0.44,
+    size * 0.17
+  )
+  // Her head upside down at the end of the Couch, ears pointing down.
+  const r = size * 0.17
+  const headX = -size * 0.36
+  const headY = bodyY + size * 0.02
+  g.fillStyle(outline, 1)
+  for (const side of [-1, 1])
+    g.fillTriangle(
+      headX + side * r * 0.95,
+      headY + r * 0.2,
+      headX + side * r * 0.2,
+      headY + r * 0.75,
+      headX + side * r * 0.85,
+      headY + r * 1.35
+    )
+  g.fillStyle(fill, 1).lineStyle(2, outline, 1)
+  g.fillCircle(headX, headY, r).strokeCircle(headX, headY, r)
+  drawClosedEyes(g, headX, headY + r * 0.05, r, 0x2b1f1a, true)
+  drawHeart(g, size * 0.3, -size * 0.2, size * 0.07, 0xe86f7e)
+}
+
+/** How far Freya has warmed up in a pose, from reserved (0) to affectionate (1). */
+function freyaWarmth(pose: HouseCatPose) {
+  const stage = pose.match(/^warming(\d+)$/)?.[1]
+  if (stage) return Number(stage) / FREYA_STAGES
+  // Her triggered pose is a warm moment, most of the way there.
+  return pose === "triggered" ? 2 / 3 : 0
+}
+
+/** Where Freya's hearts float, the first beside her, more as she warms up. */
+const FREYA_HEARTS = [
+  [0.36, -0.14],
+  [0.46, -0.32],
+  [0.26, -0.46],
+  [-0.3, -0.46]
+] as const
+
 /**
  * Each House Cat has its own look, since none has a Coat: Box Goblin peers
  * out of a cardboard box with gleaming eyes; Do Not Touch puffs up in a huff
  * beside its warning sign; One Braincell's lone braincell glows over its head;
- * The Big Loaf dozes as one enormous loaf; Skadi sprawls belly up, paws in the
- * air, adored; Freya peeks shyly over her shoulder, blushing; The Void is a
+ * The Big Loaf dozes as one enormous loaf; Skadi lies on her side, rolling
+ * belly up with paws in the air as she triggers; Freya peeks shyly over her
+ * shoulder, blushing, and turns to the viewer as she warms up; The Void is a
  * starry darkness with eyes; Copycat sits beside its own ghostly double; and
  * Treat Dealer lurks in a trench coat with a fish treat to hand.
  */
-const looks: Record<HouseCatId, (g: Graphics, size: number) => void> = {
+const looks: Record<
+  HouseCatId,
+  (g: Graphics, size: number, pose: HouseCatPose) => void
+> = {
   oneBraincell: (g, size) => {
     const fill = 0xe8893a
     const outline = 0x9c521b
@@ -148,76 +264,74 @@ const looks: Record<HouseCatId, (g: Graphics, size: number) => void> = {
     g.lineBetween(size * 0.2, -size * 0.2, size * 0.1, -size * 0.1)
     g.lineBetween(size * 0.1, -size * 0.1, size * 0.2, -size * 0.1)
   },
-  skadi: (g, size) => {
-    const fill = 0x9a8f86
-    const outline = 0x5e554e
-    const belly = 0xf6eee4
-    const bodyY = size * 0.22
-    // Paws in the air...
-    g.lineStyle(size * 0.09, outline, 1)
-    for (const x of [-0.2, -0.06, 0.1, 0.22])
-      g.lineBetween(size * x, bodyY, size * (x + 0.02), bodyY - size * 0.26)
-    g.lineStyle(size * 0.06, fill, 1)
-    for (const x of [-0.2, -0.06, 0.1, 0.22])
-      g.lineBetween(size * x, bodyY, size * (x + 0.02), bodyY - size * 0.25)
-    g.fillStyle(belly, 1)
-    for (const x of [-0.2, -0.06, 0.1, 0.22])
-      g.fillCircle(size * (x + 0.02), bodyY - size * 0.27, size * 0.045)
-    // ...and the belly, offered to all.
-    g.fillStyle(fill, 1).lineStyle(2, outline, 1)
-    g.fillEllipse(0, bodyY, size * 0.72, size * 0.3)
-    g.strokeEllipse(0, bodyY, size * 0.72, size * 0.3)
-    g.fillStyle(belly, 1).fillEllipse(
-      size * 0.02,
-      bodyY - size * 0.02,
-      size * 0.44,
-      size * 0.17
-    )
-    // Her head upside down at the end of the Couch, ears pointing down.
-    const r = size * 0.17
-    const headX = -size * 0.36
-    const headY = bodyY + size * 0.02
-    g.fillStyle(outline, 1)
-    for (const side of [-1, 1])
-      g.fillTriangle(
-        headX + side * r * 0.95,
-        headY + r * 0.2,
-        headX + side * r * 0.2,
-        headY + r * 0.75,
-        headX + side * r * 0.85,
-        headY + r * 1.35
-      )
-    g.fillStyle(fill, 1).lineStyle(2, outline, 1)
-    g.fillCircle(headX, headY, r).strokeCircle(headX, headY, r)
-    drawClosedEyes(g, headX, headY + r * 0.05, r, 0x2b1f1a, true)
-    drawHeart(g, size * 0.3, -size * 0.2, size * 0.07, 0xe86f7e)
-  },
-  freya: (g, size) => {
+  skadi: (g, size, pose) =>
+    pose === "idle" ? skadiOnHerSide(g, size) : skadiBellyUp(g, size),
+  freya: (g, size, pose) => {
     const fill = 0xf1e2cc
     const outline = 0x9c8468
     const ink = 0x2b1f1a
-    // Sitting turned away, tail wrapped round...
+    // From reserved (0) to affectionate (1), she turns toward the viewer.
+    const warmth = freyaWarmth(pose)
+    const toward = (from: number, to: number) => from + (to - from) * warmth
+    const bodyX = size * toward(0.06, 0)
     g.fillStyle(fill, 1).lineStyle(2, outline, 1)
-    g.fillEllipse(size * 0.06, size * 0.2, size * 0.5, size * 0.46)
-    g.strokeEllipse(size * 0.06, size * 0.2, size * 0.5, size * 0.46)
-    g.lineStyle(size * 0.08, outline, 1).beginPath()
-    g.arc(size * 0.06, size * 0.3, size * 0.26, 0.05 * Math.PI, 0.75 * Math.PI)
-    g.strokePath()
-    g.lineStyle(size * 0.05, fill, 1).beginPath()
-    g.arc(size * 0.06, size * 0.3, size * 0.26, 0.07 * Math.PI, 0.73 * Math.PI)
-    g.strokePath()
-    // ...peeking back over her shoulder, blushing.
+    g.fillEllipse(bodyX, size * 0.2, size * 0.5, size * 0.46)
+    g.strokeEllipse(bodyX, size * 0.2, size * 0.5, size * 0.46)
+    if (warmth < 1) {
+      // Her tail wrapped round...
+      g.lineStyle(size * 0.08, outline, 1).beginPath()
+      g.arc(bodyX, size * 0.3, size * 0.26, 0.05 * Math.PI, 0.75 * Math.PI)
+      g.strokePath()
+      g.lineStyle(size * 0.05, fill, 1).beginPath()
+      g.arc(bodyX, size * 0.3, size * 0.26, 0.07 * Math.PI, 0.73 * Math.PI)
+      g.strokePath()
+    } else {
+      // ...until it goes up like a question mark.
+      for (const [width, colour] of [
+        [0.08, outline],
+        [0.05, fill]
+      ]) {
+        g.lineStyle(size * width, colour, 1)
+        g.lineBetween(-size * 0.2, size * 0.3, -size * 0.3, -size * 0.04)
+        g.beginPath()
+        g.arc(
+          -size * 0.38,
+          -size * 0.04,
+          size * 0.08,
+          1.1 * Math.PI,
+          2 * Math.PI
+        )
+        g.strokePath()
+      }
+    }
+    // Peeking back over her shoulder at first, blushing, then facing the
+    // viewer with softening eyes and a shy smile, then eyes closed happily.
     const r = size * 0.21
-    const headX = -size * 0.12
+    const headX = size * toward(-0.12, 0)
     const headY = -size * 0.06
     drawHead(g, headX, headY, r, fill, outline)
-    g.fillStyle(ink, 1)
-    g.fillEllipse(headX - r * 0.45, headY - r * 0.02, r * 0.2, r * 0.3)
-    g.fillEllipse(headX + r * 0.2, headY - r * 0.02, r * 0.2, r * 0.3)
-    g.fillStyle(0xf4a3a8, 0.9)
-    g.fillEllipse(headX - r * 0.62, headY + r * 0.35, r * 0.34, r * 0.18)
-    g.fillEllipse(headX + r * 0.42, headY + r * 0.35, r * 0.34, r * 0.18)
-    drawHeart(g, size * 0.3, -size * 0.18, size * 0.06, 0xe86f7e)
+    if (warmth < 1) {
+      g.fillStyle(ink, 1)
+      for (const x of [toward(-0.45, -0.38), toward(0.2, 0.38)])
+        g.fillEllipse(
+          headX + r * x,
+          headY - r * 0.02,
+          r * 0.2,
+          r * toward(0.3, 0.14)
+        )
+    } else drawClosedEyes(g, headX, headY - r * 0.02, r, ink, true)
+    g.fillStyle(0xf4a3a8, toward(0.6, 1))
+    for (const x of [toward(-0.62, -0.58), toward(0.42, 0.58)])
+      g.fillEllipse(headX + r * x, headY + r * 0.35, r * 0.34, r * 0.18)
+    if (warmth > 0) {
+      g.lineStyle(1.5, ink, 1).beginPath()
+      g.arc(headX, headY + r * 0.42, r * 0.16, 0.15 * Math.PI, 0.85 * Math.PI)
+      g.strokePath()
+    }
+    // A heart to begin with, and another for each stage she warms up.
+    const hearts = 1 + Math.round(warmth * FREYA_STAGES)
+    for (const [x, y] of FREYA_HEARTS.slice(0, hearts))
+      drawHeart(g, size * x, size * y, size * 0.06, 0xe86f7e)
   },
   theVoid: (g, size) => {
     // Hardly a cat at all: a starry darkness, with eyes.
@@ -440,11 +554,14 @@ const looks: Record<HouseCatId, (g: Graphics, size: number) => void> = {
 export const HOUSE_CAT_BASE = 0.45
 
 /**
- * Draws a code-drawn House Cat centred on (0, 0), about `size` pixels
- * across, sitting with its base `HOUSE_CAT_BASE` × `size` below the centre.
+ * Draws a code-drawn House Cat in `pose`, centred on (0, 0), about `size`
+ * pixels across, sitting with its base `HOUSE_CAT_BASE` × `size` below the
+ * centre. Skadi and Freya have their signature poses drawn; any other pose
+ * not yet drawn is shown as the House Cat at rest.
  */
 export const paintHouseCat = (
   g: Graphics,
   houseCat: HouseCatId,
-  size: number
-) => looks[houseCat](g, size)
+  size: number,
+  pose: HouseCatPose = "idle"
+) => looks[houseCat](g, size, pose)
