@@ -1071,7 +1071,7 @@ A cozy, woven terracotta rug with a cream border, seen from above at a gentle an
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath. Transparent background. Front-on, with no perspective. It will be resized to exactly 1122×96 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+A long, narrow wooden wall shelf seen straight on: a single plank with two small brackets beneath, each about a quarter of the way in from its end, since names are written under the plank's ends and middle. Transparent background. Front-on, with no perspective. It will be resized to exactly 1122×96 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Treat jar: `art/raw/room/treatJar.png`

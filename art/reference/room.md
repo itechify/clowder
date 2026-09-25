@@ -39,8 +39,13 @@ the outer cushions overlapping the arms: the final frame has slimmer arms
 and a wider support deck so all five cushions fit between them. Both end
 Seats were checked empty and occupied. An earlier attempt to extend only the
 backrest also moved the support deck, so it was rejected. The meter still
-sits approximately 11 design pixels above the backrest; this minor visual
-review finding remains open.
+sat approximately 11 design pixels above the backrest; #41 lowered it onto
+the backrest in the scene's layout, with no change to the image.
+
+For #41, the delivered Shelf's two brackets were moved inward, each by 126
+pixels, so they fall between the Shelf's positions rather than under the
+names written beneath its first and last House Cats. The plank itself is
+unchanged. The brief's Shelf prompt now asks for brackets there.
 
 ## Verification
 

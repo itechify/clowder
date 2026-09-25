@@ -15,6 +15,12 @@ import { shelfX, WIDTH } from "./layout"
 
 type Add = <T extends Phaser.GameObjects.GameObject>(object: T) => T
 
+/**
+ * How much narrower than its position a House Cat's name wraps, to stay clear
+ * of the brackets beneath the plank either side of it.
+ */
+const BRACKET_CLEARANCE = 16
+
 /** Where a House Cat of `size` sits on a Shelf whose plank's top is at `y`. */
 export const onShelf = (y: number, size: number) => y - size * 0.45
 
@@ -81,8 +87,8 @@ export function drawShelf(
   const xs = shelfX(run.config.shelfSize)
   const width = (WIDTH - 40) / xs.length
   const sitY = onShelf(y, size)
-  // The plank's brackets fall between positions, clear of the names beneath
-  // the House Cats.
+  // The plank's brackets fall between positions, and the names beneath the
+  // House Cats wrap short of them.
   add(addArt(scene, art.room.shelf, WIDTH / 2, y))
   const g = add(scene.add.graphics())
 
@@ -115,7 +121,7 @@ export function drawShelf(
           .text(x, y + 18, name, {
             ...font(10, inert ? "#9c8672" : "#4a3426", "800"),
             align: "center",
-            wordWrap: { width: width - 4 }
+            wordWrap: { width: width - BRACKET_CLEARANCE }
           })
           .setOrigin(0.5, 0)
       )

@@ -2,13 +2,17 @@ import { expect, test } from "@playwright/test"
 import { artManifest } from "../src/art/manifest"
 import { boot } from "./scene"
 
-test("shows every art key, delivered or code-drawn", async ({ page }) => {
+test("shows delivered art for every art key, none on its placeholder", async ({
+  page
+}) => {
   await boot(page, 7)
   const keys = artManifest.map((entry) => entry.key)
   const sources = await page.evaluate(
-    (keys) => keys.map((key) => window.__clowder!.art(key)),
+    (keys) =>
+      Object.fromEntries(keys.map((key) => [key, window.__clowder!.art(key)])),
     keys
   )
-  for (const source of sources)
-    expect(["delivered", "fallback"]).toContain(source)
+  expect(sources).toEqual(
+    Object.fromEntries(keys.map((key) => [key, "delivered"]))
+  )
 })

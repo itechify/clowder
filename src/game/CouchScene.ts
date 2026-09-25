@@ -38,7 +38,7 @@ import { drawCat, drawHouseCat } from "./characters"
 import { choreograph, countedUp, type Step, skippedCues } from "./choreography"
 import { effectConfig } from "./effectConfig"
 import { display, font, numbers, OUTLINE } from "./fonts"
-import { HEIGHT, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
+import { HEIGHT, inRow, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { INK } from "./roomArt"
 import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
@@ -66,17 +66,22 @@ const JAR_MOUTH = 44
 const JAR_BOB_MS = 120
 /** The Disaster sign's nail, and how wide its words may run inside its border. */
 const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
-const PURR_METER = { x: WIDTH / 2, y: 264 }
+const PURR_METER = { x: WIDTH / 2, y: 276 }
 /** Where the Couch's feet and the rug's centre are. */
 const COUCH_FLOOR_Y = 428
 /** The top of each Seat's pad, which its Cat sits on. */
 const SEAT_PAD_Y = 344
-/** A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from its top. */
+/**
+ * A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from
+ * the top of its back, beneath the purr meter.
+ */
 const FULL_SOFA_Y = 337
-const BUNTING_Y = 277
+const BUNTING_Y = 286
 const RUG_Y = 636
 const SEAT_Y = 352
 const SEATED_SIZE = 64
+/** Where a seated Cat's Purr shows above it, just below the purr meter. */
+const PURR_Y = 298
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
 /** Each rug row's Cats: their centres' height, and how big they are shown. */
@@ -93,12 +98,10 @@ const RUG_AREA = { w: 80, margin: 28, dy: -4 }
 const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
 const HOP_HEIGHT = 46
-/**
- * Where the lowest Gathering name sits, just above the purr meter, the others
- * stacking up from it.
- */
-const GATHERING_NAME_Y = 236
-const GATHERING_NAME_STEP = 25
+/** Where Gathering names sit, side by side just above the purr meter. */
+const GATHERING_NAME_Y = 248
+/** Each Gathering name's pill: its padding either side, height, and the gap between pills. */
+const GATHERING_PILL = { padding: 9, height: 24, gap: 6 }
 /**
  * The colours numbers pop up in as a Play scores: Purr, Mult, then a House
  * Cat's Repeats, The Void's growth, and Freya's hearts.
@@ -891,7 +894,7 @@ export class CouchScene extends Phaser.Scene {
         this.add
           .text(
             x,
-            SEAT_Y - 72,
+            PURR_Y,
             `+${bonus}${scores.length > 1 ? ` ×${scores.length}` : ""}`,
             numbers(18, bonus > 0 ? POP.purr : "#e6d8c6")
           )
@@ -1080,13 +1083,14 @@ export class CouchScene extends Phaser.Scene {
    * Cuddle Puddle, Zs over a Nap Club, a bubble around each Cat with Personal
    * Space, bunting for a Variety Pack, and a glow round a Full Sofa. Drawn in
    * two layers, since blankets go over the Cats and the rest behind. Names
-   * stack upward, the first `stack` places above the lowest.
+   * share one row above the purr meter, clear of the Shelf, with every
+   * Gathering in `row`, each as near the Seats that form it as it can be.
    */
   private drawGatherings(
     add: Add,
     active: ActiveGathering[],
     layer: "behind" | "over",
-    stack = 0
+    row = active
   ) {
     const overlay = (key: string, x: number, y: number) =>
       add(addArt(this, key, x, y))
@@ -1130,29 +1134,40 @@ export class CouchScene extends Phaser.Scene {
     }
     if (layer === "behind") return
 
-    // Each Gathering's name, stacked above the Seats that form it.
-    active.forEach(({ name, mult, seats }, i) => {
-      const x =
-        (Math.max(55, this.seatX[seats[0]]) +
-          Math.min(WIDTH - 55, this.seatX[seats.at(-1)!])) /
-        2
-      const y = GATHERING_NAME_Y - (stack + i) * GATHERING_NAME_STEP
-      const label = add(
-        this.add.text(x, y, `${name} +${mult}`, numbers(14)).setOrigin(0.5)
-      )
+    // Each Gathering's name, above the Seats that form it.
+    const labels = row.map(({ name, mult }) =>
+      this.add.text(0, GATHERING_NAME_Y, `${name} +${mult}`, numbers(14))
+    )
+    const { x, scale } = inRow(
+      row.map(({ seats }, i) => ({
+        wanted: (this.seatX[seats[0]] + this.seatX[seats.at(-1)!]) / 2,
+        width: labels[i].width + 2 * GATHERING_PILL.padding
+      })),
+      { left: 8, right: WIDTH - 8, gap: GATHERING_PILL.gap }
+    )
+    const shown = new Set(active.map(({ gathering }) => gathering))
+    row.forEach(({ gathering }, i) => {
+      const label = labels[i]
+      if (!shown.has(gathering)) {
+        label.destroy()
+        return
+      }
+      label.setOrigin(0.5).setPosition(x[i], GATHERING_NAME_Y).setScale(scale)
+      const width = (label.width + 2 * GATHERING_PILL.padding) * scale
+      const height = GATHERING_PILL.height * scale
       const pill = [
-        x - label.width / 2 - 9,
-        y - 12,
-        label.width + 18,
-        24,
-        12
+        x[i] - width / 2,
+        GATHERING_NAME_Y - height / 2,
+        width,
+        height,
+        height / 2
       ] as const
       add(this.add.graphics())
         .fillStyle(0xe8893a, 1)
         .fillRoundedRect(...pill)
         .lineStyle(2, INK, 1)
         .strokeRoundedRect(...pill)
-      this.layer.bringToTop(label)
+      add(label)
     })
   }
 
@@ -1294,7 +1309,7 @@ export class CouchScene extends Phaser.Scene {
     const flyPurr = (x: number, purr: number, arrive: () => void) => {
       const text = add(
         this.add
-          .text(x, SEAT_Y - 72, `+${purr}`, numbers(24, POP.purr))
+          .text(x, PURR_Y, `+${purr}`, numbers(24, POP.purr))
           .setOrigin(0.5)
       )
       // Arriving within its Cat's beat, before the next Cat scores.
@@ -1401,7 +1416,10 @@ export class CouchScene extends Phaser.Scene {
     )
     const timers: Phaser.Time.TimerEvent[] = []
     const counters: Phaser.Tweens.Tween[] = []
-    let gatherings = 0
+    // The Play's Gatherings, their names sharing a row as each appears.
+    const gatherings = events.filter(
+      (event) => event.type === "gatheringActivated"
+    )
     // "New Gathering!" banners, each waiting for the one before to leave.
     const banners: (() => void)[] = []
     let bannersFreeAt = 0
@@ -1410,13 +1428,12 @@ export class CouchScene extends Phaser.Scene {
       const { at, event } = step
       switch (event.type) {
         case "gatheringActivated": {
-          const stack = gatherings++
           const wait = Math.max(0, bannersFreeAt - at)
           if (event.firstTime) bannersFreeAt = at + wait + beat(BANNER_MS)
           return () => {
             if (event.firstTime)
               banners.push(this.discover(event.name, wait, beat))
-            this.revealGathering(add, event, stack, beat)
+            this.revealGathering(add, event, gatherings, beat)
             slamMult(event.tally.mult, step)
           }
         }
@@ -1461,7 +1478,7 @@ export class CouchScene extends Phaser.Scene {
           return () => {
             const x = this.seatX[event.seat]
             hop(event.houseCat, `+${event.purr} Purr`, POP.growth)
-            pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, POP.growth)
+            pop(x, PURR_Y, `${event.basePurr} base Purr`, 14, POP.growth)
             const sprite = seated.get(event.seat)
             if (sprite)
               this.tweens.add({
@@ -1633,11 +1650,14 @@ export class CouchScene extends Phaser.Scene {
     })
   }
 
-  /** Brings one Gathering onto the Couch mid-sequence, its name `stack` high. */
+  /**
+   * Brings one Gathering onto the Couch mid-sequence, its name where it sits
+   * among the `row` of the Play's Gatherings.
+   */
   private revealGathering(
     add: Add,
     active: ActiveGathering,
-    stack: number,
+    row: ActiveGathering[],
     beat: (ms: number) => number
   ) {
     const shown: Phaser.GameObjects.GameObject[] = []
@@ -1648,7 +1668,7 @@ export class CouchScene extends Phaser.Scene {
     this.drawGatherings(collect, [active], "behind")
     // Blankets aside, a Gathering sits behind the Cats already seated.
     for (const object of shown) this.layer.sendToBack(object)
-    this.drawGatherings(collect, [active], "over", stack)
+    this.drawGatherings(collect, [active], "over", row)
     this.tweens.add({
       targets: shown,
       alpha: { from: 0, to: 1 },
