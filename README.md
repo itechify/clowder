@@ -48,6 +48,19 @@ player's first tap or key, and follows the Music and SFX volumes and mute in
 Settings. In development builds, `window.__clowder.cues()` lists every cue
 fired.
 
+The Night's eight-bar felt-key melody returns in parallel minor for Disasters;
+the Shop has a syncopated tune over plucked bass, and results use a music-box
+lullaby in three. Seated Cats chirp and purr, Gatherings trill, and the scoring
+ticks keep their pentatonic pitch ladder even at 4× speed. Instruments, cat
+calls, and noise bursts all stop and release their audio nodes after sounding.
+
+`pnpm exec playwright test tests/synthesis.spec.ts` renders the voices and two
+loops of every theme using real Web Audio, checking pitch, levels, endings,
+and theme fade-out. For the listening pass, play a Run with sound enabled,
+try 1× and 4× scoring and tap-to-skip, visit the Shop and a Disaster Night,
+then listen to the results lullaby. Check Music/SFX sliders and mute during
+play; musical balance and the feel of the cat calls still need human ears.
+
 ## Installing and offline play
 
 Production builds are an installable PWA: `vite-plugin-pwa` generates the

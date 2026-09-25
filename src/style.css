@@ -4,7 +4,7 @@ body,
   margin: 0;
   height: 100%;
   overflow: hidden;
-  font-family: system-ui, sans-serif;
+  font-family: "Nunito Variable", system-ui, sans-serif;
   /* The living room around the portrait layout on wide screens. */
   background: radial-gradient(circle at 50% 35%, #6b4a3a, #2e1f19 75%);
   touch-action: manipulation;
@@ -39,7 +39,10 @@ body,
 
 .panel h1 {
   margin: 0 0 8px;
-  font-size: 28px;
+  font:
+    400 30px "Lilita One",
+    system-ui,
+    sans-serif;
 }
 
 .panel p {
@@ -54,7 +57,8 @@ body,
   background: #4a3426;
   color: #fdf6ea;
   font:
-    800 18px system-ui,
+    400 19px "Lilita One",
+    system-ui,
     sans-serif;
   cursor: pointer;
 }
@@ -162,7 +166,8 @@ body,
   background: #4a3426;
   color: #fdf6ea;
   font:
-    700 16px system-ui,
+    400 17px "Lilita One",
+    system-ui,
     sans-serif;
   cursor: pointer;
 }

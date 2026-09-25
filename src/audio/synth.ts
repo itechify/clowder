@@ -27,12 +27,67 @@ type Tone = {
   /** Seconds after `at` the tone starts. */
   delay?: number
   attack?: number
+  /** Low-pass cutoff, in Hz, for a softer edge. */
+  cutoff?: number
+  /** Pitch modulation for breathy cat calls and sustained instruments. */
+  vibrato?: { rate: number; cents: number }
+  /** Amplitude modulation: depth 0–1, used for a rolling purr. */
+  tremolo?: { rate: number; depth: number }
+}
+
+/** A modulation oscillator with the same lifetime as the sound it shapes. */
+function modulate(
+  context: BaseAudioContext,
+  parameter: AudioParam,
+  rate: number,
+  depth: number,
+  start: number,
+  end: number
+) {
+  const oscillator = context.createOscillator()
+  const amount = context.createGain()
+  oscillator.frequency.value = rate
+  amount.gain.value = depth
+  oscillator.connect(amount).connect(parameter)
+  oscillator.start(start)
+  oscillator.stop(end)
+  oscillator.onended = () => {
+    oscillator.disconnect()
+    amount.disconnect()
+  }
+}
+
+/** A soft attack and an exact-zero ending, even when sounds overlap. */
+function envelope(
+  context: BaseAudioContext,
+  start: number,
+  end: number,
+  level: number,
+  attack: number
+) {
+  const gain = context.createGain()
+  gain.gain.setValueAtTime(0, start)
+  gain.gain.linearRampToValueAtTime(level, start + attack)
+  gain.gain.exponentialRampToValueAtTime(0.0001, end - 0.005)
+  gain.gain.linearRampToValueAtTime(0, end)
+  return gain
 }
 
 /** A tone that swells in over `attack` and fades out by its end. */
 export function tone(
   { context, destination, at }: Output,
-  { wave, note, glideTo, duration, level, delay = 0, attack = 0.005 }: Tone
+  {
+    wave,
+    note,
+    glideTo,
+    duration,
+    level,
+    delay = 0,
+    attack = 0.005,
+    cutoff,
+    vibrato,
+    tremolo
+  }: Tone
 ) {
   const start = at + delay
   const end = start + duration
@@ -41,13 +96,34 @@ export function tone(
   oscillator.frequency.setValueAtTime(frequency(note), start)
   if (glideTo !== undefined)
     oscillator.frequency.exponentialRampToValueAtTime(frequency(glideTo), end)
-  const envelope = context.createGain()
-  envelope.gain.setValueAtTime(0, start)
-  envelope.gain.linearRampToValueAtTime(level, start + attack)
-  envelope.gain.exponentialRampToValueAtTime(0.0001, end)
-  oscillator.connect(envelope).connect(destination)
+  const gain = envelope(context, start, end, level, attack)
+  const filter = context.createBiquadFilter()
+  filter.type = "lowpass"
+  filter.frequency.value = cutoff ?? 18000
+  filter.Q.value = 0.5
+  const pulse = context.createGain()
+  if (vibrato)
+    modulate(
+      context,
+      oscillator.detune,
+      vibrato.rate,
+      vibrato.cents,
+      start,
+      end
+    )
+  if (tremolo) {
+    pulse.gain.value = 1 - tremolo.depth / 2
+    modulate(context, pulse.gain, tremolo.rate, tremolo.depth / 2, start, end)
+  }
+  oscillator.connect(filter).connect(pulse).connect(gain).connect(destination)
   oscillator.start(start)
-  oscillator.stop(end + 0.02)
+  oscillator.stop(end)
+  oscillator.onended = () => {
+    oscillator.disconnect()
+    filter.disconnect()
+    pulse.disconnect()
+    gain.disconnect()
+  }
 }
 
 type Noise = {
@@ -78,10 +154,13 @@ export function noise(
   filter.frequency.setValueAtTime(cutoff, start)
   if (sweepTo !== undefined)
     filter.frequency.exponentialRampToValueAtTime(sweepTo, end)
-  const envelope = context.createGain()
-  envelope.gain.setValueAtTime(level, start)
-  envelope.gain.exponentialRampToValueAtTime(0.0001, end)
-  source.connect(filter).connect(envelope).connect(destination)
+  const gain = envelope(context, start, end, level, 0.005)
+  source.connect(filter).connect(gain).connect(destination)
   source.start(start)
-  source.stop(end + 0.02)
+  source.stop(end)
+  source.onended = () => {
+    source.disconnect()
+    filter.disconnect()
+    gain.disconnect()
+  }
 }

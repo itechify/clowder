@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**31 of 88 images delivered; 57 still on fallback.**
+**53 of 91 images delivered; 38 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
-| 3. House Cats, Skadi, and Freya | 0 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 35 |
+| 3. House Cats, Skadi, and Freya | 22 of 22 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 38 |
 
 ## How to generate and deliver
 
@@ -464,32 +464,32 @@ A calico Cat: white fur with bold patches of orange and black. Sleepy, sharing a
 
 ## 3. House Cats, Skadi, and Freya
 
-- [ ] `art/raw/houseCat/oneBraincell/idle.png`
-- [ ] `art/raw/houseCat/oneBraincell/triggered.png`
-- [ ] `art/raw/houseCat/bigLoaf/idle.png`
-- [ ] `art/raw/houseCat/bigLoaf/triggered.png`
-- [ ] `art/raw/houseCat/doNotTouch/idle.png`
-- [ ] `art/raw/houseCat/doNotTouch/triggered.png`
-- [ ] `art/raw/houseCat/skadi/idle.png`
-- [ ] `art/raw/houseCat/skadi/triggered.png`
-- [ ] `art/raw/houseCat/copycat/idle.png`
-- [ ] `art/raw/houseCat/copycat/triggered.png`
-- [ ] `art/raw/houseCat/theVoid/idle.png`
-- [ ] `art/raw/houseCat/theVoid/triggered.png`
-- [ ] `art/raw/houseCat/freya/idle.png`
-- [ ] `art/raw/houseCat/freya/triggered.png`
-- [ ] `art/raw/houseCat/treatDealer/idle.png`
-- [ ] `art/raw/houseCat/treatDealer/triggered.png`
-- [ ] `art/raw/houseCat/boxGoblin/idle.png`
-- [ ] `art/raw/houseCat/boxGoblin/triggered.png`
-- [ ] `art/raw/houseCat/skadi/bellyUp.png`
-- [ ] `art/raw/houseCat/freya/warming1.png`
-- [ ] `art/raw/houseCat/freya/warming2.png`
-- [ ] `art/raw/houseCat/freya/warming3.png`
+- [x] `art/raw/houseCat/oneBraincell/idle.png`
+- [x] `art/raw/houseCat/oneBraincell/triggered.png`
+- [x] `art/raw/houseCat/bigLoaf/idle.png`
+- [x] `art/raw/houseCat/bigLoaf/triggered.png`
+- [x] `art/raw/houseCat/doNotTouch/idle.png`
+- [x] `art/raw/houseCat/doNotTouch/triggered.png`
+- [x] `art/raw/houseCat/skadi/idle.png`
+- [x] `art/raw/houseCat/skadi/triggered.png`
+- [x] `art/raw/houseCat/copycat/idle.png`
+- [x] `art/raw/houseCat/copycat/triggered.png`
+- [x] `art/raw/houseCat/theVoid/idle.png`
+- [x] `art/raw/houseCat/theVoid/triggered.png`
+- [x] `art/raw/houseCat/freya/idle.png`
+- [x] `art/raw/houseCat/freya/triggered.png`
+- [x] `art/raw/houseCat/treatDealer/idle.png`
+- [x] `art/raw/houseCat/treatDealer/triggered.png`
+- [x] `art/raw/houseCat/boxGoblin/idle.png`
+- [x] `art/raw/houseCat/boxGoblin/triggered.png`
+- [x] `art/raw/houseCat/skadi/bellyUp.png`
+- [x] `art/raw/houseCat/freya/warming1.png`
+- [x] `art/raw/houseCat/freya/warming2.png`
+- [x] `art/raw/houseCat/freya/warming3.png`
 
 ### One Braincell, idle: `art/raw/houseCat/oneBraincell/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/oneBraincell/idle`
 - Size: 512×512
@@ -502,7 +502,7 @@ A House Cat called One Braincell: a lovably dim orange cat. On a shelf (don't dr
 
 ### One Braincell, triggered: `art/raw/houseCat/oneBraincell/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/oneBraincell/triggered`
 - Size: 512×512
@@ -515,7 +515,7 @@ A House Cat called One Braincell: a lovably dim orange cat. On a shelf (don't dr
 
 ### The Big Loaf, idle: `art/raw/houseCat/bigLoaf/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/bigLoaf/idle`
 - Size: 512×512
@@ -528,7 +528,7 @@ A House Cat called The Big Loaf: an enormous, round gray-and-cream cat shaped ju
 
 ### The Big Loaf, triggered: `art/raw/houseCat/bigLoaf/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/bigLoaf/triggered`
 - Size: 512×512
@@ -541,7 +541,7 @@ A House Cat called The Big Loaf: an enormous, round gray-and-cream cat shaped ju
 
 ### Do Not Touch, idle: `art/raw/houseCat/doNotTouch/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/doNotTouch/idle`
 - Size: 512×512
@@ -554,7 +554,7 @@ A House Cat called Do Not Touch: a grumpy, fluffy tortoiseshell cat beside a sma
 
 ### Do Not Touch, triggered: `art/raw/houseCat/doNotTouch/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/doNotTouch/triggered`
 - Size: 512×512
@@ -567,7 +567,7 @@ A House Cat called Do Not Touch: a grumpy, fluffy tortoiseshell cat beside a sma
 
 ### Skadi (Belly Up), idle: `art/raw/houseCat/skadi/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/skadi/idle`
 - Size: 512×512
@@ -580,7 +580,7 @@ A House Cat called Skadi (Belly Up): Skadi, one of the author's real cats. Draw 
 
 ### Skadi (Belly Up), triggered: `art/raw/houseCat/skadi/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/skadi/triggered`
 - Size: 512×512
@@ -593,7 +593,7 @@ A House Cat called Skadi (Belly Up): Skadi, one of the author's real cats. Draw 
 
 ### Copycat, idle: `art/raw/houseCat/copycat/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/copycat/idle`
 - Size: 512×512
@@ -606,7 +606,7 @@ A House Cat called Copycat: a sly, slender cat with a pale, translucent, ghostly
 
 ### Copycat, triggered: `art/raw/houseCat/copycat/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/copycat/triggered`
 - Size: 512×512
@@ -619,7 +619,7 @@ A House Cat called Copycat: a sly, slender cat with a pale, translucent, ghostly
 
 ### The Void, idle: `art/raw/houseCat/theVoid/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/theVoid/idle`
 - Size: 512×512
@@ -632,7 +632,7 @@ A House Cat called The Void: hardly a cat at all: a cat-shaped patch of deep, st
 
 ### The Void, triggered: `art/raw/houseCat/theVoid/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/theVoid/triggered`
 - Size: 512×512
@@ -645,7 +645,7 @@ A House Cat called The Void: hardly a cat at all: a cat-shaped patch of deep, st
 
 ### Freya (Slow to Warm Up), idle: `art/raw/houseCat/freya/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/freya/idle`
 - Size: 512×512
@@ -658,7 +658,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 
 ### Freya (Slow to Warm Up), triggered: `art/raw/houseCat/freya/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/freya/triggered`
 - Size: 512×512
@@ -671,7 +671,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 
 ### Treat Dealer, idle: `art/raw/houseCat/treatDealer/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/treatDealer/idle`
 - Size: 512×512
@@ -684,7 +684,7 @@ A House Cat called Treat Dealer: a shady cat in a tan trench coat with its colla
 
 ### Treat Dealer, triggered: `art/raw/houseCat/treatDealer/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/treatDealer/triggered`
 - Size: 512×512
@@ -697,7 +697,7 @@ A House Cat called Treat Dealer: a shady cat in a tan trench coat with its colla
 
 ### Box Goblin, idle: `art/raw/houseCat/boxGoblin/idle.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/boxGoblin/idle`
 - Size: 512×512
@@ -710,7 +710,7 @@ A House Cat called Box Goblin: a mischievous cat that lives in a cardboard box w
 
 ### Box Goblin, triggered: `art/raw/houseCat/boxGoblin/triggered.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/boxGoblin/triggered`
 - Size: 512×512
@@ -723,7 +723,7 @@ A House Cat called Box Goblin: a mischievous cat that lives in a cardboard box w
 
 ### Skadi (Belly Up), belly up: `art/raw/houseCat/skadi/bellyUp.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/skadi/bellyUp`
 - Size: 512×512
@@ -736,7 +736,7 @@ A House Cat called Skadi (Belly Up): Skadi, one of the author's real cats. Draw 
 
 ### Freya (Slow to Warm Up), warming up, stage 1 of 3: `art/raw/houseCat/freya/warming1.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/freya/warming1`
 - Size: 512×512
@@ -749,7 +749,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 
 ### Freya (Slow to Warm Up), warming up, stage 2 of 3: `art/raw/houseCat/freya/warming2.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/freya/warming2`
 - Size: 512×512
@@ -762,7 +762,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 
 ### Freya (Slow to Warm Up), warming up, stage 3 of 3: `art/raw/houseCat/freya/warming3.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `houseCat/freya/warming3`
 - Size: 512×512
@@ -796,12 +796,15 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [ ] `art/raw/room/rug.png`
 - [ ] `art/raw/room/shelf.png`
 - [ ] `art/raw/room/treatJar.png`
+- [ ] `art/raw/room/disasterSign.png`
 - [ ] `art/raw/ui/playButton/ready.png`
 - [ ] `art/raw/ui/redrawButton/ready.png`
 - [ ] `art/raw/ui/pip/full.png`
+- [ ] `art/raw/ui/purrMeter/full.png`
 - [ ] `art/raw/ui/playButton/disabled.png`
 - [ ] `art/raw/ui/redrawButton/disabled.png`
 - [ ] `art/raw/ui/pip/spent.png`
+- [ ] `art/raw/ui/purrMeter/empty.png`
 - [ ] `art/raw/gathering/cuddlePuddle/3.png`
 - [ ] `art/raw/gathering/cuddlePuddle/4.png`
 - [ ] `art/raw/gathering/cuddlePuddle/5.png`
@@ -1084,6 +1087,19 @@ A long, narrow wooden wall shelf seen straight on: a single plank with small bra
 A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it. Transparent background. Front-on, with no perspective. It will be resized to exactly 132×156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
+### Disaster sign: `art/raw/room/disasterSign.png`
+
+**On fallback.**
+
+- Key: `room/disasterSign`
+- Size: 492×186
+- Anchor: (246, 0): top centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
 ### Play button, ready: `art/raw/ui/playButton/ready.png`
 
 **On fallback.**
@@ -1123,6 +1139,19 @@ A small, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown 
 A small, round pip: a glowing golden bead, full and still to spend. Transparent background. Front-on, with no perspective. It will be resized to exactly 42×42 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
+### Purr meter, full: `art/raw/ui/purrMeter/full.png`
+
+**On fallback.**
+
+- Key: `ui/purrMeter/full`
+- Size: 900×78
+- Anchor: (450, 39): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A long, slim, rounded meter like a little bolster laid along the top of a sofa's backrest, filled end to end with a warm, glowing orange, like a cat's purr made visible. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×78 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
 ### Play button, disabled: `art/raw/ui/playButton/disabled.png`
 
 **On fallback.**
@@ -1160,6 +1189,19 @@ A small pillowy, pill-shaped button pressed flat and faded to a dusty beige-brow
 
 ```text
 A small, round pip already spent: an empty, hollow ring. Transparent background. Front-on, with no perspective. It will be resized to exactly 42×42 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Purr meter, empty: `art/raw/ui/purrMeter/empty.png`
+
+**On fallback.**
+
+- Key: `ui/purrMeter/empty`
+- Size: 900×78
+- Anchor: (450, 39): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+The same long, slim, rounded meter empty: a soft cream fabric channel with a darker inset where the glow will fill it, exactly the same shape and outline as the full one. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×78 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Cuddle Puddle, across 3 Seats: `art/raw/gathering/cuddlePuddle/3.png`

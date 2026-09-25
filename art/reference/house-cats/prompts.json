@@ -1,0 +1,188 @@
+[
+  {
+    "key": "houseCat/oneBraincell/idle",
+    "source": "exec-dd17cfed-b4eb-4bfa-8961-5188359ed2b2.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style sheet, style reference only. Generate one isolated House Cat game sprite: One Braincell, a lovably dim orange cat. On a shelf (do not draw the shelf), eyes pointing two different ways and a tongue left out, a single tiny pink braincell floating over its head with a faint glow. Square 1024×1024 image with a genuinely transparent background, no floor or cast shadow. One character, full body, centred horizontally, base on an invisible line y=896; bottom 128 px empty. Character about 768 px wide with compact proportions, matching the hero on the sheet. No hearts, Zs, anger marks or blush. No words, signatures, palette, panels, or watermark. Cult of the Lamb-inspired cute 2D game art, thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette. Match the attached style sheet exactly: outline weight, palette, shading and proportions. This is the idle pose. Preserve clean alpha transparency."
+  },
+  {
+    "key": "houseCat/oneBraincell/triggered",
+    "source": "exec-416249cc-8a55-49eb-974a-46a9474e11f8.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/oneBraincell/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the character identity reference; preserve its exact coat markings, face, palette, outline weight and proportions. Requested pose: both eyes focused, paws raised with sudden inspiration; EXACTLY the same pink floating brain as image 2, now glowing bright gold around its pink brain shape and sparking. The floating object is a PINK BRAIN, never a light bulb or lamp. Keep the tongue in the mouth."
+  },
+  {
+    "key": "houseCat/bigLoaf/idle",
+    "source": "exec-46498fb1-732d-4a85-8882-d1216d623d19.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. The Big Loaf: an enormous round gray-and-cream cat shaped just like a loaf of bread; loafed with every paw tucked out of sight, fast asleep. Idle pose."
+  },
+  {
+    "key": "houseCat/bigLoaf/triggered",
+    "source": "exec-a42e17b7-fc59-45a7-80a1-8472abdaa8c4.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/bigLoaf/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the character identity reference; preserve its exact coat markings, face, palette, outline weight and proportions. Requested pose: keep the enormous LOW ROUNDED BREAD-LOAF BODY and curled tail exactly as in image 2. The cat stays lying loafed, all paws tucked out of sight EXCEPT a single short front paw extending toward the viewer's right to gently nudge a Cat out of frame. One eye open, other closed. Do not stand up, raise hindquarters or uncurl the tail."
+  },
+  {
+    "key": "houseCat/doNotTouch/idle",
+    "source": "exec-e346a855-73fe-4901-a6e7-b36b96957f10.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Do Not Touch: a grumpy fluffy tortoiseshell cat beside a small round warning sign showing a red circle struck through. Sitting in a huff, narrowed eyes under cross brows, scowling. Idle pose."
+  },
+  {
+    "key": "houseCat/doNotTouch/triggered",
+    "source": "exec-e54f85fb-c612-4996-a14b-00e115d5a6d2.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/doNotTouch/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Input image 2 is the same character in its idle pose: preserve its identity, coat markings, palette, outline weight and design; change pose only. Triggered pose: puffed up with fur on end and back arched, hissing; the small warning sign shaking. Match character scale to image 2. Keep genuine transparent alpha."
+  },
+  {
+    "key": "houseCat/copycat/idle",
+    "source": "exec-05453568-ad43-4200-beaa-fa85353e3ff1.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Copycat: a sly slender cat with a pale translucent ghostly double of itself a step to its left. Watching with its head tilted, the double faint and still. The double is the only additional figure allowed. Idle pose."
+  },
+  {
+    "key": "houseCat/copycat/triggered",
+    "source": "exec-4a6c1200-798a-41a9-b1e6-d1365bf5bb37.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/copycat/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Input image 2 is the same character in its idle pose: preserve its identity, coat markings, palette, outline weight and design; change pose only. Triggered pose: the cat and ghostly double striking exactly the same pose at the same moment, the double glowing brighter. Both lean toward the viewer's right with one paw raised, while keeping the same slim silhouette and markings. Match character scale to image 2. Keep genuine transparent alpha."
+  },
+  {
+    "key": "houseCat/theVoid/idle",
+    "source": "exec-21a4e56d-8ce4-4613-bb2f-50f708681af9.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. The Void: hardly a cat at all, a cat-shaped patch of deep starry darkness with two big round eyes. Sitting still, stars twinkling faintly inside it, eyes calm. Idle pose."
+  },
+  {
+    "key": "houseCat/theVoid/triggered",
+    "source": "exec-1d30540c-afb8-4470-9d2a-4cc1d1dfff11.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/theVoid/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the same character in its idle pose. Preserve its identity, markings, proportions, palette and design. Triggered pose: its eyes glowing bright gold and the stars inside swirling. Keep character scale consistent with image 2."
+  },
+  {
+    "key": "houseCat/treatDealer/idle",
+    "source": "exec-3b2c5aba-facf-42c3-abf8-930639b96ffe.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Treat Dealer: a shady cat in a tan trench coat with its collar turned up. Leaning with heavy-lidded knowing eyes, one fish-shaped treat peeking out from inside the coat. Idle pose."
+  },
+  {
+    "key": "houseCat/treatDealer/triggered",
+    "source": "exec-470c6afc-257c-4bca-9c23-dbb2a0bccb47.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/treatDealer/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the same character in its idle pose. Preserve its identity, markings, proportions, palette and design. Triggered pose: flinging its tan trench coat open to reveal rows of fish-shaped treats pinned inside, with a wink. Keep character scale consistent with image 2."
+  },
+  {
+    "key": "houseCat/boxGoblin/idle",
+    "source": "exec-8ca84b10-afff-4302-ab37-7f33d8cfb471.png",
+    "references": ["art/reference/style-sheet.png"],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Box Goblin: a mischievous cat living in a cardboard box with flaps folded open. Peering over the rim, ONLY ears and big gleaming eyes showing. Idle pose."
+  },
+  {
+    "key": "houseCat/boxGoblin/triggered",
+    "source": "exec-933bb6f8-74d3-4aac-b2c5-3dc06d78f7d4.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/boxGoblin/idle.png (original generated image before resizing)"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the same character in its idle pose. Preserve its identity, markings, proportions, palette and design. Triggered pose: bursting out of its cardboard box with its paws up and a gremlin grin, bits of cardboard flying. Keep character scale consistent with image 2."
+  },
+  {
+    "key": "houseCat/skadi/idle",
+    "source": "exec-1a21a4e7-0ea0-4f17-921e-1564e1c4620f.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/reference/photos/skadi/skadi.png",
+      "art/reference/photos/skadi/skadi-belly.png"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Skadi, the real cat in images 2 and 3 (identity references): long fluffy brown-and-black tabby fur, broad white chest ruff and white belly and paws, distinctive white forehead blaze and dark tabby stripe down nose bridge, green eyes. Keep her markings and face recognisable; ignore coloured room light in the photo. Translate her likeness into the style of image 1. Idle pose: lying on her side, relaxed and content, looking at viewer."
+  },
+  {
+    "key": "houseCat/skadi/triggered",
+    "source": "exec-36e84c18-a8d4-40fd-88ea-75fea8b3dc66.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/skadi/idle.png (original generated image before resizing)",
+      "art/reference/photos/skadi/skadi.png",
+      "art/reference/photos/skadi/skadi-belly.png"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the same character in its idle pose. Preserve its identity, markings, proportions, palette and design. Additional photos are identity references for the real cat: keep her recognisable. Triggered pose: starting to roll over: twisting onto her back with her paws lifting; retain her fluffy white chest and belly, green eyes and brown tabby head markings. Keep character scale consistent with image 2."
+  },
+  {
+    "key": "houseCat/skadi/bellyUp",
+    "source": "exec-4f490ab8-5230-4773-b24b-5bb2d9fe42d4.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/skadi/idle.png (original generated image before resizing)",
+      "art/reference/photos/skadi/skadi.png",
+      "art/reference/photos/skadi/skadi-belly.png"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the character identity reference; preserve its exact coat markings, face, palette, outline weight and proportions. Additional images are the real cat's identity photos; keep her recognisable. Requested pose: fully belly up, all four paws in the air, head upside down, her fluffy white belly offered to all, adored. Her whole body lies horizontally on her back, head resting upside-down at the base. This must be distinct from the starting-to-roll triggered pose."
+  },
+  {
+    "key": "houseCat/freya/idle",
+    "source": "exec-f3a8e49e-ad09-41af-a247-1f6a8432cb2e.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/reference/photos/freya/freya.JPEG"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Freya, the real cat in image 2 (identity reference): short smooth gray tabby-and-white coat, slender build, pale green eyes, white cheeks chest and legs, broad white forehead blaze around distinct gray nose bridge, pink-brown nose, ringed tail. Preserve her recognisable markings and face, translated into image 1's style. Idle pose: reserved, sitting turned away, tail wrapped round, peeking shyly back over her shoulder."
+  },
+  {
+    "key": "houseCat/freya/triggered",
+    "source": "exec-bad1a531-1b12-4e42-be94-2075f5693470.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/freya/idle.png (original generated image before resizing)",
+      "art/reference/photos/freya/freya.JPEG"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the same character in its idle pose. Preserve its identity, markings, proportions, palette and design. Additional photos are identity references for the real cat: keep her recognisable. Triggered pose: a warm moment: turning toward the viewer, eyes softening, with a shy smile. Keep character scale consistent with image 2."
+  },
+  {
+    "key": "houseCat/freya/warming1",
+    "source": "exec-ac598ed3-6d34-4b6d-8098-e226aec8ee19.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/freya/idle.png (original generated image before resizing)",
+      "art/reference/photos/freya/freya.JPEG"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the character identity reference; preserve its exact coat markings, face, palette, outline weight and proportions. Additional images are the real cat's identity photos; keep her recognisable. Requested pose: still turned mostly away, but glancing back with softened eyes. Tail wrapped around her. A subtle first stage of affection."
+  },
+  {
+    "key": "houseCat/freya/warming2",
+    "source": "exec-0f8fabf8-8154-4bd0-ac98-e64dd25d7d4c.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/freya/idle.png (original generated image before resizing)",
+      "art/reference/photos/freya/freya.JPEG"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the character identity reference; preserve its exact coat markings, face, palette, outline weight and proportions. Additional images are the real cat's identity photos; keep her recognisable. Requested pose: turned halfway toward viewer, relaxed, tail loose, with a shy smile. A clearly warmer intermediate stage, still seated."
+  },
+  {
+    "key": "houseCat/freya/warming3",
+    "source": "exec-e04ab083-e6a5-4cb1-b414-860147576d0a.png",
+    "references": [
+      "art/reference/style-sheet.png",
+      "art/raw/houseCat/freya/idle.png (original generated image before resizing)",
+      "art/reference/photos/freya/freya.JPEG"
+    ],
+    "prompt": "Use case: stylized-concept. Input image: approved Clowder style reference only. Generate a single isolated House Cat sprite. Square 1024×1024 with genuinely transparent background, no floor, shadow or shelf. Full body centred horizontally, base at y=896, bottom 128 pixels clear. About 768 px across, compact proportions matching the sheet's hero. No hearts, Zs, anger marks or blush. No text, panels, palette, watermark. Cult of the Lamb-inspired cute 2D art with thick bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cute palette; match the attached sheet's outline weight and proportions. Image 2 is the character identity reference; preserve its exact coat markings, face, palette, outline weight and proportions. Additional images are the real cat's identity photos; keep her recognisable. Requested pose: fully affectionate, facing viewer with eyes closed happily, head tilted toward viewer's right to rub against an unseen hand, tail up like a question mark. Do not draw the hand."
+  }
+]
