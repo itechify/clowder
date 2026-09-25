@@ -2,11 +2,11 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**0 of 88 images delivered; 87 still on fallback.**
+**2 of 88 images delivered; 86 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
-| 1. Style reference sheet | 0 of 2 |
+| 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 0 of 29 |
 | 3. House Cats, Skadi, and Freya | 0 of 22 |
 | 4. The room, badges, UI furniture, and Gathering overlays | 0 of 35 |
@@ -25,12 +25,12 @@ Every prompt carries the style direction, so each can be pasted as it stands.
 
 ## 1. Style reference sheet
 
-- [ ] `art/reference/style-sheet.png`
-- [ ] `art/raw/cat/orange/clingy/content.png`
+- [x] `art/reference/style-sheet.png`
+- [x] `art/raw/cat/orange/clingy/content.png`
 
 ### Style reference sheet: `art/reference/style-sheet.png`
 
-**Not yet delivered.**
+**Delivered.**
 
 - Size: 1536×1024
 - Anchor: none: the game never shows it
@@ -42,7 +42,7 @@ A style reference sheet for Clowder, a cozy cat-collecting game set in a living 
 
 ### Orange Clingy Cat, content: `art/raw/cat/orange/clingy/content.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `cat/orange/clingy/content`
 - Size: 512×512
