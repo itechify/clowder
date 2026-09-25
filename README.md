@@ -28,6 +28,14 @@ game uses it in place of the code-drawn fallback with no code change. The dev
 server reloads when one lands, and the build packs them into WebP atlases. A
 file named for no key, or the wrong size, fails the build.
 
+The art brief, `art/brief.md`, lists every image for Astra to generate, in
+delivery batches, with a ready-to-paste prompt, size, anchor, what to attach,
+and file name for each. It is written from the manifest by `pnpm brief` (prompts
+live in `src/art/brief.ts`), which also marks what is delivered; rerun it after
+delivering images, since `pnpm test` fails while the brief is out of date. The
+style reference sheet goes in `art/reference/`, and the photos of Skadi and
+Freya in `art/reference/photos/`, which git ignores.
+
 ## Installing and offline play
 
 Production builds are an installable PWA: `vite-plugin-pwa` generates the

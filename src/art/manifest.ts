@@ -27,7 +27,7 @@ export const CHARACTER_SPAN = 384
  * Where a character sits (its base) on its canvas: bottom centre, with 64
  * pixels beneath for a tail dangling over the Shelf's edge.
  */
-const CHARACTER_BASE = { x: 0.5, y: 448 / CHARACTER_CANVAS }
+export const CHARACTER_BASE = { x: 0.5, y: 448 / CHARACTER_CANVAS }
 
 /** The room, its furniture, and the UI are authored at 3× the 390×844 design size. */
 export const ROOM_SCALE = 3
