@@ -55,6 +55,7 @@ export type RoomPiece =
   | "window"
   | "moon"
   | "couch"
+  | "seatPad"
   | "rug"
   | "shelf"
   | "treatJar"
@@ -123,6 +124,7 @@ export const art = {
     wall: "room/wall",
     window: "room/window",
     couch: "room/couch",
+    seatPad: "room/seatPad",
     rug: "room/rug",
     shelf: "room/shelf",
     treatJar: "room/treatJar"
@@ -216,18 +218,26 @@ function* entries(): Generator<ArtEntry> {
       key: moonArt(phase),
       ...room(32, 32)
     }
+  // The Couch's frame: back, arms, base, and legs, without the pads on its Seats.
   yield {
     kind: "room",
     piece: "couch",
     key: art.room.couch,
     ...room(390, 166, bottomCentre)
   }
-  yield { kind: "room", piece: "rug", key: art.room.rug, ...room(350, 245) }
+  // One upholstered pad per Seat, a Cat sitting on its top.
+  yield {
+    kind: "room",
+    piece: "seatPad",
+    key: art.room.seatPad,
+    ...room(66, 38, topCentre)
+  }
+  yield { kind: "room", piece: "rug", key: art.room.rug, ...room(370, 220) }
   yield {
     kind: "room",
     piece: "shelf",
     key: art.room.shelf,
-    ...room(366, 24, topCentre)
+    ...room(374, 32, topCentre)
   }
   yield {
     kind: "room",

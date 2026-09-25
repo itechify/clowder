@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**0 of 87 images delivered; 86 still on fallback.**
+**0 of 88 images delivered; 87 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 0 of 2 |
 | 2. Cat poses | 0 of 29 |
 | 3. House Cats, Skadi, and Freya | 0 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 34 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 35 |
 
 ## How to generate and deliver
 
@@ -792,6 +792,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [ ] `art/raw/room/moon/8.png`
 - [ ] `art/raw/room/moon/9.png`
 - [ ] `art/raw/room/couch.png`
+- [ ] `art/raw/room/seatPad.png`
 - [ ] `art/raw/room/rug.png`
 - [ ] `art/raw/room/shelf.png`
 - [ ] `art/raw/room/treatJar.png`
@@ -885,7 +886,7 @@ A small round badge for a calico Cat: a orange, black, and white patchwork disc 
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-The back wall and floor of a cozy living room at night, seen straight on: warm cream wallpaper with soft vertical stripes over the top 56%, and warm wooden floorboards below. Keep it simple and low in detail, since the window, shelf, sofa, and rug are separate images layered over it. It fills the whole image edge to edge, fully opaque, with no furniture. Front-on, with no perspective. It will be resized to exactly 1170×2532 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+The back wall and floor of a cozy living room at night, seen straight on: warm cream wallpaper with soft vertical stripes over the top 47%, a cream skirting board, and warm wooden floorboards below from 48% down. Keep it simple and low in detail, since the window, shelf, sofa, and rug are separate images layered over it. It fills the whole image edge to edge, fully opaque, with no furniture. Front-on, with no perspective. It will be resized to exactly 1170×2532 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Window: `art/raw/room/window.png`
@@ -1028,7 +1029,20 @@ The moon through the window on Night 9 of 9, waxing across the Run: a full moon,
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-A plump sage-green sofa seen straight on, with five separate seat cushions evenly spaced across it, rounded arms at both ends, and short wooden legs. Keep the top edge of the backrest plain: the game lays a meter along it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1170×498 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+A plump sage-green sofa seen straight on, without its seat cushions: a tall, softly tufted backrest, rounded arms at both ends, a low base where the cushions will rest, and short wooden legs. The five seat cushions are a separate image, laid over the base. Keep the top edge of the backrest plain: the game lays a meter along it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1170×498 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Seat pad: `art/raw/room/seatPad.png`
+
+**On fallback.**
+
+- Key: `room/seatPad`
+- Size: 198×114
+- Anchor: (99, 0): top centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A single plump, square-ish sage-green sofa seat cushion seen straight on from slightly above, its top face lit and its front face softly piped. Five of these sit side by side on the sofa, a Cat sitting on each. Transparent background. Front-on, with no perspective. It will be resized to exactly 198×114 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Rug: `art/raw/room/rug.png`
@@ -1036,12 +1050,12 @@ A plump sage-green sofa seen straight on, with five separate seat cushions evenl
 **On fallback.**
 
 - Key: `room/rug`
-- Size: 1050×735
-- Anchor: (525, 368): centre
+- Size: 1110×660
+- Anchor: (555, 330): centre
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-A cozy, woven terracotta rug with a cream border, seen from above at a gentle angle as it lies on the floor, big enough for eight Cats lounging in two rows. Transparent background. It will be resized to exactly 1050×735 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+A cozy, woven terracotta rug with a cream border, seen from above at a gentle angle as it lies on the floor, big enough for eight Cats lounging in two rows. Transparent background. It will be resized to exactly 1110×660 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Shelf: `art/raw/room/shelf.png`
@@ -1049,12 +1063,12 @@ A cozy, woven terracotta rug with a cream border, seen from above at a gentle an
 **On fallback.**
 
 - Key: `room/shelf`
-- Size: 1098×72
-- Anchor: (549, 0): top centre
+- Size: 1122×96
+- Anchor: (561, 0): top centre
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath. Transparent background. Front-on, with no perspective. It will be resized to exactly 1098×72 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath. Transparent background. Front-on, with no perspective. It will be resized to exactly 1122×96 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Treat jar: `art/raw/room/treatJar.png`

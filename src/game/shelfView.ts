@@ -91,8 +91,9 @@ export function drawShelf(
   xs.forEach((x, position) => {
     const id = run.shelf[position]
     if (id === undefined) {
-      g.lineStyle(2, 0x8a5a3b, 0.35)
-      g.strokeRoundedRect(x - size / 2, sitY - size / 2, size, size, 12)
+      // A free position: a little mat waiting on the plank.
+      g.fillStyle(0xfaf3e6, 0.55).fillEllipse(x, y + 2, size * 0.9, 7)
+      g.lineStyle(1.5, 0xb07a52, 0.8).strokeEllipse(x, y + 2, size * 0.9, 7)
     } else {
       if (id === held)
         g.fillStyle(0xfff4c2, 0.9).fillRoundedRect(
@@ -115,7 +116,7 @@ export function drawShelf(
         scene.add
           .text(
             x,
-            y + 12,
+            y + 18,
             copiedName ? `Copycat as ${copiedName}` : houseCat(id).name,
             {
               ...font(10, inert ? "#9c8672" : "#4a3426", "800"),

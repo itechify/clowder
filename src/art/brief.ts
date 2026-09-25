@@ -224,11 +224,13 @@ const moonLook = (phase: number) =>
     : `a waxing moon about ${Math.round((100 * phase) / MOON_PHASES)}% lit, lit on its right side`
 
 const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
-  wall: "The back wall and floor of a cozy living room at night, seen straight on: warm cream wallpaper with soft vertical stripes over the top 56%, and warm wooden floorboards below. Keep it simple and low in detail, since the window, shelf, sofa, and rug are separate images layered over it. It fills the whole image edge to edge, fully opaque, with no furniture.",
+  wall: "The back wall and floor of a cozy living room at night, seen straight on: warm cream wallpaper with soft vertical stripes over the top 47%, a cream skirting board, and warm wooden floorboards below from 48% down. Keep it simple and low in detail, since the window, shelf, sofa, and rug are separate images layered over it. It fills the whole image edge to edge, fully opaque, with no furniture.",
   window:
     "A window with a cream-painted frame and a single vertical mullion, showing a deep blue night sky with a few small stars. No moon: that is a separate image.",
   couch:
-    "A plump sage-green sofa seen straight on, with five separate seat cushions evenly spaced across it, rounded arms at both ends, and short wooden legs. Keep the top edge of the backrest plain: the game lays a meter along it.",
+    "A plump sage-green sofa seen straight on, without its seat cushions: a tall, softly tufted backrest, rounded arms at both ends, a low base where the cushions will rest, and short wooden legs. The five seat cushions are a separate image, laid over the base. Keep the top edge of the backrest plain: the game lays a meter along it.",
+  seatPad:
+    "A single plump, square-ish sage-green sofa seat cushion seen straight on from slightly above, its top face lit and its front face softly piped. Five of these sit side by side on the sofa, a Cat sitting on each.",
   rug: "A cozy, woven terracotta rug with a cream border, seen from above at a gentle angle as it lies on the floor, big enough for eight Cats lounging in two rows.",
   shelf:
     "A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath.",
