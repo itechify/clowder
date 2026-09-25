@@ -4,6 +4,7 @@ import {
   applyAction,
   defaultConfig,
   type HouseCatId,
+  houseCats,
   previewPlay,
   type Run,
   startRun
@@ -17,6 +18,27 @@ function apply(run: Run, ...actions: Action[]) {
     if (!result.ok) throw new Error(result.reason)
     next = result.run
   }
+  return next
+}
+
+/** A seed-dependent Shelf of up to four House Cats, in seed-dependent order. */
+function seededShelf(seed: number): HouseCatId[] {
+  const ids = houseCats.map((houseCat) => houseCat.id)
+  const shelf: HouseCatId[] = []
+  for (let i = 0; i < seed % 5; i++) {
+    const unused = ids.filter((id) => !shelf.includes(id))
+    shelf.push(unused[(seed * (i + 7) + i * i) % unused.length])
+  }
+  return shelf
+}
+
+/** Seats a seed-dependent selection of Hand Cats in seed-dependent Seats. */
+function seatSeeded(run: Run, seed: number) {
+  let next = run
+  run.night.hand.forEach((cat, i) => {
+    const seat = (seed * (i + 5) + 2 * i) % (7 + (seed % 9))
+    if (seat < 5) next = apply(next, { type: "place", cat, seat })
+  })
   return next
 }
 
@@ -73,6 +95,7 @@ describe("Play", () => {
         bonus: 5,
         purr: 15,
         mult: 0,
+        multFrom: [],
         tally: { purr: 15, mult: 1 }
       },
       {
@@ -84,6 +107,7 @@ describe("Play", () => {
         bonus: 5,
         purr: 15,
         mult: 0,
+        multFrom: [],
         tally: { purr: 30, mult: 1 }
       },
       {
@@ -95,6 +119,7 @@ describe("Play", () => {
         bonus: 15,
         purr: 25,
         mult: 0,
+        multFrom: [],
         tally: { purr: 55, mult: 1 }
       },
       { type: "scoreTotal", purr: 55, mult: 1, score: 55, nightScore: 55 }
@@ -118,7 +143,8 @@ describe("Play", () => {
       basePurr: 10,
       bonus,
       purr: 10 + bonus,
-      mult: 0
+      mult: 0,
+      multFrom: []
     })
 
     const { events } = accepted(run, { type: "play" })
@@ -145,64 +171,79 @@ describe("Play", () => {
         nightScore: 340
       },
       { type: "nightCleared", score: 340 },
-      { type: "treatsAwarded", forNight: 3, forUnusedPlays: 2, treats: 5 },
+      {
+        type: "treatsAwarded",
+        forNight: 3,
+        forUnusedPlays: 2,
+        forHouseCats: [],
+        treats: 5
+      },
       { type: "shopOpened" }
     ])
   })
 
   it("scripts events that add up to the Score, each tallying the Play so far", () => {
     const config = { ...defaultConfig, firstTarget: Number.POSITIVE_INFINITY }
-    const shelves: HouseCatId[][] = [
-      [],
-      ["doNotTouch"],
-      ["boxGoblin"],
-      ["boxGoblin", "doNotTouch"]
-    ]
     for (let seed = 1; seed <= 200; seed++) {
-      let run: Run = { ...startRun(seed, config), shelf: shelves[seed % 4] }
-      run.night.hand.forEach((cat, i) => {
-        const seat = (seed * (i + 5) + 2 * i) % (7 + (seed % 9))
-        if (seat < 5) run = apply(run, { type: "place", cat, seat })
-      })
-      if (run.night.couch.every((cat) => cat === null)) continue
+      let run: Run = { ...startRun(seed, config), shelf: seededShelf(seed) }
+      for (let play = 0; play < run.config.playsPerNight; play++) {
+        run = seatSeeded(run, seed + play)
+        if (run.night.couch.every((cat) => cat === null)) break
+        const { run: after, events } = accepted(run, { type: "play" })
 
-      const { events } = accepted(run, { type: "play" })
-
-      // Replays the phases (ADR-0001) from the events alone.
-      let purr = 0
-      let mult = 1
-      let phase = 1
-      for (const event of events) {
-        if (
-          event.type === "gatheringActivated" ||
-          event.type === "wholePlayEffect"
-        ) {
-          expect(phase).toBe(1)
-          mult += event.mult
-        } else if (event.type === "catScored") {
-          expect(phase).toBeLessThanOrEqual(2)
-          phase = 2
-          purr += event.purr
-          mult += event.mult
-        } else if (event.type === "timesEffect") {
-          expect(phase).toBeLessThanOrEqual(3)
-          phase = 3
-          mult *= event.times
-        } else if (event.type === "scoreTotal") {
-          phase = 4
-          expect(event).toEqual({
-            type: "scoreTotal",
-            purr,
-            mult,
-            score: Math.floor(purr * mult),
-            nightScore: run.night.score + event.score
-          })
-          expect(event.score).toBe(previewPlay(run).score)
-          continue
-        } else continue
-        expect(event.tally).toEqual({ purr, mult })
+        // Replays the phases (ADR-0001) from the events alone.
+        let purr = 0
+        let mult = 1
+        let phase = 1
+        let scoring: string | undefined
+        for (const event of events) {
+          if (
+            event.type === "gatheringActivated" ||
+            event.type === "wholePlayEffect"
+          ) {
+            expect(phase).toBe(1)
+            mult += event.mult
+          } else if (event.type === "catScored" || event.type === "repeat") {
+            expect(phase).toBeLessThanOrEqual(2)
+            phase = 2
+            // A Cat's Repeats follow its Scoring event, each from a House Cat.
+            if (event.type === "catScored") {
+              expect(event.source).toBe("seat")
+              scoring = event.cat
+            } else {
+              expect(event.cat).toBe(scoring)
+              expect(run.shelf).toContain(event.source)
+            }
+            purr += event.purr
+            mult += event.mult
+            expect(
+              event.multFrom.reduce((sum, from) => sum + from.mult, 0)
+            ).toBe(event.mult)
+          } else if (event.type === "houseCatWarmedUp") {
+            expect(phase).toBeLessThanOrEqual(3)
+            phase = 3
+            continue
+          } else if (event.type === "timesEffect") {
+            expect(phase).toBeLessThanOrEqual(3)
+            phase = 3
+            mult *= event.times
+          } else if (event.type === "scoreTotal") {
+            phase = 4
+            expect(event).toEqual({
+              type: "scoreTotal",
+              purr,
+              mult,
+              score: Math.floor(purr * mult),
+              nightScore: run.night.score + event.score
+            })
+            expect(event.score).toBe(previewPlay(run).score)
+            continue
+          } else continue
+          expect(event.tally).toEqual({ purr, mult })
+        }
+        expect(phase).toBe(4)
+        run = after
       }
-      expect(phase).toBe(4)
     }
   })
 
@@ -262,29 +303,28 @@ describe("Play", () => {
     expect(after.night.drawPile).toEqual([])
   })
 
-  it("equals the preview for any seeded arrangement", () => {
+  it("equals the preview for any seeded arrangement and Shelf, Play after Play", () => {
     // An unreachable Target keeps the Night, and its Score, open after the Play.
     const config = { ...defaultConfig, firstTarget: Number.POSITIVE_INFINITY }
     for (let seed = 1; seed <= 200; seed++) {
-      let run = startRun(seed, config)
-      // Seat a seed-dependent selection of Hand Cats in seed-dependent Seats.
-      run.night.hand.forEach((cat, i) => {
-        const seat = (seed * (i + 3) + i) % 7
-        if (seat < 5) run = apply(run, { type: "place", cat, seat })
-      })
-      if (run.night.couch.every((cat) => cat === null)) continue
-      const preview = previewPlay(run)
+      let run: Run = { ...startRun(seed, config), shelf: seededShelf(seed) }
+      for (let play = 0; play < run.config.playsPerNight; play++) {
+        run = seatSeeded(run, seed * 3 + play)
+        if (run.night.couch.every((cat) => cat === null)) break
+        const preview = previewPlay(run)
 
-      const result = accepted(run, { type: "play" })
+        const result = accepted(run, { type: "play" })
 
-      expect(result.run.night.score).toBe(preview.score)
-      expect(result.events).toContainEqual({
-        type: "scoreTotal",
-        purr: preview.purr,
-        mult: preview.mult,
-        score: preview.score,
-        nightScore: preview.score
-      })
+        expect(result.run.night.score).toBe(run.night.score + preview.score)
+        expect(result.events).toContainEqual({
+          type: "scoreTotal",
+          purr: preview.purr,
+          mult: preview.mult,
+          score: preview.score,
+          nightScore: run.night.score + preview.score
+        })
+        run = result.run
+      }
     }
   })
 })

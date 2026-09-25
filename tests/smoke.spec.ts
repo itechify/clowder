@@ -146,7 +146,8 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
   page
 }) => {
   test.setTimeout(60_000)
-  await boot(page, 1)
+  // This seed's first Shop offers Do Not Touch, for all 5 Treats.
+  await boot(page, 2)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     while (!run().shop) {

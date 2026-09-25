@@ -78,6 +78,7 @@ export function startNight(run: Omit<Run, "night">, number: number): Run {
     score: 0,
     playsLeft: rules.plays,
     redrawsLeft: rules.redraws,
+    warmPlays: 0,
     drawPile: shuffled.slice(config.handSize),
     hand: shuffled.slice(0, config.handSize),
     couch: Array.from({ length: config.seats }, () => null),

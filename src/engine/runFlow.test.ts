@@ -89,6 +89,7 @@ describe("Treats", () => {
       type: "treatsAwarded",
       forNight: 3,
       forUnusedPlays: 0,
+      forHouseCats: [],
       treats: 3
     })
   })

@@ -1,6 +1,8 @@
 import type Phaser from "phaser"
 import {
   type Action,
+  clearTreats,
+  copying,
   type HouseCatId,
   houseCat,
   type Run,
@@ -21,18 +23,38 @@ export const shelfX = (positions: number) =>
 /** Where a House Cat of `size` sits on a Shelf whose plank's top is at `y`. */
 export const onShelf = (y: number, size: number) => y - size * 0.45
 
+const plural = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? "" : "s"}`
+
 /**
- * What each House Cat adds to a Play, as a note to float above it; one that
- * adds nothing to this Play has none.
+ * What each House Cat adds to the Play as it stands, as a note to float above
+ * it; one that adds nothing to this Play has none. Freya always shows where
+ * she has warmed up to, and Treat Dealer what clearing the Night now would pay.
  */
 export function shelfNotes(
+  run: Run,
   breakdown: ScoreBreakdown
 ): Partial<Record<HouseCatId, string>> {
   const notes: Partial<Record<HouseCatId, string>> = {}
+  const tally = (counts: Map<HouseCatId, number>, id: HouseCatId, n: number) =>
+    counts.set(id, (counts.get(id) ?? 0) + n)
+  const mult = new Map<HouseCatId, number>()
+  const repeats = new Map<HouseCatId, number>()
+  const grows = new Map<HouseCatId, number>()
   for (const effect of breakdown.wholePlayEffects)
-    notes[effect.houseCat] = `+${effect.mult} Mult`
+    tally(mult, effect.houseCat, effect.mult)
+  for (const event of breakdown.scoringEvents) {
+    for (const from of event.multFrom) tally(mult, from.houseCat, from.mult)
+    if (event.source !== "seat") tally(repeats, event.source, 1)
+  }
+  for (const growth of breakdown.growth) tally(grows, growth.houseCat, 1)
+  for (const [id, added] of mult) notes[id] = `+${added} Mult`
+  for (const [id, count] of repeats) notes[id] = plural(count, "Repeat")
+  for (const [id, count] of grows) notes[id] = `grows ${plural(count, "Cat")}`
   for (const effect of breakdown.timesEffects)
-    notes[effect.houseCat] = `×${effect.times}`
+    notes[effect.houseCat] = `×${effect.times.toFixed(1)}`
+  for (const paid of clearTreats(run.shelf, run.night))
+    notes[paid.houseCat] = `+${plural(paid.treats, "Treat")}`
   return notes
 }
 
@@ -71,6 +93,7 @@ export function drawShelf(
     g.fillRect((xs[position - 1] + xs[position]) / 2 - 4, y + 10, 8, 14)
 
   const sprites = new Map<HouseCatId, Phaser.GameObjects.Container>()
+  const copied = copying(run.shelf)
   xs.forEach((x, position) => {
     const id = run.shelf[position]
     if (id === undefined) {
@@ -85,12 +108,30 @@ export function drawShelf(
           size + 10,
           14
         )
-      sprites.set(id, add(drawHouseCat(scene, id, size)).setPosition(x, sitY))
-      add(
-        scene.add
-          .text(x, y + 18, houseCat(id).name, font(10, "#4a3426", "800"))
-          .setOrigin(0.5)
+      // A Copycat with nothing to copy is greyed out; one copying says whom.
+      const inert = id === "copycat" && copied[position] === null
+      sprites.set(
+        id,
+        add(drawHouseCat(scene, id, size))
+          .setPosition(x, sitY)
+          .setAlpha(inert ? 0.35 : 1)
       )
+      const copiedName = copied[position] && houseCat(copied[position]).name
+      const label = add(
+        scene.add
+          .text(
+            x,
+            y + 12,
+            copiedName ? `Copycat as ${copiedName}` : houseCat(id).name,
+            {
+              ...font(10, inert ? "#9c8672" : "#4a3426", "800"),
+              align: "center",
+              wordWrap: { width: width - 4 }
+            }
+          )
+          .setOrigin(0.5, 0)
+      )
+      label.setLineSpacing(-2)
       const note = notes[id]
       if (note) {
         const label = scene.add

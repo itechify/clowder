@@ -88,18 +88,25 @@ const contiguous = (seats: number[]) =>
 function multBreakdown({
   gatherings,
   wholePlayEffects,
+  scoringEvents,
   timesEffects,
   mult
 }: ScoreBreakdown) {
-  if (gatherings.length + wholePlayEffects.length + timesEffects.length === 0)
-    return ""
-  const added = [
-    "1",
+  // Mult added as Cats score, totalled for each House Cat adding it.
+  const perScore = new Map<string, number>()
+  for (const { name, mult } of scoringEvents.flatMap((e) => e.multFrom))
+    perScore.set(name, (perScore.get(name) ?? 0) + mult)
+  const sources = [
     ...[...gatherings, ...wholePlayEffects].map(
       ({ name, mult }) => `${name} ${mult}`
-    )
-  ].join(" + ")
-  const times = timesEffects.map(({ name, times }) => ` × ${name} ${times}`)
+    ),
+    ...[...perScore].map(([name, mult]) => `${name} ${mult}`)
+  ]
+  if (sources.length + timesEffects.length === 0) return ""
+  const added = ["1", ...sources].join(" + ")
+  const times = timesEffects.map(
+    ({ name, times }) => ` × ${name} ${times.toFixed(1)}`
+  )
   return `${times.length ? `(${added})` : added}${times.join("")} = ${mult.toFixed(1)} Mult`
 }
 
@@ -507,6 +514,21 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
+   * A Cat grown past the base Purr it started with wears its base Purr in a
+   * starry badge, so The Void's work shows wherever the Cat goes.
+   */
+  private drawGrowth(add: Add, cat: Cat, x: number, y: number) {
+    if (cat.basePurr === session.run.config.basePurr) return
+    const label = this.add
+      .text(x, y, `${cat.basePurr}`, font(11, "#f6d743", "900"))
+      .setOrigin(0.5)
+    add(this.add.graphics())
+      .fillStyle(0x141018, 0.92)
+      .fillRoundedRect(x - label.width / 2 - 6, y - 9, label.width + 12, 18, 9)
+    add(label)
+  }
+
+  /**
    * The HUD: Night, Plays, Treats, and progress toward the Target. Returns
    * how to show a different Night score, for counting up during scoring.
    */
@@ -617,7 +639,7 @@ export class CouchScene extends Phaser.Scene {
       y: SHELF_Y,
       size: SHELF_CAT_SIZE,
       held: this.heldHouseCat,
-      notes: shelfNotes(preview),
+      notes: shelfNotes(run, preview),
       onTap: (position) => this.tapShelfPosition(position)
     })
 
@@ -637,11 +659,14 @@ export class CouchScene extends Phaser.Scene {
     // whichever Gatherings they form. A Cat being dragged leaves its labels.
     this.drawGatherings(add, preview.gatherings, "behind")
     for (const event of preview.scoringEvents) {
+      // A Cat's Repeats score where it sits; it is drawn once.
+      if (event.source !== "seat") continue
       const cat = catById.get(event.cat)!
       const x = this.seatX[event.seat]
       if (chosen.has(event.cat)) markChosen(x, SEAT_Y - 4)
       this.drawCatAt(add, cat, 64, { x, y: SEAT_Y - 12 }, true)
       if (event.cat === this.dragging) continue
+      this.drawGrowth(add, cat, x - 22, SEAT_Y - 44)
       add(
         this.add
           .text(
@@ -652,12 +677,16 @@ export class CouchScene extends Phaser.Scene {
           )
           .setOrigin(0.5)
       )
+      // With Repeats, how many times the Cat will score.
+      const scores = preview.scoringEvents.filter(
+        (e) => e.cat === event.cat
+      ).length
       add(
         this.add
           .text(
             x,
             SEAT_Y - 72,
-            `+${event.bonus}`,
+            `+${event.bonus}${scores > 1 ? ` ×${scores}` : ""}`,
             font(18, event.bonus > 0 ? "#c2410c" : "#b9a58f", "800")
           )
           .setOrigin(0.5)
@@ -719,6 +748,7 @@ export class CouchScene extends Phaser.Scene {
             this.startPress(pointer, { cat: id })
           )
         if (id === this.dragging) return
+        this.drawGrowth(add, cat, x - 26, y - 40)
         add(
           this.add
             .text(
@@ -1033,10 +1063,16 @@ export class CouchScene extends Phaser.Scene {
         ease: "Quad.easeOut"
       })
     }
-    const pop = (x: number, y: number, label: string, size: number) => {
+    const pop = (
+      x: number,
+      y: number,
+      label: string,
+      size: number,
+      colour = "#c2410c"
+    ) => {
       const text = add(
         this.add
-          .text(x, y, label, font(size, "#c2410c", "900"))
+          .text(x, y, label, font(size, colour, "900"))
           .setOrigin(0.5)
           .setStroke("#fff7e8", 5)
       )
@@ -1057,10 +1093,16 @@ export class CouchScene extends Phaser.Scene {
       })
     }
 
-    /** A House Cat on the Shelf hops as its effect fires. */
-    const hop = (id: HouseCatId, label: string) => {
+    /**
+     * A House Cat on the Shelf hops as its effect fires, from where it sits
+     * however quickly its effects follow one another.
+     */
+    const home = new Map([...shelved].map(([id, sprite]) => [id, sprite.y]))
+    const hop = (id: HouseCatId, label: string, colour?: string) => {
       const sprite = shelved.get(id)
       if (!sprite) return
+      this.tweens.killTweensOf(sprite)
+      sprite.setY(home.get(id)!).setScale(1)
       this.tweens.add({
         targets: sprite,
         y: sprite.y - 12,
@@ -1070,7 +1112,7 @@ export class CouchScene extends Phaser.Scene {
         yoyo: true,
         ease: "Quad.easeOut"
       })
-      pop(sprite.x, sprite.y - SHELF_CAT_SIZE * 0.6, label, 20)
+      pop(sprite.x, sprite.y - SHELF_CAT_SIZE * 0.6, label, 20, colour)
     }
 
     // Each event gets a beat of its own, in order.
@@ -1106,10 +1148,13 @@ export class CouchScene extends Phaser.Scene {
           })
           break
         case "catScored":
+        case "repeat":
           next(380, () => {
             const x = this.seatX[event.seat]
             const sprite = seated.get(event.seat)
-            if (sprite)
+            if (sprite) {
+              this.tweens.killTweensOf(sprite)
+              sprite.setPosition(x, SEAT_Y - 12).setScale(1)
               this.tweens.add({
                 targets: sprite,
                 y: sprite.y - 14,
@@ -1119,14 +1164,44 @@ export class CouchScene extends Phaser.Scene {
                 yoyo: true,
                 ease: "Quad.easeOut"
               })
+            }
+            // A Repeat is the same Cat scoring again, sent by a House Cat.
+            if (event.source !== "seat") {
+              hop(event.source, "Repeat!")
+              pop(x, SEAT_Y - 128, "Repeat!", 15, "#6b4fb3")
+            }
             pop(x, SEAT_Y - 72, `+${event.purr}`, 24)
             if (event.mult) pop(x, SEAT_Y - 100, `+${event.mult} Mult`, 16)
+            for (const from of event.multFrom)
+              hop(from.houseCat, `+${from.mult} Mult`)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
+          })
+          break
+        case "houseCatWarmedUp":
+          // Freya warms up a little more, a heart at a time.
+          next(600, () =>
+            hop(event.houseCat, `♥ ×${event.times.toFixed(1)}`, "#d6456a")
+          )
+          break
+        case "catGrew":
+          // Grown for good: The Void's gift shows once the Score is in.
+          next(450, () => {
+            const x = this.seatX[event.seat]
+            hop(event.houseCat, `+${event.purr} Purr`, "#6b4fb3")
+            pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, "#6b4fb3")
+            const sprite = seated.get(event.seat)
+            if (sprite)
+              this.tweens.add({
+                targets: sprite,
+                scale: { from: 1.15, to: 1 },
+                duration: beat(300),
+                ease: "Back.easeOut"
+              })
           })
           break
         case "timesEffect":
           next(500, () => {
-            hop(event.houseCat, `×${event.times}`)
+            hop(event.houseCat, `×${event.times.toFixed(1)}`)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
           })
           break
@@ -1151,7 +1226,11 @@ export class CouchScene extends Phaser.Scene {
           next(500, () => pop(WIDTH / 2, 170, "Night cleared!", 34))
           break
         case "treatsAwarded":
-          next(500, () => pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24))
+          next(500, () => {
+            pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24)
+            for (const paid of event.forHouseCats)
+              hop(paid.houseCat, `+${paid.treats} Treats`)
+          })
           break
         case "nightLost":
           next(500, () => pop(WIDTH / 2, 170, "Night lost", 30))

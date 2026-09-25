@@ -14,8 +14,11 @@ export {
 } from "./content/disasters"
 export type { GatheringId } from "./content/gatherings"
 export {
+  clearTreats,
+  copying,
   type HouseCat,
   type HouseCatId,
+  type HouseCatTreats,
   houseCat,
   houseCats
 } from "./content/houseCats"
@@ -27,11 +30,13 @@ export { startRun } from "./run"
 export { restoreRun, serialiseRun } from "./save"
 export {
   type ActiveGathering,
+  type Growth,
   previewPlay,
   type ScoreBreakdown,
   type ScoringEvent,
   type ScoringSource,
   type TimesEffect,
+  type WarmUp,
   type WholePlayEffect
 } from "./scoring"
 export { rehomeRefund, type ShopAction } from "./shop"
