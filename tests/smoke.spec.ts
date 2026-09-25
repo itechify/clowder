@@ -179,3 +179,83 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
   expect(rehomed.shelf).toEqual([])
   expect(rehomed.treats).toBe(2)
 })
+
+test("resumes a Run where it was left after a reload", async ({ page }) => {
+  await boot(page, 7)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    apply({ type: "redraw", cats: run().night.hand.slice(0, 2) })
+    run()
+      .night.hand.slice(0, 3)
+      .forEach((cat, seat) => {
+        apply({ type: "place", cat, seat })
+      })
+    apply({ type: "play" })
+  })
+  // Seat one more Cat by tapping, and leave it seated.
+  await tap(page, ...layout.wall)
+  await tap(page, ...layout.hand(0))
+  await tap(page, ...layout.seat(4))
+  const before = await page.evaluate(() => window.__clowder!.run())
+  expect(before.night.couch[4]).not.toBeNull()
+
+  await page.reload()
+  await page.waitForFunction(() => "__clowder" in window)
+
+  expect(new URL(page.url()).search).toBe("")
+  expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
+  // The resumed Couch plays on from the scene.
+  await tap(page, ...layout.play)
+  const after = await page.evaluate(() => window.__clowder!.run())
+  expect(after.night.playsLeft).toBe(before.night.playsLeft - 1)
+})
+
+test("starts afresh once the saved Run has finished", async ({ page }) => {
+  await boot(page, 7)
+  const seed = await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (run().status === "playing") {
+      if (run().shop) apply({ type: "leaveShop" })
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+    return run().seed
+  })
+
+  await page.reload()
+  await page.waitForFunction(() => "__clowder" in window)
+
+  const fresh = await page.evaluate(() => window.__clowder!.run())
+  expect(fresh.status).toBe("playing")
+  expect(fresh.night.number).toBe(1)
+  expect(fresh.seed).not.toBe(seed)
+})
+
+test("resumes a Run left in the Shop there", async ({ page }) => {
+  await boot(page, 1)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (!run().shop) {
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+    apply({ type: "reroll" })
+  })
+  const before = await page.evaluate(() => window.__clowder!.run())
+
+  await page.reload()
+  await page.waitForFunction(() => "__clowder" in window)
+
+  expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scenes()))
+    .toEqual(["shop"])
+})

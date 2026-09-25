@@ -7,6 +7,11 @@ export {
 } from "./actions"
 export { type Config, defaultConfig } from "./config"
 export { type Coat, coats } from "./content/coats"
+export {
+  type Disaster,
+  type DisasterId,
+  disasterById
+} from "./content/disasters"
 export type { GatheringId } from "./content/gatherings"
 export {
   type HouseCat,
@@ -19,6 +24,7 @@ export {
   personalities
 } from "./content/personalities"
 export { startRun } from "./run"
+export { restoreRun, serialiseRun } from "./save"
 export {
   type ActiveGathering,
   previewPlay,

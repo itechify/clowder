@@ -5,6 +5,8 @@ import {
   applyAction,
   type Cat,
   type CatId,
+  type DisasterId,
+  disasterById,
   type HouseCatId,
   houseCat,
   previewPlay,
@@ -26,6 +28,8 @@ export const RESOLUTION = 2
 /** The top of the Shelf's plank, a windowsill above the Couch. */
 const SHELF_Y = 186
 const SHELF_CAT_SIZE = 48
+/** Centre of tonight's Disaster sign, between the Draw pile and the Redraws. */
+const DISASTER_SIGN = { x: 208, y: 101 }
 const SEAT_Y = 352
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
@@ -103,6 +107,9 @@ function multBreakdown({
 const purrTimesMult = (purr: number, mult: number) =>
   `${purr} Purr × ${mult.toFixed(1)}`
 
+/** The red of a Disaster, wherever one is announced. */
+export const DISASTER_RED = 0x8a3a2e
+
 export const font = (size: number, colour = "#4a3426", weight = "600") => ({
   fontFamily: "system-ui, sans-serif",
   fontSize: `${size}px`,
@@ -140,6 +147,8 @@ export class CouchScene extends Phaser.Scene {
   private bedtime: Phaser.Time.TimerEvent | null = null
   private skipArea!: Phaser.GameObjects.Zone
   private layer!: Phaser.GameObjects.Container
+  /** The sign naming tonight's Disaster, when there is one. */
+  private disasterSign: Phaser.GameObjects.Container | null = null
   private seatX: number[] = []
 
   constructor() {
@@ -331,7 +340,14 @@ export class CouchScene extends Phaser.Scene {
     for (const [cat, sprite] of this.sprites)
       this.movedFrom.set(cat, { x: sprite.x, y: sprite.y })
     if (dropped) this.movedFrom.set(dropped.cat, dropped.at)
-    if (!action || !session.apply(action).ok) this.draw()
+    if (!action || !session.apply(action).ok) {
+      this.draw()
+      // A Seat refused while tonight's Couch holds fewer Cats than it has
+      // Seats points at the Disaster limiting it.
+      const { night } = session.run
+      if (action?.type === "place" && night.catsPerPlay < night.couch.length)
+        this.nudgeDisasterSign()
+    }
     this.movedFrom.clear()
   }
 
@@ -539,7 +555,42 @@ export class CouchScene extends Phaser.Scene {
         .text(WIDTH - 20, 94, `Redraws ${night.redrawsLeft}`, font(15))
         .setOrigin(1, 0)
     )
+    this.disasterSign = night.disaster
+      ? add(this.drawDisasterSign(night.disaster))
+      : null
     return showScore
+  }
+
+  /**
+   * A sign naming tonight's Disaster and the rule it changes, hung between
+   * the Draw pile and the Redraws, clear of the Shelf below.
+   */
+  private drawDisasterSign(id: DisasterId) {
+    const { name, rule } = disasterById(id)
+    const texts = [
+      this.add.text(0, -7, name, font(12, "#fdf6ea", "800")).setOrigin(0.5),
+      this.add.text(0, 7, rule, font(11, "#fdf6ea")).setOrigin(0.5)
+    ]
+    const w = Math.max(...texts.map((text) => text.width)) + 16
+    const board = this.add.graphics()
+    board.fillStyle(DISASTER_RED, 1).fillRoundedRect(-w / 2, -15, w, 30, 10)
+    board.lineStyle(2, 0xf0b28c, 1).strokeRoundedRect(-w / 2, -15, w, 30, 10)
+    return this.add.container(DISASTER_SIGN.x, DISASTER_SIGN.y, [
+      board,
+      ...texts
+    ])
+  }
+
+  /** Gives the Disaster sign a shake. */
+  private nudgeDisasterSign() {
+    const sign = this.disasterSign
+    if (!sign) return
+    this.tweens.add({
+      targets: sign,
+      x: { from: sign.x - 6, to: sign.x },
+      duration: 320,
+      ease: "Elastic.easeOut"
+    })
   }
 
   /**

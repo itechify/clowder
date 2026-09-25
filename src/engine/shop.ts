@@ -5,7 +5,7 @@ import { coats } from "./content/coats"
 import { type HouseCatId, houseCats } from "./content/houseCats"
 import { personalities } from "./content/personalities"
 import { pick, shuffle } from "./rng"
-import { startNight } from "./run"
+import { disasterOn, startNight } from "./run"
 import type { Cat, CatId, Run, Shop } from "./types"
 
 export type ShopAction =
@@ -38,7 +38,8 @@ export function openShop(run: Run): Run {
     catOffers,
     catRehomesLeft: run.config.shop.catRehomesPerVisit,
     houseCatOffers,
-    rerollPrice: run.config.shop.rerollPrice
+    rerollPrice: run.config.shop.rerollPrice,
+    nextDisaster: disasterOn(run, run.night.number + 1)
   }
   return { ...next, shop }
 }

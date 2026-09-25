@@ -5,24 +5,26 @@ import {
   type Cat,
   type CatId,
   coats,
+  disasterById,
   type HouseCatId,
   houseCat,
   personalities,
   rehomeRefund
 } from "../engine"
-import { font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
+import { DISASTER_RED, font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
 import { drawCat } from "./catArt"
 import { drawHouseCat } from "./houseCatArt"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 
-const SECTION_Y = 92
-const CARD_TOP = 106
-const CARD_HEIGHT = 200
-const REROLL_BUTTON = { x: WIDTH / 2, y: 334, w: 150, h: 40 }
-const SHELF_LABEL_Y = 372
+/** Below the next Disaster, when one is announced. */
+const SECTION_Y = 110
+const CARD_TOP = 122
+const CARD_HEIGHT = 190
+const REROLL_BUTTON = { x: WIDTH / 2, y: 338, w: 150, h: 40 }
+const SHELF_LABEL_Y = 376
 /** The top of the Shelf's plank. */
-const SHELF_Y = 440
+const SHELF_Y = 442
 const SHELF_CAT_SIZE = 44
 const FLOOR_Y = 470
 const ROSTER_LABEL_Y = 490
@@ -145,14 +147,32 @@ export class ShopScene extends Phaser.Scene {
         .text(WIDTH - 20, 26, `Treats ${run.treats}`, font(18))
         .setOrigin(1, 0)
     )
+    const next = run.night.number + 1
+    const disaster = shop.nextDisaster && disasterById(shop.nextDisaster)
     add(
       this.add.text(
         20,
-        60,
-        `Night ${run.night.number} cleared. Night ${run.night.number + 1} is next.`,
+        disaster ? 50 : 60,
+        `Night ${run.night.number} cleared. Night ${next} is ${disaster ? "a Disaster!" : "next."}`,
         font(15)
       )
     )
+    // The Disaster ahead, revealed now so the household can prepare for it.
+    if (disaster) {
+      add(this.add.graphics())
+        .fillStyle(DISASTER_RED, 1)
+        .fillRoundedRect(14, 72, WIDTH - 28, 24, 12)
+      add(
+        this.add
+          .text(
+            WIDTH / 2,
+            84,
+            `${disaster.name}: ${disaster.rule}`,
+            font(14, "#fdf6ea", "800")
+          )
+          .setOrigin(0.5)
+      )
+    }
 
     // Cats on offer, each with its Adopt price, then House Cats with their
     // Recruit prices, in the cards they arrived in.

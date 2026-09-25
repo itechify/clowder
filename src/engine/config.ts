@@ -23,11 +23,19 @@ export type Config = {
   firstTarget: number
   /** Night n's Target is firstTarget × targetGrowth^(n − 1), rounded. */
   targetGrowth: number
-  /** Treats for clearing a Night: `early` through Night `earlyNights`, `later` after. */
+  /** The Nights that are Disasters, each meeting the next in the Run's order. */
+  disasterNights: number[]
+  /** A Disaster Night's Target is the Night's normal Target × this, rounded. */
+  disasterTargetFactor: number
+  /**
+   * Treats for clearing a Night: `early` through Night `earlyNights`, `later`
+   * after, and `disaster` for any Disaster Night.
+   */
   clearReward: {
     early: number
     earlyNights: number
     later: number
+    disaster: number
     perUnusedPlay: number
   }
   shop: {
@@ -63,7 +71,15 @@ export const defaultConfig: Config = {
   nights: 9,
   firstTarget: 300,
   targetGrowth: 1.6,
-  clearReward: { early: 3, earlyNights: 2, later: 4, perUnusedPlay: 1 },
+  disasterNights: [3, 6, 9],
+  disasterTargetFactor: 1.5,
+  clearReward: {
+    early: 3,
+    earlyNights: 2,
+    later: 4,
+    disaster: 6,
+    perUnusedPlay: 1
+  },
   shop: {
     catOffers: 2,
     adoptPrice: 3,
