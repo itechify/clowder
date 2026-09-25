@@ -1,11 +1,5 @@
-import { expect, type Page, test } from "@playwright/test"
-import type {} from "../src/game/debugHook"
-
-async function boot(page: Page, seed: number) {
-  await page.goto(`/?seed=${seed}`)
-  await expect(page.locator("#game canvas")).toBeVisible()
-  await page.waitForFunction(() => "__clowder" in window)
-}
+import { expect, test } from "@playwright/test"
+import { boot, layout, tap } from "./scene"
 
 test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
   await boot(page, 7)
@@ -47,6 +41,9 @@ test("plays a seeded Run through to its results", async ({ page }) => {
   expect(["won", "lost"]).toContain(outcome.status)
   for (const [previewed, played] of outcome.scores)
     expect(played).toBe(previewed)
+  // Skips the last Play's scoring sequence.
+  await tap(page, ...layout.wall)
+  expect(await page.evaluate(() => window.__clowder!.scoring())).toBe(false)
   // The results wait for the household to fall asleep.
   await expect(
     page.getByRole("heading", { name: /Sweet dreams!|Lights out/ })
@@ -64,25 +61,16 @@ test("plays a seeded Run through to its results", async ({ page }) => {
   expect(fresh.seed).not.toBe(outcome.seed)
 })
 
-/** Taps the canvas at a point in the scene's 390×844 portrait layout. */
-async function tap(page: Page, x: number, y: number) {
-  const box = (await page.locator("#game canvas").boundingBox())!
-  await page.mouse.click(
-    box.x + (x / 390) * box.width,
-    box.y + (y / 844) * box.height
-  )
-}
-
 test("redraws Cats chosen by tapping in the scene", async ({ page }) => {
   await boot(page, 7)
   const before = await page.evaluate(() => window.__clowder!.run())
   const [first, second] = before.night.hand
 
-  // Redraw, the first two Hand Cats, then Swap (see CouchScene's layout).
-  await tap(page, 316, 790)
-  await tap(page, 60, 585)
-  await tap(page, 150, 585)
-  await tap(page, 316, 790)
+  // Redraw, the first two Hand Cats, then Swap.
+  await tap(page, ...layout.redraw)
+  await tap(page, ...layout.hand(0))
+  await tap(page, ...layout.hand(1))
+  await tap(page, ...layout.redraw)
 
   const after = await page.evaluate(() => window.__clowder!.run())
   expect(after.night.redrawsLeft).toBe(1)

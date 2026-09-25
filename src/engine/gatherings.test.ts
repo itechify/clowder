@@ -232,7 +232,8 @@ describe("Gatherings in a Play", () => {
       name: "Nap Club",
       mult: 3,
       seats: [0, 1, 2],
-      firstTime: true
+      firstTime: true,
+      tally: { purr: 0, mult: 4 }
     })
   })
 

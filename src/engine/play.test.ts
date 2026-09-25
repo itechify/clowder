@@ -58,16 +58,156 @@ describe("Play", () => {
 
   it("emits each Scoring event, then the Score total", () => {
     const run = runWithCouch(["clingy", "clingy", null, "aloof"])
-    const preview = previewPlay(run)
+    const [first, second, , third] = run.night.couch
 
     const { events } = accepted(run, { type: "play" })
 
     expect(events.slice(0, 4)).toEqual([
-      { type: "catScored", ...preview.scoringEvents[0] },
-      { type: "catScored", ...preview.scoringEvents[1] },
-      { type: "catScored", ...preview.scoringEvents[2] },
-      { type: "scoreTotal", purr: 55, mult: 1, score: 55 }
+      {
+        type: "catScored",
+        seat: 0,
+        cat: first,
+        source: "seat",
+        basePurr: 10,
+        bonus: 5,
+        purr: 15,
+        mult: 0,
+        tally: { purr: 15, mult: 1 }
+      },
+      {
+        type: "catScored",
+        seat: 1,
+        cat: second,
+        source: "seat",
+        basePurr: 10,
+        bonus: 5,
+        purr: 15,
+        mult: 0,
+        tally: { purr: 30, mult: 1 }
+      },
+      {
+        type: "catScored",
+        seat: 3,
+        cat: third,
+        source: "seat",
+        basePurr: 10,
+        bonus: 15,
+        purr: 25,
+        mult: 0,
+        tally: { purr: 55, mult: 1 }
+      },
+      { type: "scoreTotal", purr: 55, mult: 1, score: 55, nightScore: 55 }
     ])
+  })
+
+  it("scripts a Night-clearing Play phase by phase, then its Treats and the Shop", () => {
+    const run = runWithCouch([
+      "orange sleepy",
+      "orange sleepy",
+      "black sleepy",
+      null,
+      "white aloof"
+    ])
+    const [a, b, c, , d] = run.night.couch
+    const scored = (seat: number, cat: string | null, bonus: number) => ({
+      type: "catScored",
+      seat,
+      cat,
+      source: "seat",
+      basePurr: 10,
+      bonus,
+      purr: 10 + bonus,
+      mult: 0
+    })
+
+    const { events } = accepted(run, { type: "play" })
+
+    expect(events).toEqual([
+      {
+        type: "gatheringActivated",
+        gathering: "napClub",
+        name: "Nap Club",
+        mult: 3,
+        seats: [0, 1, 2],
+        firstTime: true,
+        tally: { purr: 0, mult: 4 }
+      },
+      { ...scored(0, a, 10), tally: { purr: 20, mult: 4 } },
+      { ...scored(1, b, 10), tally: { purr: 40, mult: 4 } },
+      { ...scored(2, c, 10), tally: { purr: 60, mult: 4 } },
+      { ...scored(4, d, 15), tally: { purr: 85, mult: 4 } },
+      {
+        type: "scoreTotal",
+        purr: 85,
+        mult: 4,
+        score: 340,
+        nightScore: 340
+      },
+      { type: "nightCleared", score: 340 },
+      { type: "treatsAwarded", forNight: 3, forUnusedPlays: 2, treats: 5 },
+      { type: "shopOpened" }
+    ])
+  })
+
+  it("scripts events that add up to the Score, each tallying the Play so far", () => {
+    const config = { ...defaultConfig, firstTarget: Number.POSITIVE_INFINITY }
+    for (let seed = 1; seed <= 200; seed++) {
+      let run = startRun(seed, config)
+      run.night.hand.forEach((cat, i) => {
+        const seat = (seed * (i + 5) + 2 * i) % 7
+        if (seat < 5) run = apply(run, { type: "place", cat, seat })
+      })
+      if (run.night.couch.every((cat) => cat === null)) continue
+
+      const { events } = accepted(run, { type: "play" })
+
+      // Replays the phases (ADR-0001) from the events alone.
+      let purr = 0
+      let mult = 1
+      let phase = 1
+      for (const event of events) {
+        if (event.type === "gatheringActivated") {
+          expect(phase).toBe(1)
+          mult += event.mult
+        } else if (event.type === "catScored") {
+          expect(phase).toBeLessThanOrEqual(2)
+          phase = 2
+          purr += event.purr
+          mult += event.mult
+        } else if (event.type === "timesEffect") {
+          expect(phase).toBeLessThanOrEqual(3)
+          phase = 3
+          mult *= event.times
+        } else if (event.type === "scoreTotal") {
+          phase = 4
+          expect(event).toEqual({
+            type: "scoreTotal",
+            purr,
+            mult,
+            score: Math.floor(purr * mult),
+            nightScore: run.night.score + event.score
+          })
+          expect(event.score).toBe(previewPlay(run).score)
+          continue
+        } else continue
+        expect(event.tally).toEqual({ purr, mult })
+      }
+      expect(phase).toBe(4)
+    }
+  })
+
+  it("totals the Night's Score so far with each Play", () => {
+    const first = apply(runWithCouch(["aloof"]), { type: "play" })
+    const second = seatFromHand(first, 1)
+
+    const { events } = accepted(second, { type: "play" })
+
+    expect(events).toContainEqual(
+      expect.objectContaining({
+        type: "scoreTotal",
+        nightScore: 25 + previewPlay(second).score
+      })
+    )
   })
 
   it("sends played Cats away for the rest of the Night and clears the Couch", () => {
@@ -132,7 +272,8 @@ describe("Play", () => {
         type: "scoreTotal",
         purr: preview.purr,
         mult: preview.mult,
-        score: preview.score
+        score: preview.score,
+        nightScore: preview.score
       })
     }
   })
