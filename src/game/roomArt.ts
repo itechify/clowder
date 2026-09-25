@@ -6,6 +6,7 @@ import {
   type UiPiece
 } from "../art/manifest"
 import { defaultConfig } from "../engine"
+import { seatX, shelfX, WIDTH } from "./layout"
 
 type Graphics = Phaser.GameObjects.Graphics
 type Paint = (g: Graphics, ctx: CanvasRenderingContext2D) => void
@@ -13,20 +14,19 @@ type Paint = (g: Graphics, ctx: CanvasRenderingContext2D) => void
 /** The night sky through the window, which the moon's shadow matches. */
 const NIGHT_SKY = 0x2d3561
 
-/** A Couch Seat's centre, from the Couch's left edge. */
-const cushionX = (seat: number) =>
-  20 + (350 / defaultConfig.seats) * (seat + 0.5)
+/**
+ * Like a delivered image, the Couch and the Shelf are drawn once for a Run as
+ * configured by default: five Seats and four Shelf positions.
+ */
+const seatCentres = seatX(defaultConfig.seats)
 
 /** The Shelf's brackets, between pairs of positions, from its left edge. */
 function bracketsX() {
-  const positions = defaultConfig.shelfSize
-  const xs = Array.from(
-    { length: positions },
-    (_, position) => 8 + (350 / positions) * (position + 0.5)
-  )
+  const xs = shelfX(defaultConfig.shelfSize)
+  const left = (WIDTH - 366) / 2
   const brackets: number[] = []
-  for (let position = 1; position < positions; position += 2)
-    brackets.push((xs[position - 1] + xs[position]) / 2 - 4)
+  for (let position = 1; position < xs.length; position += 2)
+    brackets.push((xs[position - 1] + xs[position]) / 2 - 4 - left)
   return brackets
 }
 
@@ -56,8 +56,7 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.fillStyle(0x6f8f72, 1).fillRoundedRect(8, 0, 374, 112, 22)
     g.fillStyle(0x5c7a5f, 1).fillRoundedRect(8, 110, 374, 40, 12)
     g.fillStyle(0x86a888, 1)
-    for (let seat = 0; seat < defaultConfig.seats; seat++)
-      g.fillRoundedRect(cushionX(seat) - 33, 38, 66, 80, 14)
+    for (const x of seatCentres) g.fillRoundedRect(x - 33, 38, 66, 80, 14)
     g.fillStyle(0x587558, 1)
     g.fillRoundedRect(0, 38, 22, 110, 10).fillRoundedRect(368, 38, 22, 110, 10)
     g.fillStyle(0x4a3426, 1)

@@ -39,6 +39,7 @@ export function artAtlas(): Plugin {
         ).module
     return artManifest as ArtEntry[]
   }
+  // With nothing delivered, there is no need to load the manifest at all.
   const pack = async () =>
     pngsIn(rawDir).length === 0 ? null : buildAtlas(rawDir, await manifest())
   return {

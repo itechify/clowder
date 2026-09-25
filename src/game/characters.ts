@@ -16,9 +16,9 @@ export function drawCat(
   size: number,
   { asleep = false } = {}
 ): Phaser.GameObjects.Container {
-  const pose = catArt(cat.coat, asleep ? "sleepy" : cat.personality)
+  const poseKey = catArt(cat.coat, asleep ? "sleepy" : cat.personality)
   return scene.add.container(0, 0, [
-    addCharacter(scene, pose, size, 0, size * CAT_BASE),
+    addCharacter(scene, poseKey, size, 0, size * CAT_BASE),
     addCharacter(
       scene,
       art.badge(cat.coat),

@@ -10,17 +10,11 @@ import {
   type ScoreBreakdown
 } from "../engine"
 import { addArt } from "./art"
-import { font, WIDTH } from "./CouchScene"
+import { font } from "./CouchScene"
 import { drawHouseCat } from "./characters"
+import { shelfX, WIDTH } from "./layout"
 
 type Add = <T extends Phaser.GameObjects.GameObject>(object: T) => T
-
-/** Position centres, spread evenly along the Shelf. */
-export const shelfX = (positions: number) =>
-  Array.from(
-    { length: positions },
-    (_, position) => 20 + ((WIDTH - 40) / positions) * (position + 0.5)
-  )
 
 /** Where a House Cat of `size` sits on a Shelf whose plank's top is at `y`. */
 export const onShelf = (y: number, size: number) => y - size * 0.45

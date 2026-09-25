@@ -18,14 +18,10 @@ import {
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
 import { drawCat } from "./characters"
+import { HEIGHT, RESOLUTION, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
-
-/** The portrait layout's logical size; the canvas renders it at `RESOLUTION`×. */
-export const WIDTH = 390
-export const HEIGHT = 844
-export const RESOLUTION = 2
 
 /** The top of the Shelf's plank, a windowsill above the Couch. */
 const SHELF_Y = 186
@@ -36,6 +32,9 @@ const DISASTER_SIGN = { x: 208, y: 101 }
 const WINDOW_Y = 151
 const MOON = { x: 245, y: 136 }
 const COUCH_FLOOR_Y = 428
+/** A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from its top. */
+const FULL_SOFA_Y = 337
+const BUNTING_Y = 249
 const RUG_Y = 627.5
 const SEAT_Y = 352
 /** Each Seat's tap and drop area, around its centre. */
@@ -74,10 +73,6 @@ const handSpot = (i: number) => ({
   x: 60 + (i % HAND_COLUMNS) * 90,
   y: HAND_ROW_Y + Math.floor(i / HAND_COLUMNS) * HAND_ROW_HEIGHT
 })
-
-/** Seat centres, spread evenly between the Couch's arms. */
-const seatX = (seats: number) =>
-  Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
 /** Splits sorted Seats into stretches of consecutive Seats. */
 const contiguous = (seats: number[]) =>
@@ -894,12 +889,12 @@ export class CouchScene extends Phaser.Scene {
       const span = seats.at(-1)! - seats[0] + 1
       if (layer === "behind") {
         if (gathering === "fullSofa")
-          overlay(gatheringArt(gathering), WIDTH / 2, 337)
+          overlay(gatheringArt(gathering), WIDTH / 2, FULL_SOFA_Y)
         if (gathering === "personalSpace")
           for (const seat of seats)
             overlay(gatheringArt(gathering), this.seatX[seat], SEAT_Y - 14)
         if (gathering === "varietyPack")
-          overlay(gatheringArt(gathering, span), across(seats), 249)
+          overlay(gatheringArt(gathering, span), across(seats), BUNTING_Y)
       } else {
         if (gathering === "cuddlePuddle")
           for (const group of groups)

@@ -37,7 +37,7 @@ export default defineConfig({
       workbox: {
         // Every format the game ships: code, pages, images, atlases, and fonts.
         globPatterns: ["**/*.{js,css,html,png,webp,json,woff2,woff,ttf,svg}"],
-        // scripts/check-precache.mjs fails the build if anything is left out.
+        // scripts/check-precache.ts fails the build if anything is left out.
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         clientsClaim: true

@@ -6,7 +6,7 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
-import { artTexture } from "./art"
+import { artTexture, delivered } from "./art"
 import { presentation } from "./presentation"
 import { session } from "./session"
 
@@ -43,8 +43,8 @@ export function installDebugHook(game: Phaser.Game) {
     scoring: () => presentation.scoring,
     scenes: () => game.scene.getScenes(true).map((scene) => scene.scene.key),
     art: (key) => {
-      const [texture] = artTexture(game.scene.getScenes(true)[0], key)
-      return texture === key ? "fallback" : "delivered"
+      artTexture(game.scene.getScenes(true)[0], key)
+      return delivered(game.textures, key) ? "delivered" : "fallback"
     }
   }
 }

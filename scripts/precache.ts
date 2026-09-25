@@ -5,6 +5,9 @@ export const MAX_TOTAL_BYTES = 15_000_000
 
 export type ShippedFile = { file: string; size: number }
 
+export const precacheTotal = (shipped: ShippedFile[]) =>
+  shipped.reduce((sum, { size }) => sum + size, 0)
+
 /**
  * Why the build can't play offline or installs too large, if it can't: a
  * shipped file the service worker doesn't precache, one too large to, or a
@@ -22,7 +25,7 @@ export function precacheProblems(
     if (size > MAX_FILE_BYTES) problems.push(`Too large to precache: ${file}`)
     if (!precached.has(file)) problems.push(`Missing from precache: ${file}`)
   }
-  const total = shipped.reduce((sum, { size }) => sum + size, 0)
+  const total = precacheTotal(shipped)
   if (total > MAX_TOTAL_BYTES)
     problems.push(
       `Precache totals ${total} bytes, over the ${MAX_TOTAL_BYTES}-byte budget.`

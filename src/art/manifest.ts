@@ -71,8 +71,6 @@ type Subject =
   /** `span` counts the Seats from its first to its last, where that varies. */
   | { kind: "gathering"; gathering: GatheringId; span?: number }
 
-export type ArtKind = Subject["kind"]
-
 export type ArtEntry = Subject & {
   key: string
   /** The delivered image's size in pixels. */
@@ -305,6 +303,9 @@ export function artEntry(key: string): ArtEntry {
   return entry
 }
 
-/** Characters are sized by the scene; everything else by the room's scale. */
-export const isCharacter = (entry: ArtEntry) =>
+/**
+ * Cats, House Cats, and the Coat badges on Cats share the characters' scale,
+ * sized by the scene; everything else is at the room's scale.
+ */
+export const sharesCharacterScale = (entry: ArtEntry) =>
   entry.kind === "cat" || entry.kind === "houseCat" || entry.kind === "badge"

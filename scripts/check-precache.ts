@@ -7,6 +7,7 @@ import { join, relative } from "node:path"
 import {
   MAX_TOTAL_BYTES,
   precacheProblems,
+  precacheTotal,
   type ShippedFile
 } from "./precache.ts"
 
@@ -36,7 +37,7 @@ walk("dist")
 
 const problems = precacheProblems(shipped, precached)
 if (problems.length > 0) throw new Error(problems.join("\n"))
-const total = shipped.reduce((sum, { size }) => sum + size, 0)
+const total = precacheTotal(shipped)
 console.log(
   `Precache verified: all ${shipped.length} files, each below 2 MiB, ` +
     `${(total / 1e6).toFixed(1)} of ${MAX_TOTAL_BYTES / 1e6} MB.`

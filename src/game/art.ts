@@ -4,11 +4,12 @@ import {
   type ArtEntry,
   artEntry,
   CHARACTER_SPAN,
-  isCharacter,
-  ROOM_SCALE
+  ROOM_SCALE,
+  sharesCharacterScale
 } from "../art/manifest"
 import { BADGE, CAT_BASE, paintCat, paintCoatBadge } from "./catArt"
 import { HOUSE_CAT_BASE, paintHouseCat } from "./houseCatArt"
+import { RESOLUTION } from "./layout"
 import { paintRoomArt } from "./roomArt"
 
 /** The texture holding every delivered image, a frame per art key. */
@@ -18,7 +19,7 @@ const ATLAS = "art"
  * Fallback textures are drawn as sharp as the canvas shows them: the room at
  * the canvas's 2× resolution, and characters at the size the Hand shows Cats.
  */
-const ROOM_DENSITY = 2 / ROOM_SCALE
+const ROOM_DENSITY = RESOLUTION / ROOM_SCALE
 const CHARACTER_DENSITY = 0.375
 
 /**
@@ -44,7 +45,7 @@ export const delivered = (
  * and anchor as a delivered image, so the two are interchangeable.
  */
 function drawFallback(scene: Phaser.Scene, entry: ArtEntry) {
-  const character = isCharacter(entry)
+  const character = sharesCharacterScale(entry)
   const density = character ? CHARACTER_DENSITY : ROOM_DENSITY
   const width = Math.ceil(entry.canvas.width * density)
   const height = Math.ceil(entry.canvas.height * density)
