@@ -89,6 +89,16 @@ test("loads offline after the first visit", async ({ page, context }) => {
   await page.reload()
 
   await expect(page.locator("#game canvas")).toBeVisible()
+  // The bundled fonts came from the precache too, once the game loads them.
+  const loadedFonts = () =>
+    page.evaluate(() =>
+      [...document.fonts]
+        .filter((face) => face.status === "loaded")
+        .map((face) => face.family.replaceAll('"', ""))
+    )
+  await expect
+    .poll(loadedFonts)
+    .toEqual(expect.arrayContaining(["Lilita One", "Nunito Variable"]))
   const probe = await page.evaluate(() =>
     fetch("/not-precached.json").then(
       () => "online",

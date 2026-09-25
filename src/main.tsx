@@ -14,6 +14,9 @@ import { session } from "./game/session"
 import { PwaPrompts } from "./shell/PwaPrompts"
 import { pwa } from "./shell/pwa"
 import { SettingsMenu } from "./shell/SettingsMenu"
+// The game's typefaces, bundled for offline play (see src/game/fonts.ts).
+import "@fontsource/lilita-one"
+import "@fontsource-variable/nunito/wght.css"
 import "./style.css"
 
 pwa.register()
