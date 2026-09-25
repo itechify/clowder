@@ -235,7 +235,9 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   shelf:
     "A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath.",
   treatJar:
-    "A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it."
+    "A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it.",
+  disasterSign:
+    "A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it."
 }
 
 /** Each UI piece, ready (to press, or still to spend) and not. */
@@ -256,6 +258,12 @@ const uiLooks: Record<UiPiece, { ready: string; notReady: string }> = {
     ready:
       "A small, round pip: a glowing golden bead, full and still to spend.",
     notReady: "A small, round pip already spent: an empty, hollow ring."
+  },
+  purrMeter: {
+    ready:
+      "A long, slim, rounded meter like a little bolster laid along the top of a sofa's backrest, filled end to end with a warm, glowing orange, like a cat's purr made visible. Leave its face blank: the game writes on it.",
+    notReady:
+      "The same long, slim, rounded meter empty: a soft cream fabric channel with a darker inset where the glow will fill it, exactly the same shape and outline as the full one. Leave its face blank: the game writes on it."
   }
 }
 
@@ -384,7 +392,8 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
       const [name, ready, not] = {
         playButton: ["Play button", "ready", "disabled"],
         redrawButton: ["Redraw button", "ready", "disabled"],
-        pip: ["Pip", "full", "spent"]
+        pip: ["Pip", "full", "spent"],
+        purrMeter: ["Purr meter", "full", "empty"]
       }[entry.piece]
       const looks = uiLooks[entry.piece]
       return {

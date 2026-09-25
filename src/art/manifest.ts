@@ -59,7 +59,8 @@ export type RoomPiece =
   | "rug"
   | "shelf"
   | "treatJar"
-export type UiPiece = "playButton" | "redrawButton" | "pip"
+  | "disasterSign"
+export type UiPiece = "playButton" | "redrawButton" | "pip" | "purrMeter"
 
 type Size = { width: number; height: number }
 /** A point on the canvas, as fractions of its width and height. */
@@ -71,7 +72,10 @@ type Subject =
   | { kind: "badge"; coat: Coat }
   /** `phase` counts from 1, for the moon. */
   | { kind: "room"; piece: RoomPiece; phase?: number }
-  /** `ready` for a button that can be pressed, or a pip still to spend. */
+  /**
+   * `ready` for a button that can be pressed, a pip still to spend, or the
+   * purr meter full; the meter fills from empty by showing more of its full self.
+   */
   | { kind: "ui"; piece: UiPiece; ready: boolean }
   /** `span` counts the Seats from its first to its last, where that varies. */
   | { kind: "gathering"; gathering: GatheringId; span?: number }
@@ -127,13 +131,15 @@ export const art = {
     seatPad: "room/seatPad",
     rug: "room/rug",
     shelf: "room/shelf",
-    treatJar: "room/treatJar"
+    treatJar: "room/treatJar",
+    disasterSign: "room/disasterSign"
   },
   playButton: (ready: boolean) =>
     `ui/playButton/${ready ? "ready" : "disabled"}`,
   redrawButton: (ready: boolean) =>
     `ui/redrawButton/${ready ? "ready" : "disabled"}`,
-  pip: (full: boolean) => `ui/pip/${full ? "full" : "spent"}`
+  pip: (full: boolean) => `ui/pip/${full ? "full" : "spent"}`,
+  purrMeter: (full: boolean) => `ui/purrMeter/${full ? "full" : "empty"}`
 } as const
 
 /** Seats on the Couch, 70 design pixels apart. */
@@ -245,6 +251,14 @@ function* entries(): Generator<ArtEntry> {
     key: art.room.treatJar,
     ...room(44, 52, bottomCentre)
   }
+  // Hung from a nail on the wall throughout a Disaster Night; the game
+  // writes the Disaster and its rule on the sign.
+  yield {
+    kind: "room",
+    piece: "disasterSign",
+    key: art.room.disasterSign,
+    ...room(164, 62, topCentre)
+  }
 
   for (const ready of [true, false]) {
     yield {
@@ -267,6 +281,14 @@ function* entries(): Generator<ArtEntry> {
       ready,
       key: art.pip(ready),
       ...room(14, 14)
+    }
+    // Along the top of the Couch's back, with the Night's score written on it.
+    yield {
+      kind: "ui",
+      piece: "purrMeter",
+      ready,
+      key: art.purrMeter(ready),
+      ...room(300, 26)
     }
   }
 
