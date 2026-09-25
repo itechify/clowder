@@ -9,6 +9,9 @@ import { disasterById, type Run } from "../engine"
 /** A budget shown as pips: `left` still to spend, out of the Night's `of`. */
 export type Pips = { left: number; of: number }
 
+/** Tonight's Disaster, as the sign on the wall names it. */
+export type DisasterSign = { name: string; rule: string }
+
 /** How full the purr meter along the Couch's back is, and its number. */
 export type PurrMeter = { filled: number; label: string }
 
@@ -22,7 +25,7 @@ export type Hud = {
   redraws: Pips
   drawPile: number
   /** Tonight's Disaster, while it is a Disaster Night. */
-  disaster: { name: string; rule: string } | null
+  disaster: DisasterSign | null
 }
 
 /** The purr meter at a Night score, full once it reaches the Target. */

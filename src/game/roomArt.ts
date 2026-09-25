@@ -7,6 +7,7 @@ import {
   type UiPiece
 } from "../art/manifest"
 import { defaultConfig } from "../engine"
+import { displayFont, OUTLINE } from "./fonts"
 import { seatX, shelfX, WIDTH } from "./layout"
 
 type Graphics = Phaser.GameObjects.Graphics
@@ -15,7 +16,7 @@ type Paint = (g: Graphics, ctx: CanvasRenderingContext2D) => void
 /** The night sky through the window, which the moon's shadow matches. */
 const NIGHT_SKY = 0x2d3561
 /** The bold dark-brown outline round everything drawn in the game's style. */
-const INK = 0x3b2a22
+export const INK = 0x3b2a22
 /** The red of a Disaster, wherever one is announced. */
 export const DISASTER_RED = 0x8a3a2e
 
@@ -161,7 +162,7 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.fillStyle(0xd46a4f, 1).fillRoundedRect(7, 5, 30, 10, 4)
   },
   disasterSign: (g) => {
-    // A string from the nail to the board's top corners.
+    // A string from the nail to the sign's top corners.
     g.lineStyle(2, INK, 1)
       .lineBetween(82, 5, 22, 18)
       .lineBetween(82, 5, 142, 18)
@@ -258,12 +259,12 @@ function gathering(
       g.lineStyle(2, INK, 1).strokeRoundedRect(1, 1, w - 2, 16, 8)
       break
     case "napClub":
-      ctx.font = '15px "Lilita One", system-ui, sans-serif'
+      ctx.font = displayFont(15)
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.lineJoin = "round"
       ctx.lineWidth = 3
-      ctx.strokeStyle = "#3b2a22"
+      ctx.strokeStyle = OUTLINE
       ctx.strokeText("z Z", 21, 12.5)
       ctx.fillStyle = "#a9b6f2"
       ctx.fillText("z Z", 21, 12.5)

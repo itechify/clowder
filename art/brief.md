@@ -1097,7 +1097,7 @@ A glass jar full of fish-shaped orange cat treats, with a red lid and no label: 
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-A warning sign hung from a single nail by a string: a wide, rounded wooden board painted brick red, with a cream border, hanging from the top centre. Leave the board blank: the game writes tonight's trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Play button, ready: `art/raw/ui/playButton/ready.png`

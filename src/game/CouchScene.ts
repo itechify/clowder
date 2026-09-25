@@ -14,7 +14,13 @@ import {
   type RunEvent,
   type ScoreBreakdown
 } from "../engine"
-import { type Hud, hud, type Pips, purrMeter } from "../presentation/hud"
+import {
+  type DisasterSign,
+  hud,
+  type Pips,
+  type PurrMeter,
+  purrMeter
+} from "../presentation/hud"
 import {
   type Placement,
   type RugRow,
@@ -29,6 +35,7 @@ import { choreograph, type Step, skippedCues } from "./choreography"
 import { display, font, numbers, OUTLINE } from "./fonts"
 import { HEIGHT, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
+import { INK } from "./roomArt"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
@@ -46,7 +53,9 @@ const DRAW_PILE_LABEL = { x: 22, y: 52 }
 const WINDOW = { x: 112, y: 100 }
 const MOON = { x: 155, y: 90 }
 const TREAT_JAR = { x: 362, y: 60 }
-const DISASTER_SIGN = { x: 296, y: 64 }
+const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
+/** The Disaster sign's nail, and how wide its words may run inside its border. */
+const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
 const PURR_METER = { x: WIDTH / 2, y: 264 }
 /** Where the Couch's feet and the rug's centre are. */
 const COUCH_FLOOR_Y = 428
@@ -79,8 +88,17 @@ const HOP_HEIGHT = 46
  * stacking up from it.
  */
 const GATHERING_NAME_Y = 236
-/** The colours numbers pop up in as a Play scores: Purr, The Void's and Repeats' purple, Freya's hearts. */
-const POP = { purr: "#ffa94d", purple: "#c4b0ff", heart: "#ff9cbb" }
+const GATHERING_NAME_STEP = 25
+/**
+ * The colours numbers pop up in as a Play scores: Purr, then a House Cat's
+ * Repeats, The Void's growth, and Freya's hearts.
+ */
+const POP = {
+  purr: "#ffa94d",
+  repeat: "#c4b0ff",
+  growth: "#c4b0ff",
+  heart: "#ff9cbb"
+}
 /** A picked-up Cat glows warm; one chosen to Redraw glows cool, ringed. */
 const GLOW = { held: 0xfff1b0, chosen: 0xa9c8ee, chosenRing: 0x4f79a8 }
 const PREVIEW_Y = 446
@@ -91,7 +109,7 @@ const REDRAW_BUTTON = { x: 316, y: 790, w: 108, h: 58 }
  * Where a button's label and pips sit on its face, above and below its
  * centre, and how far apart its pips are.
  */
-const BUTTON_FACE = { label: 8, pips: 12, pipSpacing: 17 }
+const BUTTON_FACE = { labelAbove: 8, pipsBelow: 12, pipSpacing: 17 }
 /** How far a press must move before it picks the Cat up rather than tapping. */
 const DRAG_THRESHOLD = 8
 /** How long the final Play's Score lingers before the lights go down. */
@@ -676,7 +694,7 @@ export class CouchScene extends Phaser.Scene {
   private drawGrowth(add: Add, cat: Cat, x: number, y: number) {
     if (cat.basePurr === session.run.config.basePurr) return
     const label = this.add
-      .text(x, y, `${cat.basePurr}`, display(12, "#f6d743"))
+      .text(x, y, `${cat.basePurr}`, numbers(12, "#f6d743"))
       .setOrigin(0.5)
     add(this.add.graphics())
       .fillStyle(0x141018, 0.92)
@@ -692,7 +710,7 @@ export class CouchScene extends Phaser.Scene {
    * Night score, for counting up during scoring.
    */
   private drawHud(run: Run, add: Add) {
-    const { night, treats, drawPile, disaster } = hud(run)
+    const { night, treats, meter, drawPile, disaster } = hud(run)
     add(addArt(this, moonArt(night.moon), MOON.x, MOON.y))
     add(
       this.add
@@ -712,12 +730,7 @@ export class CouchScene extends Phaser.Scene {
     add(addArt(this, art.room.treatJar, TREAT_JAR.x, TREAT_JAR.y))
     add(
       this.add
-        .text(
-          TREAT_JAR.x - 28,
-          TREAT_JAR.y - 24,
-          `${treats}`,
-          numbers(30, "#f6c453")
-        )
+        .text(TREAT_COUNT.x, TREAT_COUNT.y, `${treats}`, numbers(30, "#f6c453"))
         .setOrigin(1, 0.5)
     )
 
@@ -729,30 +742,35 @@ export class CouchScene extends Phaser.Scene {
     const score = add(
       this.add.text(PURR_METER.x, PURR_METER.y, "", numbers(16)).setOrigin(0.5)
     )
-    const showScore = (nightScore: number) => {
-      const { filled, label } = purrMeter(nightScore, run.night.target)
+    const showMeter = ({ filled, label }: PurrMeter) => {
       const { realWidth, realHeight } = glow.frame
       glow.setVisible(filled > 0).setCrop(0, 0, realWidth * filled, realHeight)
       score.setText(label)
     }
-    showScore(run.night.score)
+    showMeter(meter)
 
     this.disasterSign = disaster ? add(this.drawDisasterSign(disaster)) : null
-    return showScore
+    return (nightScore: number) =>
+      showMeter(purrMeter(nightScore, run.night.target))
   }
 
   /**
    * A sign hung on the wall below the treat jar, naming tonight's Disaster
    * and the rule it changes, clear of the Shelf below.
    */
-  private drawDisasterSign({ name, rule }: NonNullable<Hud["disaster"]>) {
+  private drawDisasterSign({ name, rule }: DisasterSign) {
+    const words = [
+      this.add.text(0, 30, name, display(15, "#fdf6ea")).setStroke(OUTLINE, 3),
+      this.add.text(0, 47, rule, font(11, "#fdf6ea", "800"))
+    ]
+    // Any line too long for the sign shrinks to fit inside its border.
+    for (const line of words)
+      line
+        .setOrigin(0.5)
+        .setScale(Math.min(1, DISASTER_SIGN.textWidth / line.width))
     return this.add.container(DISASTER_SIGN.x, DISASTER_SIGN.y, [
       addArt(this, art.room.disasterSign),
-      this.add
-        .text(0, 30, name, display(15, "#fdf6ea"))
-        .setOrigin(0.5)
-        .setStroke(OUTLINE, 3),
-      this.add.text(0, 47, rule, font(11, "#fdf6ea", "800")).setOrigin(0.5)
+      ...words
     ])
   }
 
@@ -918,7 +936,7 @@ export class CouchScene extends Phaser.Scene {
       this.add
         .text(
           area.x,
-          area.y - BUTTON_FACE.label,
+          area.y - BUTTON_FACE.labelAbove,
           label,
           display(primary ? 26 : 20, ready ? "#fdf6ea" : "#f3e9da")
         )
@@ -932,7 +950,7 @@ export class CouchScene extends Phaser.Scene {
           this,
           art.pip(pip < pips.left),
           area.x + (pip - (count - 1) / 2) * BUTTON_FACE.pipSpacing,
-          area.y + BUTTON_FACE.pips
+          area.y + BUTTON_FACE.pipsBelow
         )
       )
   }
@@ -1058,29 +1076,22 @@ export class CouchScene extends Phaser.Scene {
         (Math.max(55, this.seatX[seats[0]]) +
           Math.min(WIDTH - 55, this.seatX[seats.at(-1)!])) /
         2
-      const y = GATHERING_NAME_Y - (stack + i) * 25
+      const y = GATHERING_NAME_Y - (stack + i) * GATHERING_NAME_STEP
       const label = add(
-        this.add
-          .text(x, y, `${name} +${mult}`, display(14, "#4a3426"))
-          .setOrigin(0.5)
+        this.add.text(x, y, `${name} +${mult}`, numbers(14)).setOrigin(0.5)
       )
+      const pill = [
+        x - label.width / 2 - 9,
+        y - 12,
+        label.width + 18,
+        24,
+        12
+      ] as const
       add(this.add.graphics())
-        .fillStyle(0xfff4dc, 1)
-        .fillRoundedRect(
-          x - label.width / 2 - 9,
-          y - 11,
-          label.width + 18,
-          22,
-          11
-        )
-        .lineStyle(2, 0x3b2a22, 1)
-        .strokeRoundedRect(
-          x - label.width / 2 - 9,
-          y - 11,
-          label.width + 18,
-          22,
-          11
-        )
+        .fillStyle(0xe8893a, 1)
+        .fillRoundedRect(...pill)
+        .lineStyle(2, INK, 1)
+        .strokeRoundedRect(...pill)
       this.layer.bringToTop(label)
     })
   }
@@ -1233,7 +1244,7 @@ export class CouchScene extends Phaser.Scene {
             // A Repeat is the same Cat scoring again, sent by a House Cat.
             if (event.source !== "seat") {
               hop(event.source, "Repeat!")
-              pop(x, SEAT_Y - 128, "Repeat!", 15, POP.purple)
+              pop(x, SEAT_Y - 128, "Repeat!", 15, POP.repeat)
             }
             pop(x, SEAT_Y - 72, `+${event.purr}`, 24)
             if (event.mult) pop(x, SEAT_Y - 100, `+${event.mult} Mult`, 16)
@@ -1249,8 +1260,8 @@ export class CouchScene extends Phaser.Scene {
           // Grown for good: The Void's gift shows once the Score is in.
           return () => {
             const x = this.seatX[event.seat]
-            hop(event.houseCat, `+${event.purr} Purr`, POP.purple)
-            pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, POP.purple)
+            hop(event.houseCat, `+${event.purr} Purr`, POP.growth)
+            pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, POP.growth)
             const sprite = seated.get(event.seat)
             if (sprite)
               this.tweens.add({

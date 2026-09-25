@@ -252,7 +252,7 @@ function* entries(): Generator<ArtEntry> {
     ...room(44, 52, bottomCentre)
   }
   // Hung from a nail on the wall throughout a Disaster Night; the game
-  // writes the Disaster and its rule on the board.
+  // writes the Disaster and its rule on the sign.
   yield {
     kind: "room",
     piece: "disasterSign",

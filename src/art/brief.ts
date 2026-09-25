@@ -237,7 +237,7 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   treatJar:
     "A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it.",
   disasterSign:
-    "A warning sign hung from a single nail by a string: a wide, rounded wooden board painted brick red, with a cream border, hanging from the top centre. Leave the board blank: the game writes tonight's trouble on it."
+    "A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it."
 }
 
 /** Each UI piece, ready (to press, or still to spend) and not. */

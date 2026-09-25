@@ -5,11 +5,18 @@ import { RESOLUTION } from "./layout"
  * src/main.tsx): Lilita One for numbers, titles, and buttons, and Nunito for
  * everything else.
  */
+
 const DISPLAY = "Lilita One"
 const BODY = "Nunito Variable"
 const family = (name: string) => `"${name}", system-ui, sans-serif`
 
-/** The dark brown that numbers and labels are outlined in, and the shadow numbers cast. */
+/** Lilita One as a canvas's font, for art drawn with words on it. */
+export const displayFont = (size: number) => `${size}px ${family(DISPLAY)}`
+
+/**
+ * The dark brown that numbers and labels are outlined in, as the art is
+ * (see src/game/roomArt.ts), and the shadow numbers cast.
+ */
 export const OUTLINE = "#3b2a22"
 const SHADOW = "rgba(46, 31, 25, 0.6)"
 
@@ -43,15 +50,11 @@ export const display = (size: number, colour = "#4a3426") => ({
  * A number, in Lilita One with a thick outline and a drop shadow, so it reads
  * at a glance over any art.
  */
-export const numbers = (
-  size: number,
-  colour = "#fdf6ea",
-  outline = OUTLINE
-) => {
+export const numbers = (size: number, colour = "#fdf6ea") => {
   const drop = Math.max(2, Math.round(size / 9))
   return {
     ...display(size, colour),
-    stroke: outline,
+    stroke: OUTLINE,
     strokeThickness: Math.max(3, Math.round(size / 4.5)),
     shadow: {
       offsetX: 0,
