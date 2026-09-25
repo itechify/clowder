@@ -1,7 +1,7 @@
 import Phaser from "phaser"
 import { useEffect, useSyncExternalStore } from "react"
 import { createRoot } from "react-dom/client"
-import { starCat } from "./engine"
+import { houseCat, starCat } from "./engine"
 import { CouchScene, HEIGHT, RESOLUTION, WIDTH } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
 import { presentation } from "./game/presentation"
@@ -55,6 +55,12 @@ function Results() {
               </dd>
             </>
           )}
+          <dt>House Cats</dt>
+          <dd>
+            {run.shelf.length > 0
+              ? run.shelf.map((id) => houseCat(id).name).join(", ")
+              : "None"}
+          </dd>
           {star && (
             <>
               <dt>Star Cat</dt>

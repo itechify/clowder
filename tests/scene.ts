@@ -44,6 +44,17 @@ export const layout = {
   seat: (seat: number): [number, number] => [55 + seat * 70, 342],
   play: [135, 790] as [number, number],
   redraw: [316, 790] as [number, number],
-  /** Open wall, clear of anything that answers a tap. */
-  wall: [150, 200] as [number, number]
+  /** Open wall below the Shelf, clear of anything that answers a tap. */
+  wall: [195, 240] as [number, number]
+}
+
+/** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */
+export const shop = {
+  /** The button on the `i`th offer card, Cats first, then House Cats. */
+  offer: (i: number): [number, number] => [56 + i * 92.5, 280],
+  /** A House Cat in the `slot`th slot of the Shelf. */
+  shelf: (slot: number): [number, number] => [64 + slot * 87.5, 400],
+  reroll: [195, 334] as [number, number],
+  rehome: [105, 790] as [number, number],
+  leave: [285, 790] as [number, number]
 }

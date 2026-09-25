@@ -1,19 +1,24 @@
 import type { ActionResult } from "./actions"
+import type { Config } from "./config"
 import { catNames } from "./content/catNames"
 import { coats } from "./content/coats"
+import { type HouseCatId, houseCats } from "./content/houseCats"
 import { personalities } from "./content/personalities"
-import { pick } from "./rng"
+import { pick, shuffle } from "./rng"
 import { startNight } from "./run"
 import type { Cat, CatId, Run, Shop } from "./types"
 
 export type ShopAction =
   | { type: "adopt"; cat: CatId }
+  | { type: "recruit"; houseCat: HouseCatId }
   | { type: "rehome"; cat: CatId }
+  | { type: "rehome"; houseCat: HouseCatId }
   | { type: "reroll" }
   | { type: "leaveShop" }
 
 const shopActions = new Set<string>([
   "adopt",
+  "recruit",
   "rehome",
   "reroll",
   "leaveShop"
@@ -22,15 +27,30 @@ const shopActions = new Set<string>([
 export const isShopAction = (action: { type: string }): action is ShopAction =>
   shopActions.has(action.type)
 
+/** What Rehoming a House Cat refunds: half its Recruit price, rounded down. */
+export const rehomeRefund = (config: Config, houseCat: HouseCatId) =>
+  Math.floor(config.shop.recruitPrices[houseCat] / 2)
+
 /** Opens the Shop after a cleared Night, with fresh offers and prices. */
 export function openShop(run: Run): Run {
-  const [catOffers, next] = newOffers(run)
+  const [catOffers, withCats] = newOffers(run)
+  const [houseCatOffers, next] = newHouseCatOffers(withCats)
   const shop: Shop = {
     catOffers,
     catRehomesLeft: run.config.shop.catRehomesPerVisit,
+    houseCatOffers,
     rerollPrice: run.config.shop.rerollPrice
   }
   return { ...next, shop }
+}
+
+/** House Cats to offer for Recruitment, chosen from those not on the Shelf. */
+function newHouseCatOffers(run: Run): [HouseCatId[], Run] {
+  const unowned = houseCats
+    .map((houseCat) => houseCat.id)
+    .filter((id) => !run.shelf.includes(id))
+  const [shuffled, rng] = shuffle(run.rng, unowned)
+  return [shuffled.slice(0, run.config.shop.houseCatOffers), { ...run, rng }]
 }
 
 /** A full set of new Cats to offer for Adoption. */
@@ -98,7 +118,44 @@ export function applyShopAction(
         events: [{ type: "catAdopted", cat, price: prices.adoptPrice }]
       }
     }
+    case "recruit": {
+      const { houseCat } = action
+      if (!shop.houseCatOffers.includes(houseCat))
+        return reject("That House Cat is not on offer")
+      if (run.shelf.length >= run.config.shelfSlots)
+        return reject("The Shelf is full; Rehome a House Cat first")
+      const price = prices.recruitPrices[houseCat]
+      if (run.treats < price) return reject("Not enough Treats")
+      return {
+        ok: true,
+        run: {
+          ...run,
+          treats: run.treats - price,
+          shelf: [...run.shelf, houseCat],
+          shop: {
+            ...shop,
+            houseCatOffers: shop.houseCatOffers.filter((id) => id !== houseCat)
+          }
+        },
+        events: [{ type: "houseCatRecruited", houseCat, price }]
+      }
+    }
     case "rehome": {
+      if ("houseCat" in action) {
+        const { houseCat } = action
+        if (!run.shelf.includes(houseCat))
+          return reject("That House Cat is not on the Shelf")
+        const refund = rehomeRefund(run.config, houseCat)
+        return {
+          ok: true,
+          run: {
+            ...run,
+            treats: run.treats + refund,
+            shelf: run.shelf.filter((id) => id !== houseCat)
+          },
+          events: [{ type: "houseCatRehomed", houseCat, refund }]
+        }
+      }
       const cat = run.roster.find((c) => c.id === action.cat)
       if (!cat) return reject("That Cat is not in the Roster")
       if (shop.catRehomesLeft === 0)
@@ -118,7 +175,8 @@ export function applyShopAction(
     case "reroll": {
       const price = shop.rerollPrice
       if (run.treats < price) return reject("Not enough Treats")
-      const [offers, next] = newOffers(run)
+      const [catOffers, withCats] = newOffers(run)
+      const [houseCatOffers, next] = newHouseCatOffers(withCats)
       return {
         ok: true,
         run: {
@@ -126,11 +184,12 @@ export function applyShopAction(
           treats: run.treats - price,
           shop: {
             ...shop,
-            catOffers: offers,
+            catOffers,
+            houseCatOffers,
             rerollPrice: price + prices.rerollPriceStep
           }
         },
-        events: [{ type: "offersRerolled", offers, price }]
+        events: [{ type: "offersRerolled", catOffers, houseCatOffers, price }]
       }
     }
     case "leaveShop": {

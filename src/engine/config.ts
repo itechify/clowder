@@ -1,3 +1,5 @@
+import type { HouseCatId } from "./content/houseCats"
+
 /** Tuning numbers for a Run. Playtesting changes belong here, not in rules. */
 export type Config = {
   /** Cats of each Coat/Personality combination in a starting Roster. */
@@ -10,6 +12,8 @@ export type Config = {
   }
   handSize: number
   seats: number
+  /** The most House Cats the Shelf holds. */
+  shelfSlots: number
   playsPerNight: number
   redrawsPerNight: number
   /** The most Cats one Redraw may swap. */
@@ -32,6 +36,10 @@ export type Config = {
     adoptPrice: number
     rehomeCatPrice: number
     catRehomesPerVisit: number
+    /** House Cats offered to Recruit on each visit, while any are unowned. */
+    houseCatOffers: number
+    /** Each House Cat's Recruit price, by strength; Rehoming refunds half. */
+    recruitPrices: Record<HouseCatId, number>
     /** The first Reroll of a visit costs `rerollPrice`; each costs `rerollPriceStep` more. */
     rerollPrice: number
     rerollPriceStep: number
@@ -48,6 +56,7 @@ export const defaultConfig: Config = {
   },
   handSize: 8,
   seats: 5,
+  shelfSlots: 4,
   playsPerNight: 3,
   redrawsPerNight: 2,
   catsPerRedraw: 3,
@@ -60,6 +69,8 @@ export const defaultConfig: Config = {
     adoptPrice: 3,
     rehomeCatPrice: 1,
     catRehomesPerVisit: 1,
+    houseCatOffers: 2,
+    recruitPrices: { boxGoblin: 6, doNotTouch: 5 },
     rerollPrice: 1,
     rerollPriceStep: 1
   }

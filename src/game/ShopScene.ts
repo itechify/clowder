@@ -5,27 +5,41 @@ import {
   type Cat,
   type CatId,
   coats,
-  personalities
+  type HouseCatId,
+  houseCat,
+  personalities,
+  rehomeRefund
 } from "../engine"
 import { font, HEIGHT, RESOLUTION, WIDTH } from "./CouchScene"
 import { drawCat } from "./catArt"
+import { drawHouseCat } from "./houseCatArt"
 import { session } from "./session"
+import { drawShelf, tapShelf } from "./shelfView"
 
-const OFFER_Y = 200
-const REROLL_BUTTON = { x: WIDTH / 2, y: 345, w: 170, h: 44 }
-const ROSTER_LABEL_Y = 392
-const ROSTER_TOP = 440
+const SECTION_Y = 92
+const CARD_TOP = 106
+const CARD_HEIGHT = 200
+const REROLL_BUTTON = { x: WIDTH / 2, y: 334, w: 150, h: 40 }
+const SHELF_LABEL_Y = 372
+/** The top of the Shelf's plank. */
+const SHELF_Y = 440
+const SHELF_CAT_SIZE = 44
+const FLOOR_Y = 470
+const ROSTER_LABEL_Y = 490
+const ROSTER_TOP = 540
 const ROSTER_COLUMNS = 8
 /** Room for the Roster between its label and the buttons, however big it grows. */
-const ROSTER_HEIGHT = 300
+const ROSTER_HEIGHT = 200
 const REHOME_BUTTON = { x: 105, y: 790, w: 170, h: 58 }
 const LEAVE_BUTTON = { x: 285, y: 790, w: 170, h: 58 }
 
 type Area = { x: number; y: number; w: number; h: number }
+/** What is picked out to Rehome: a Roster Cat, or a House Cat on the Shelf. */
+type Picked = { cat: CatId } | { houseCat: HouseCatId } | null
 
-/** Offer card centres, spread across the Shop. */
+/** Offer card centres, spread across the Shop in one row. */
 const offerX = (count: number) => {
-  const spacing = Math.min(180, (WIDTH - 20) / count)
+  const spacing = (WIDTH - 20) / count
   return Array.from(
     { length: count },
     (_, i) => WIDTH / 2 + (i - (count - 1) / 2) * spacing
@@ -48,16 +62,19 @@ const byKind = (roster: Cat[]) =>
   )
 
 /**
- * The Shop between Nights: Adopt an offered Cat, Rehome one from the Roster,
- * Reroll the offers, or leave for the next Night. Like the living room, it
- * draws the Session's Run and sends taps to it as actions; the engine decides
- * every price and whether each action is allowed.
+ * The Shop between Nights: Adopt an offered Cat, Recruit an offered House
+ * Cat, Rehome either, rearrange the Shelf, Reroll the offers, or leave for the
+ * next Night. Like the living room, it draws the Session's Run and sends taps
+ * to it as actions; the engine decides every price and whether each action is
+ * allowed.
  */
 export class ShopScene extends Phaser.Scene {
-  /** The Roster Cat picked out to Rehome, awaiting confirmation. */
-  private rehoming: CatId | null = null
-  /** The offers as first laid out, so an Adopted Cat leaves its card empty. */
+  /** What is picked out to Rehome, awaiting confirmation. */
+  private picked: Picked = null
+  /** The offers as first laid out, so an Adopted Cat leaves its card empty... */
   private offerCards: CatId[] = []
+  /** ...and a Recruited House Cat leaves its card empty. */
+  private houseCatCards: HouseCatId[] = []
   private layer!: Phaser.GameObjects.Container
 
   constructor() {
@@ -65,9 +82,15 @@ export class ShopScene extends Phaser.Scene {
   }
 
   create() {
+    // Actions taken in the same frame may have left the Shop already.
+    if (!session.run.shop) {
+      this.scene.start("couch")
+      return
+    }
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
-    this.rehoming = null
+    this.picked = null
     this.offerCards = []
+    this.houseCatCards = []
     this.drawRoom()
     this.layer = this.add.container()
     const off = session.on(() => {
@@ -75,8 +98,14 @@ export class ShopScene extends Phaser.Scene {
         this.scene.start("couch")
         return
       }
-      if (!session.run.roster.some((cat) => cat.id === this.rehoming))
-        this.rehoming = null
+      const { picked } = this
+      if (
+        picked &&
+        ("cat" in picked
+          ? !session.run.roster.some((cat) => cat.id === picked.cat)
+          : !session.run.shelf.includes(picked.houseCat))
+      )
+        this.picked = null
       this.draw()
     })
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, off)
@@ -88,10 +117,16 @@ export class ShopScene extends Phaser.Scene {
     const g = this.add.graphics()
     g.fillStyle(0xe4ecd6, 1).fillRect(0, 0, WIDTH, HEIGHT)
     g.fillStyle(0xd6e1c4, 1)
-    for (let y = 0; y < 420; y += 36) g.fillRect(0, y, WIDTH, 12)
-    g.fillStyle(0xb98b62, 1).fillRect(0, 372, WIDTH, HEIGHT - 372)
-    g.fillStyle(0xa47650, 1).fillRect(0, 372, WIDTH, 8)
-    g.fillStyle(0xd9b48a, 1).fillRoundedRect(12, 420, WIDTH - 24, 330, 20)
+    for (let y = 0; y < FLOOR_Y; y += 36) g.fillRect(0, y, WIDTH, 12)
+    g.fillStyle(0xb98b62, 1).fillRect(0, FLOOR_Y, WIDTH, HEIGHT - FLOOR_Y)
+    g.fillStyle(0xa47650, 1).fillRect(0, FLOOR_Y, WIDTH, 8)
+    g.fillStyle(0xd9b48a, 1).fillRoundedRect(
+      12,
+      ROSTER_TOP - 30,
+      WIDTH - 24,
+      ROSTER_HEIGHT + 60,
+      20
+    )
   }
 
   private draw() {
@@ -120,45 +155,118 @@ export class ShopScene extends Phaser.Scene {
       )
     )
 
-    // Cats on offer, each with its Adopt price, in the cards they arrived in.
+    // Cats on offer, each with its Adopt price, then House Cats with their
+    // Recruit prices, in the cards they arrived in.
     if (shop.catOffers.some((cat) => !this.offerCards.includes(cat.id)))
       this.offerCards = shop.catOffers.map((cat) => cat.id)
-    const adoptPrice = run.config.shop.adoptPrice
-    const xs = offerX(this.offerCards.length)
-    const cardWidth = Math.min(156, (WIDTH - 20) / xs.length - 16)
-    this.offerCards.forEach((id, i) => {
-      const x = xs[i]
-      const card = add(this.add.graphics())
-      card
+    if (shop.houseCatOffers.some((id) => !this.houseCatCards.includes(id)))
+      this.houseCatCards = [...shop.houseCatOffers]
+    const xs = offerX(this.offerCards.length + this.houseCatCards.length)
+    const cardWidth = Math.min(86, (WIDTH - 20) / xs.length - 6)
+    const card = (x: number) =>
+      add(this.add.graphics())
         .fillStyle(0xfdf6ea, 1)
-        .fillRoundedRect(x - cardWidth / 2, OFFER_Y - 100, cardWidth, 210, 18)
-      const cat = shop.catOffers.find((offer) => offer.id === id)
-      if (!cat) {
-        add(
-          this.add
-            .text(x, OFFER_Y, "Adopted!", font(18, "#9c8672", "800"))
-            .setOrigin(0.5)
+        .fillRoundedRect(
+          x - cardWidth / 2,
+          CARD_TOP,
+          cardWidth,
+          CARD_HEIGHT,
+          14
         )
-        return
-      }
-      add(drawCat(this, cat, 92)).setPosition(x, OFFER_Y - 30)
+    /** An empty card, where an offer was taken. */
+    const gone = (x: number, label: string) => {
       add(
         this.add
-          .text(x, OFFER_Y + 30, cat.name, font(17, "#4a3426", "800"))
+          .text(
+            x,
+            CARD_TOP + CARD_HEIGHT / 2,
+            label,
+            font(15, "#9c8672", "800")
+          )
+          .setOrigin(0.5)
+      )
+    }
+    const buttonArea = (x: number) => ({
+      x,
+      y: CARD_TOP + CARD_HEIGHT - 26,
+      w: cardWidth - 10,
+      h: 36
+    })
+    const section = (label: string, from: number, count: number) => {
+      if (count > 0)
+        add(
+          this.add
+            .text(
+              (xs[from] + xs[from + count - 1]) / 2,
+              SECTION_Y,
+              label,
+              font(13, "#4a3426", "800")
+            )
+            .setOrigin(0.5)
+        )
+    }
+    section("Adopt", 0, this.offerCards.length)
+    section("Recruit", this.offerCards.length, this.houseCatCards.length)
+
+    const adoptPrice = run.config.shop.adoptPrice
+    this.offerCards.forEach((id, i) => {
+      const x = xs[i]
+      card(x)
+      const cat = shop.catOffers.find((offer) => offer.id === id)
+      if (!cat) {
+        gone(x, "Adopted!")
+        return
+      }
+      add(drawCat(this, cat, 64)).setPosition(x, CARD_TOP + 44)
+      add(
+        this.add
+          .text(x, CARD_TOP + 90, cat.name, font(13, "#4a3426", "800"))
           .setOrigin(0.5)
       )
       add(
         this.add
-          .text(x, OFFER_Y + 52, coatAndPersonality(cat), font(13))
+          .text(x, CARD_TOP + 108, coatAndPersonality(cat), font(11))
           .setOrigin(0.5)
       )
       this.button(
-        { x, y: OFFER_Y + 84, w: cardWidth - 28, h: 40 },
+        buttonArea(x),
         `Adopt ${adoptPrice}`,
         can({ type: "adopt", cat: cat.id }),
         () => session.apply({ type: "adopt", cat: cat.id }),
         add,
-        18
+        15
+      )
+    })
+    this.houseCatCards.forEach((id, i) => {
+      const x = xs[this.offerCards.length + i]
+      card(x)
+      if (!shop.houseCatOffers.includes(id)) {
+        gone(x, "Recruited!")
+        return
+      }
+      const { name, ability } = houseCat(id)
+      add(drawHouseCat(this, id, 56)).setPosition(x, CARD_TOP + 44)
+      add(
+        this.add
+          .text(x, CARD_TOP + 90, name, font(12, "#4a3426", "800"))
+          .setOrigin(0.5)
+      )
+      add(
+        this.add
+          .text(x, CARD_TOP + 102, ability, {
+            ...font(10),
+            align: "center",
+            wordWrap: { width: cardWidth - 10 }
+          })
+          .setOrigin(0.5, 0)
+      )
+      this.button(
+        buttonArea(x),
+        `Recruit ${run.config.shop.recruitPrices[id]}`,
+        can({ type: "recruit", houseCat: id }),
+        () => session.apply({ type: "recruit", houseCat: id }),
+        add,
+        14
       )
     })
     this.button(
@@ -170,16 +278,49 @@ export class ShopScene extends Phaser.Scene {
       18
     )
 
+    // The Shelf, where a House Cat may be moved or picked out to Rehome.
+    const { picked } = this
+    const pickedHouseCat =
+      picked && "houseCat" in picked ? picked.houseCat : null
+    const { shelfSlots } = run.config
+    add(
+      this.add
+        .text(
+          WIDTH / 2,
+          SHELF_LABEL_Y,
+          pickedHouseCat
+            ? `Rehome ${houseCat(pickedHouseCat).name} for ${rehomeRefund(run.config, pickedHouseCat)} Treats back, or tap a slot to move it.`
+            : run.shelf.length > 0
+              ? `Shelf ${run.shelf.length}/${shelfSlots}. Tap a House Cat to move or Rehome it.`
+              : `Shelf 0/${shelfSlots}. Recruit a House Cat to join it.`,
+          {
+            ...font(13, "#4a3426", "700"),
+            align: "center",
+            wordWrap: { width: WIDTH - 30 }
+          }
+        )
+        .setOrigin(0.5)
+    )
+    drawShelf(this, add, {
+      run,
+      y: SHELF_Y,
+      size: SHELF_CAT_SIZE,
+      held: pickedHouseCat,
+      onTap: (slot) => this.tapShelfSlot(slot)
+    })
+
     // The Roster, where a Cat may be picked out to Rehome.
     const rehomePrice = run.config.shop.rehomeCatPrice
-    const picked = run.roster.find((cat) => cat.id === this.rehoming)
+    const pickedCat = run.roster.find(
+      (cat) => picked && "cat" in picked && cat.id === picked.cat
+    )
     add(
       this.add
         .text(
           WIDTH / 2,
           ROSTER_LABEL_Y,
-          picked
-            ? `Rehome ${picked.name}, ${coatAndPersonality(picked)}?`
+          pickedCat
+            ? `Rehome ${pickedCat.name}, ${coatAndPersonality(pickedCat)}?`
             : shop.catRehomesLeft > 0
               ? `Roster ${run.roster.length}. Tap a Cat to Rehome it.`
               : `Roster ${run.roster.length}. No more Rehoming this visit.`,
@@ -194,7 +335,7 @@ export class ShopScene extends Phaser.Scene {
     roster.forEach((cat, i) => {
       const x = 20 + columnWidth * ((i % ROSTER_COLUMNS) + 0.5)
       const y = ROSTER_TOP + rowHeight * Math.floor(i / ROSTER_COLUMNS)
-      if (cat.id === this.rehoming)
+      if (cat.id === pickedCat?.id)
         add(this.add.graphics())
           .fillStyle(0xfff4c2, 0.95)
           .fillRoundedRect(x - 21, y - 20, 42, 40, 10)
@@ -205,12 +346,20 @@ export class ShopScene extends Phaser.Scene {
         .on("pointerdown", () => this.tapRosterCat(cat.id))
     })
 
+    // Rehoming a Cat costs Treats; Rehoming a House Cat refunds some.
+    const rehome: Action | null = pickedHouseCat
+      ? { type: "rehome", houseCat: pickedHouseCat }
+      : pickedCat
+        ? { type: "rehome", cat: pickedCat.id }
+        : null
     this.button(
       REHOME_BUTTON,
-      `Rehome ${rehomePrice}`,
-      picked !== undefined && can({ type: "rehome", cat: picked.id }),
+      pickedHouseCat
+        ? `Rehome +${rehomeRefund(run.config, pickedHouseCat)}`
+        : `Rehome ${rehomePrice}`,
+      rehome !== null && can(rehome),
       () => {
-        if (this.rehoming) session.apply({ type: "rehome", cat: this.rehoming })
+        if (rehome) session.apply(rehome)
       },
       add
     )
@@ -225,10 +374,23 @@ export class ShopScene extends Phaser.Scene {
 
   /** Picks a Cat out to Rehome, or puts it back; the engine decides if it may go. */
   private tapRosterCat(cat: CatId) {
-    if (this.rehoming === cat) this.rehoming = null
+    const { picked } = this
+    if (picked && "cat" in picked && picked.cat === cat) this.picked = null
     else if (applyAction(session.run, { type: "rehome", cat }).ok)
-      this.rehoming = cat
+      this.picked = { cat }
     this.draw()
+  }
+
+  /** Picks a House Cat out to move or Rehome, or moves the one picked out. */
+  private tapShelfSlot(slot: number) {
+    const { picked } = this
+    const { held, action } = tapShelf(
+      session.run,
+      picked && "houseCat" in picked ? picked.houseCat : null,
+      slot
+    )
+    this.picked = held ? { houseCat: held } : null
+    if (!action || !session.apply(action).ok) this.draw()
   }
 
   private button(

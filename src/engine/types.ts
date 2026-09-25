@@ -1,6 +1,7 @@
 import type { Config } from "./config"
 import type { Coat } from "./content/coats"
 import type { GatheringId } from "./content/gatherings"
+import type { HouseCatId } from "./content/houseCats"
 import type { Personality } from "./content/personalities"
 import type { RngState } from "./rng"
 import type { RunStats } from "./stats"
@@ -14,6 +15,9 @@ export type Cat = {
   personality: Personality
   basePurr: number
 }
+
+/** One entry per Seat, left to right; null is an empty Seat. */
+export type Couch = readonly (Cat | null)[]
 
 export type NightStatus = "playing" | "cleared" | "lost"
 
@@ -39,6 +43,8 @@ export type Shop = {
   /** New Cats, not yet in the Roster, that may be Adopted. */
   catOffers: Cat[]
   catRehomesLeft: number
+  /** House Cats not on the Shelf that may be Recruited. */
+  houseCatOffers: HouseCatId[]
   /** What the next Reroll costs; it rises with each Reroll this visit. */
   rerollPrice: number
 }
@@ -50,6 +56,8 @@ export type Run = {
   config: Config
   rng: RngState
   roster: Cat[]
+  /** The equipped House Cats, left to right; each at most once. */
+  shelf: HouseCatId[]
   /** Cats created this Run, Roster and Shop offers alike; numbers new ids. */
   catsCreated: number
   night: Night

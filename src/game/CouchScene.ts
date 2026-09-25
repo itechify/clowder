@@ -5,20 +5,27 @@ import {
   applyAction,
   type Cat,
   type CatId,
+  type HouseCatId,
+  houseCat,
   previewPlay,
   type Run,
-  type RunEvent
+  type RunEvent,
+  type ScoreBreakdown
 } from "../engine"
 import { settings } from "../shell/settings"
 import { drawCat } from "./catArt"
 import { presentation } from "./presentation"
 import { session } from "./session"
+import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
 /** The portrait layout's logical size; the canvas renders it at `RESOLUTION`×. */
 export const WIDTH = 390
 export const HEIGHT = 844
 export const RESOLUTION = 2
 
+/** The top of the Shelf's plank, a windowsill above the Couch. */
+const SHELF_Y = 186
+const SHELF_CAT_SIZE = 48
 const SEAT_Y = 352
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
@@ -70,6 +77,28 @@ const contiguous = (seats: number[]) =>
     return groups
   }, [])
 
+/**
+ * Where a Play's Mult comes from, as a sum and then any × effects; nothing
+ * when it is the plain starting 1.
+ */
+function multBreakdown({
+  gatherings,
+  wholePlayEffects,
+  timesEffects,
+  mult
+}: ScoreBreakdown) {
+  if (gatherings.length + wholePlayEffects.length + timesEffects.length === 0)
+    return ""
+  const added = [
+    "1",
+    ...[...gatherings, ...wholePlayEffects].map(
+      ({ name, mult }) => `${name} ${mult}`
+    )
+  ].join(" + ")
+  const times = timesEffects.map(({ name, times }) => ` × ${name} ${times}`)
+  return `${times.length ? `(${added})` : added}${times.join("")} = ${mult.toFixed(1)} Mult`
+}
+
 /** Purr × Mult, as the preview and the scoring sequence both show it. */
 const purrTimesMult = (purr: number, mult: number) =>
   `${purr} Purr × ${mult.toFixed(1)}`
@@ -90,6 +119,8 @@ export const font = (size: number, colour = "#4a3426", weight = "600") => ({
 export class CouchScene extends Phaser.Scene {
   /** The Cat picked up from the Hand, waiting for a Seat. */
   private held: CatId | null = null
+  /** The House Cat picked up from the Shelf, waiting for another slot. */
+  private heldHouseCat: HouseCatId | null = null
   /** The last Play's Couch, where its Cats doze off once the Run ends. */
   private lastCouch: (CatId | null)[] = []
   /** The Cats chosen to Redraw, or null when not choosing. */
@@ -123,6 +154,7 @@ export class CouchScene extends Phaser.Scene {
     }
     // Back from the Shop, the scene starts afresh.
     this.held = null
+    this.heldHouseCat = null
     this.lastCouch = []
     this.redrawing = null
     this.press = null
@@ -182,6 +214,7 @@ export class CouchScene extends Phaser.Scene {
       this.lastDrawn = session.run
       if (events.length === 0) {
         this.held = null
+        this.heldHouseCat = null
         this.lastCouch = []
         presentation.update({ asleep: false })
       }
@@ -192,8 +225,17 @@ export class CouchScene extends Phaser.Scene {
         this.playScoring(before, events)
       else this.draw()
     })
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, off)
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      off()
+      // Leaving for the Shop, a sequence still playing goes with the scene.
+      if (this.scoring) {
+        this.scoring = null
+        presentation.update({ scoring: false })
+      }
+    })
     this.draw()
+    // Arriving once the Run is over, the household is already asleep.
+    if (session.run.status !== "playing") presentation.update({ asleep: true })
   }
 
   private worldPoint(pointer: Phaser.Input.Pointer): Point {
@@ -295,6 +337,7 @@ export class CouchScene extends Phaser.Scene {
 
   private tapSeat(seat: number) {
     const occupant = session.run.night.couch[seat]
+    this.heldHouseCat = null
     if (this.redrawing) {
       if (occupant) this.chooseForRedraw(occupant)
     } else if (this.held) {
@@ -307,14 +350,25 @@ export class CouchScene extends Phaser.Scene {
   }
 
   private tapHandCat(cat: CatId) {
+    this.heldHouseCat = null
     if (this.redrawing) return this.chooseForRedraw(cat)
     this.held = this.held === cat ? null : cat
     this.draw()
   }
 
+  /** Picks a House Cat up from the Shelf, or puts one down in another slot. */
+  private tapShelfSlot(slot: number) {
+    if (this.redrawing) return
+    this.held = null
+    const { held, action } = tapShelf(session.run, this.heldHouseCat, slot)
+    this.heldHouseCat = held
+    if (!action || !session.apply(action).ok) this.draw()
+  }
+
   /** Plays, or while choosing Cats to Redraw, stops choosing. */
   private tapPlay() {
     this.held = null
+    this.heldHouseCat = null
     if (this.redrawing) {
       this.redrawing = null
       this.draw()
@@ -326,6 +380,7 @@ export class CouchScene extends Phaser.Scene {
   /** Starts choosing Cats to Redraw, then swaps the chosen Cats. */
   private tapRedraw() {
     this.held = null
+    this.heldHouseCat = null
     if (!this.redrawing) {
       if (!this.canRedraw()) return
       this.redrawing = []
@@ -369,12 +424,14 @@ export class CouchScene extends Phaser.Scene {
     g.fillStyle(0xa47650, 1).fillRect(0, 470, WIDTH, 8)
     g.fillStyle(0xd46a4f, 1).fillRoundedRect(20, 505, WIDTH - 40, 245, 28)
     g.lineStyle(3, 0xf0b28c, 1).strokeRoundedRect(32, 517, WIDTH - 64, 221, 22)
-    // Window with a moon, since every Night is spent indoors.
-    g.fillStyle(0x2d3561, 1).fillRoundedRect(250, 130, 110, 100, 8)
-    g.fillStyle(0xf6ecc9, 1).fillCircle(320, 165, 16)
-    g.fillStyle(0x2d3561, 1).fillCircle(328, 159, 14)
-    g.lineStyle(6, 0xfaf3e6, 1).strokeRoundedRect(250, 130, 110, 100, 8)
-    g.lineBetween(305, 130, 305, 230).lineBetween(250, 180, 360, 180)
+    // Window with a moon, since every Night is spent indoors; the Shelf is
+    // its sill.
+    g.fillStyle(0x2d3561, 1).fillRoundedRect(115, 116, 160, SHELF_Y - 116, 8)
+    g.fillStyle(0xf6ecc9, 1).fillCircle(245, 136, 12)
+    g.fillStyle(0x2d3561, 1).fillCircle(251, 132, 10)
+    g.lineStyle(6, 0xfaf3e6, 1)
+    g.strokeRoundedRect(115, 116, 160, SHELF_Y - 116, 8)
+    g.lineBetween(195, 116, 195, SHELF_Y)
     // Couch: back, five cushions, arms.
     g.fillStyle(0x6f8f72, 1).fillRoundedRect(8, 262, WIDTH - 16, 112, 22)
     g.fillStyle(0x5c7a5f, 1).fillRoundedRect(8, 372, WIDTH - 16, 40, 12)
@@ -497,9 +554,21 @@ export class CouchScene extends Phaser.Scene {
     this.drawHud(run, add)
 
     if (run.status !== "playing") {
+      drawShelf(this, add, { run, y: SHELF_Y, size: SHELF_CAT_SIZE })
       this.drawAsleep(add, catById, fallingAsleep)
       return
     }
+
+    // The Shelf, each House Cat noting what it adds to the Play as it stands.
+    const preview = previewPlay(run)
+    drawShelf(this, add, {
+      run,
+      y: SHELF_Y,
+      size: SHELF_CAT_SIZE,
+      held: this.heldHouseCat,
+      notes: shelfNotes(preview),
+      onTap: (slot) => this.tapShelfSlot(slot)
+    })
 
     // A Cat chosen to Redraw glows cool, like one about to leave.
     const chosen = new Set(this.redrawing)
@@ -515,7 +584,6 @@ export class CouchScene extends Phaser.Scene {
 
     // Seated Cats with their live Personality bonus floating above, inside
     // whichever Gatherings they form. A Cat being dragged leaves its labels.
-    const preview = previewPlay(run)
     this.drawGatherings(add, preview.gatherings, "behind")
     for (const event of preview.scoringEvents) {
       const cat = catById.get(event.cat)!
@@ -561,18 +629,20 @@ export class CouchScene extends Phaser.Scene {
         )
         .setOrigin(0.5)
     )
-    if (preview.gatherings.length)
+    // Beneath it, where the Mult comes from; or what a House Cat picked up
+    // from the Shelf does.
+    const picked = this.heldHouseCat && houseCat(this.heldHouseCat)
+    const breakdown = picked
+      ? `${picked.name}: ${picked.ability}. Tap a slot to move it.`
+      : multBreakdown(preview)
+    if (breakdown)
       add(
         this.add
-          .text(
-            WIDTH / 2,
-            BREAKDOWN_Y,
-            [
-              "1",
-              ...preview.gatherings.map(({ name, mult }) => `${name} ${mult}`)
-            ].join(" + ") + ` = ${preview.mult.toFixed(1)} Mult`,
-            font(13, "#fdf6ea", "700")
-          )
+          .text(WIDTH / 2, BREAKDOWN_Y, breakdown, {
+            ...font(13, "#fdf6ea", "700"),
+            align: "center",
+            wordWrap: { width: WIDTH - 30 }
+          })
           .setOrigin(0.5)
       )
 
@@ -828,7 +898,7 @@ export class CouchScene extends Phaser.Scene {
         (Math.max(55, this.seatX[seats[0]]) +
           Math.min(WIDTH - 55, this.seatX[seats.at(-1)!])) /
         2
-      const y = 228 - (stack + i) * 26
+      const y = 240 - (stack + i) * 24
       const label = add(
         this.add
           .text(x, y, `${name} +${mult}`, font(13, "#4a3426", "800"))
@@ -886,6 +956,11 @@ export class CouchScene extends Phaser.Scene {
       })
     this.drawButton(PLAY_BUTTON, "Get Comfy", false, add)
     this.drawButton(REDRAW_BUTTON, "Redraw", false, add)
+    const shelved = drawShelf(this, add, {
+      run: before,
+      y: SHELF_Y,
+      size: SHELF_CAT_SIZE
+    })
 
     // Purr × Mult so far, where the preview was.
     const tally = add(
@@ -931,6 +1006,22 @@ export class CouchScene extends Phaser.Scene {
       })
     }
 
+    /** A House Cat on the Shelf hops as its effect fires. */
+    const hop = (id: HouseCatId, label: string) => {
+      const sprite = shelved.get(id)
+      if (!sprite) return
+      this.tweens.add({
+        targets: sprite,
+        y: sprite.y - 12,
+        scaleX: 0.92,
+        scaleY: 1.1,
+        duration: beat(140),
+        yoyo: true,
+        ease: "Quad.easeOut"
+      })
+      pop(sprite.x, sprite.y - SHELF_CAT_SIZE * 0.6, label, 20)
+    }
+
     // Each event gets a beat of its own, in order.
     const timers: Phaser.Time.TimerEvent[] = []
     const counters: Phaser.Tweens.Tween[] = []
@@ -957,6 +1048,12 @@ export class CouchScene extends Phaser.Scene {
           })
           break
         }
+        case "wholePlayEffect":
+          next(500, () => {
+            hop(event.houseCat, `+${event.mult} Mult`)
+            showTally(purrTimesMult(event.tally.purr, event.tally.mult))
+          })
+          break
         case "catScored":
           next(380, () => {
             const x = this.seatX[event.seat]
@@ -978,7 +1075,7 @@ export class CouchScene extends Phaser.Scene {
           break
         case "timesEffect":
           next(500, () => {
-            pop(WIDTH / 2, 228, `${event.name} ×${event.times}`, 24)
+            hop(event.houseCat, `×${event.times}`)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
           })
           break

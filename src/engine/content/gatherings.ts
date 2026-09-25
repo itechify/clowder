@@ -1,4 +1,4 @@
-import type { Cat } from "../types"
+import type { Cat, Couch } from "../types"
 
 export type GatheringId =
   | "cuddlePuddle"
@@ -6,9 +6,6 @@ export type GatheringId =
   | "personalSpace"
   | "varietyPack"
   | "fullSofa"
-
-/** One entry per Seat, left to right; null is an empty Seat. */
-type Couch = readonly (Cat | null)[]
 
 export type Gathering = {
   id: GatheringId
