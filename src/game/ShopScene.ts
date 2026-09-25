@@ -1,4 +1,5 @@
 import Phaser from "phaser"
+import { sound } from "../audio/sound"
 import {
   type Action,
   applyAction,
@@ -15,6 +16,7 @@ import {
 import { DISASTER_RED, font } from "./CouchScene"
 import { drawCat, drawHouseCat } from "./characters"
 import { HEIGHT, RESOLUTION, WIDTH } from "./layout"
+import { presentation } from "./presentation"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 import { drawTreat } from "./treatArt"
@@ -138,6 +140,7 @@ export class ShopScene extends Phaser.Scene {
       this.scene.start("couch")
       return
     }
+    presentation.update({ scene: "shop" })
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.picked = null
     this.offerCards = []
@@ -532,7 +535,8 @@ export class ShopScene extends Phaser.Scene {
 
   /**
    * A pill button. Any change to the player's Treats shows as a treat and a
-   * signed amount; a cost the player cannot afford is outlined in red.
+   * signed amount; a cost the player cannot afford is outlined in red. Tapped,
+   * one that spends Treats sounds like Treats being spent.
    */
   private button(
     area: Area,
@@ -585,6 +589,9 @@ export class ShopScene extends Phaser.Scene {
       button
         .setSize(area.w, area.h)
         .setInteractive({ useHandCursor: true })
-        .on("pointerdown", onTap)
+        .on("pointerdown", () => {
+          sound.cue({ name: treats && treats < 0 ? "treatsSpent" : "uiTap" })
+          onTap()
+        })
   }
 }

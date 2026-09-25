@@ -1,5 +1,6 @@
 import Phaser from "phaser"
 import { art, gatheringArt, moonArt } from "../art/manifest"
+import { sound } from "../audio/sound"
 import {
   type Action,
   type ActiveGathering,
@@ -18,6 +19,7 @@ import {
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
 import { drawCat } from "./characters"
+import { choreograph, type Step, skippedCues } from "./choreography"
 import { HEIGHT, RESOLUTION, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
 import { session } from "./session"
@@ -170,6 +172,7 @@ export class CouchScene extends Phaser.Scene {
       this.scene.start("shop")
       return
     }
+    presentation.update({ scene: "couch" })
     // Back from the Shop, the scene starts afresh.
     this.held = null
     this.heldHouseCat = null
@@ -356,7 +359,7 @@ export class CouchScene extends Phaser.Scene {
       const { night } = session.run
       if (action?.type === "place" && night.catsPerPlay < night.couch.length)
         this.nudgeDisasterSign()
-    }
+    } else if (action.type === "place") sound.cue({ name: "catSeated" })
     this.movedFrom.clear()
   }
 
@@ -392,6 +395,7 @@ export class CouchScene extends Phaser.Scene {
 
   /** Plays, or while choosing Cats to Redraw, stops choosing. */
   private tapPlay() {
+    sound.cue({ name: "uiTap" })
     this.held = null
     this.heldHouseCat = null
     if (this.redrawing) {
@@ -404,6 +408,7 @@ export class CouchScene extends Phaser.Scene {
 
   /** Starts choosing Cats to Redraw, then swaps the chosen Cats. */
   private tapRedraw() {
+    sound.cue({ name: "uiTap" })
     this.held = null
     this.heldHouseCat = null
     if (!this.redrawing) {
@@ -1063,41 +1068,36 @@ export class CouchScene extends Phaser.Scene {
       pop(sprite.x, sprite.y - SHELF_CAT_SIZE * 0.6, label, 20, colour)
     }
 
-    // Each event gets a beat of its own, in order.
+    // Each event gets a beat of its own, in order, with its sounds.
+    const script = choreograph(events, settings)
     const timers: Phaser.Time.TimerEvent[] = []
     const counters: Phaser.Tweens.Tween[] = []
-    let time = beat(250)
-    const next = (duration: number, show: () => void) => {
-      timers.push(this.time.delayedCall(time, show))
-      time += beat(duration)
-    }
     let gatherings = 0
     // "New Gathering!" banners, each waiting for the one before to leave.
     const banners: (() => void)[] = []
     let bannersFreeAt = 0
-    for (const event of events) {
+    /** How a step shows, worked out as the sequence is laid out. */
+    const animate = ({ at, event }: Step): (() => void) => {
       switch (event.type) {
         case "gatheringActivated": {
           const stack = gatherings++
-          const wait = Math.max(0, bannersFreeAt - time)
-          if (event.firstTime) bannersFreeAt = time + wait + beat(BANNER_MS)
-          next(500, () => {
+          const wait = Math.max(0, bannersFreeAt - at)
+          if (event.firstTime) bannersFreeAt = at + wait + beat(BANNER_MS)
+          return () => {
             if (event.firstTime)
               banners.push(this.discover(event.name, wait, beat))
             this.revealGathering(add, event, stack, beat)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
-          })
-          break
+          }
         }
         case "wholePlayEffect":
-          next(500, () => {
+          return () => {
             hop(event.houseCat, `+${event.mult} Mult`)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
-          })
-          break
+          }
         case "catScored":
         case "repeat":
-          next(380, () => {
+          return () => {
             const x = this.seatX[event.seat]
             const sprite = seated.get(event.seat)
             if (sprite) {
@@ -1123,17 +1123,14 @@ export class CouchScene extends Phaser.Scene {
             for (const from of event.multFrom)
               hop(from.houseCat, `+${from.mult} Mult`)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
-          })
-          break
+          }
         case "houseCatWarmedUp":
           // Freya warms up a little more, a heart at a time.
-          next(600, () =>
+          return () =>
             hop(event.houseCat, `♥ ×${event.times.toFixed(1)}`, "#d6456a")
-          )
-          break
         case "catGrew":
           // Grown for good: The Void's gift shows once the Score is in.
-          next(450, () => {
+          return () => {
             const x = this.seatX[event.seat]
             hop(event.houseCat, `+${event.purr} Purr`, "#6b4fb3")
             pop(x, SEAT_Y - 72, `${event.basePurr} base Purr`, 14, "#6b4fb3")
@@ -1145,16 +1142,14 @@ export class CouchScene extends Phaser.Scene {
                 duration: beat(300),
                 ease: "Back.easeOut"
               })
-          })
-          break
+          }
         case "timesEffect":
-          next(500, () => {
+          return () => {
             hop(event.houseCat, `×${event.times.toFixed(1)}`)
             showTally(purrTimesMult(event.tally.purr, event.tally.mult))
-          })
-          break
+          }
         case "scoreTotal":
-          next(1000, () => {
+          return () => {
             showTally(
               `${purrTimesMult(event.purr, event.mult)} = ${event.score}`
             )
@@ -1168,23 +1163,33 @@ export class CouchScene extends Phaser.Scene {
                 onUpdate: (tween) => showScore(Math.round(tween.getValue()!))
               })
             )
-          })
-          break
+          }
         case "nightCleared":
-          next(500, () => pop(WIDTH / 2, 170, "Night cleared!", 34))
-          break
+          return () => pop(WIDTH / 2, 170, "Night cleared!", 34)
         case "treatsAwarded":
-          next(500, () => {
+          return () => {
             pop(WIDTH / 2, 215, `+${event.treats} Treats`, 24)
             for (const paid of event.forHouseCats)
               hop(paid.houseCat, `+${paid.treats} Treats`)
-          })
-          break
+          }
         case "nightLost":
-          next(500, () => pop(WIDTH / 2, 170, "Night lost", 30))
-          break
+          return () => pop(WIDTH / 2, 170, "Night lost", 30)
+        default:
+          return () => {}
       }
     }
+    /** How many steps have played out, sounds and all. */
+    let stepsPlayed = 0
+    script.steps.forEach((step, i) => {
+      const show = animate(step)
+      timers.push(
+        this.time.delayedCall(step.at, () => {
+          stepsPlayed = i + 1
+          for (const cue of step.cues) sound.cue(cue)
+          show()
+        })
+      )
+    })
 
     const ended = events.some((event) => event.type === "runEnded")
     const finish = (ending: Ending) => {
@@ -1194,6 +1199,9 @@ export class CouchScene extends Phaser.Scene {
       for (const counter of counters) counter.stop()
       // Played out, a banner may take its bow; cut short, it goes at once.
       if (ending !== "played") for (const dismiss of banners) dismiss()
+      // Skipped, the sequence still sounds how it ends, if it hadn't yet.
+      if (ending === "skipped")
+        for (const cue of skippedCues(script, stepsPlayed)) sound.cue(cue)
       this.skipArea.disableInteractive()
       presentation.update({ scoring: false })
       // Overtaken, the next sequence or draw shows what comes after.
@@ -1211,7 +1219,7 @@ export class CouchScene extends Phaser.Scene {
     }
     const sequence = { finish }
     this.scoring = sequence
-    timers.push(this.time.delayedCall(time + beat(300), () => finish("played")))
+    timers.push(this.time.delayedCall(script.duration, () => finish("played")))
     this.skipArea.setInteractive()
     presentation.update({ scoring: true })
   }

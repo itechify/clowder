@@ -1,11 +1,13 @@
 import Phaser from "phaser"
 import { useEffect, useSyncExternalStore } from "react"
 import { createRoot } from "react-dom/client"
+import { sound } from "./audio/sound"
 import { houseCat, starCat } from "./engine"
 import { BootScene } from "./game/BootScene"
 import { CouchScene } from "./game/CouchScene"
 import { installDebugHook } from "./game/debugHook"
 import { HEIGHT, RESOLUTION, WIDTH } from "./game/layout"
+import { themeFor } from "./game/music"
 import { presentation } from "./game/presentation"
 import { ShopScene } from "./game/ShopScene"
 import { session } from "./game/session"
@@ -15,6 +17,18 @@ import { SettingsMenu } from "./shell/SettingsMenu"
 import "./style.css"
 
 pwa.register()
+sound.attach(window)
+// The music follows what is showing.
+const followScene = () =>
+  sound.playTheme(
+    themeFor({
+      scene: presentation.scene,
+      run: session.run,
+      asleep: presentation.asleep
+    })
+  )
+presentation.on(followScene)
+session.on(followScene)
 
 /** Between-Run screen: how the household did, and a fresh one. */
 function Results() {
@@ -72,7 +86,13 @@ function Results() {
             </>
           )}
         </dl>
-        <button type="button" onClick={() => session.newHousehold()}>
+        <button
+          type="button"
+          onClick={() => {
+            sound.cue({ name: "uiTap" })
+            session.newHousehold()
+          }}
+        >
           New Household
         </button>
       </section>
@@ -98,6 +118,8 @@ function App() {
         autoCenter: Phaser.Scale.CENTER_BOTH
       },
       scene: [BootScene, CouchScene, ShopScene],
+      // All sound is the game's own, synthesized (src/audio, ADR-0004).
+      audio: { noAudio: true },
       render: { antialias: true }
     })
     if (import.meta.env.DEV) installDebugHook(game)
