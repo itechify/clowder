@@ -270,7 +270,31 @@ describe("Reroll", () => {
     expect(offers).toHaveLength(2)
     for (const offer of offers)
       expect(before.map((cat) => cat.id)).not.toContain(offer.id)
-    expect(events).toEqual([{ type: "offersRerolled", offers, price: 1 }])
+    expect(events).toEqual([
+      {
+        type: "offersRerolled",
+        catOffers: offers,
+        houseCatOffers: after.shop!.houseCatOffers,
+        price: 1
+      }
+    ])
+  })
+
+  it("offers every unowned House Cat again, but none on the Shelf", () => {
+    const shop = {
+      ...defaultConfig.shop,
+      recruitPrices: { boxGoblin: 1, doNotTouch: 1 },
+      rerollPrice: 0
+    }
+    let run = playOne(easyRun(1, { shop })).run
+    run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
+    run = accepted(run, { type: "recruit", houseCat: "doNotTouch" }).run
+    run = accepted(run, { type: "rehome", houseCat: "doNotTouch" }).run
+    expect(run.shop!.houseCatOffers).toEqual([])
+
+    const after = accepted(run, { type: "reroll" }).run
+
+    expect(after.shop!.houseCatOffers).toEqual(["doNotTouch"])
   })
 
   it("refills an offer already Adopted", () => {
@@ -332,5 +356,152 @@ describe("Reroll", () => {
       accepted(playOne(easyRun(9)).run, { type: "reroll" }).run.shop!.catOffers
 
     expect(reroll()).toEqual(reroll())
+  })
+})
+
+describe("House Cats offered to Recruit", () => {
+  it("are two House Cats", () => {
+    const run = playOne(easyRun()).run
+
+    expect([...run.shop!.houseCatOffers].sort()).toEqual([
+      "boxGoblin",
+      "doNotTouch"
+    ])
+  })
+})
+
+describe("Recruit", () => {
+  it("places an offered House Cat on the Shelf for its price", () => {
+    const run = playOne(easyRun()).run
+    expect(run.treats).toBe(5)
+
+    const { run: after, events } = accepted(run, {
+      type: "recruit",
+      houseCat: "doNotTouch"
+    })
+
+    expect(after.shelf).toEqual(["doNotTouch"])
+    expect(after.treats).toBe(0)
+    expect(after.shop!.houseCatOffers).toEqual(["boxGoblin"])
+    expect(events).toEqual([
+      { type: "houseCatRecruited", houseCat: "doNotTouch", price: 5 }
+    ])
+  })
+  it("is rejected with a full Shelf", () => {
+    const shop = {
+      ...defaultConfig.shop,
+      recruitPrices: { boxGoblin: 1, doNotTouch: 1 }
+    }
+    const run = playOne(easyRun(1, { shelfSize: 1, shop })).run
+    const [first, second] = run.shop!.houseCatOffers
+    const full = accepted(run, { type: "recruit", houseCat: first }).run
+
+    const result = applyAction(full, { type: "recruit", houseCat: second })
+
+    expect(result.ok).toBe(false)
+    expect(result.run).toBe(full)
+  })
+
+  it("is rejected when Treats are insufficient", () => {
+    const run = playOne(easyRun()).run
+
+    expect(
+      applyAction(run, { type: "recruit", houseCat: "boxGoblin" }).ok
+    ).toBe(false)
+  })
+
+  it("is rejected for a House Cat not on offer", () => {
+    const run = playOne(easyRun()).run
+    const recruited = accepted(run, {
+      type: "recruit",
+      houseCat: "doNotTouch"
+    }).run
+
+    expect(
+      applyAction(recruited, { type: "recruit", houseCat: "doNotTouch" }).ok
+    ).toBe(false)
+    expect(
+      applyAction(startRun(1), { type: "recruit", houseCat: "doNotTouch" }).ok
+    ).toBe(false)
+  })
+
+  it("takes its price from config", () => {
+    const shop = {
+      ...defaultConfig.shop,
+      recruitPrices: { boxGoblin: 2, doNotTouch: 4 }
+    }
+    const run = playOne(easyRun(1, { shop })).run
+
+    expect(
+      accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run.treats
+    ).toBe(3)
+  })
+
+  it("keeps the House Cat on the Shelf, and out of the Shop, for the Run", () => {
+    let run = playOne(easyRun()).run
+    run = accepted(run, { type: "recruit", houseCat: "doNotTouch" }).run
+    run = accepted(run, { type: "leaveShop" }).run
+    expect(run.shelf).toEqual(["doNotTouch"])
+
+    for (let visit = 0; visit < 3; visit++) {
+      run = playOne(run).run
+      expect(run.shop!.houseCatOffers).toEqual(["boxGoblin"])
+      run = accepted(accepted(run, { type: "reroll" }).run, {
+        type: "leaveShop"
+      }).run
+    }
+    expect(run.shelf).toEqual(["doNotTouch"])
+  })
+})
+
+describe("Rehoming a House Cat", () => {
+  /** An odd price, to show the refund rounds down. */
+  const oddPrices = {
+    ...defaultConfig.shop,
+    recruitPrices: { boxGoblin: 3, doNotTouch: 5 }
+  }
+
+  it("removes it from the Shelf and refunds half its price, rounded down", () => {
+    let run = playOne(easyRun(1, { shop: oddPrices })).run
+    run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
+    expect(run.treats).toBe(2)
+
+    const { run: after, events } = accepted(run, {
+      type: "rehome",
+      houseCat: "boxGoblin"
+    })
+
+    expect(after.shelf).toEqual([])
+    expect(after.treats).toBe(3)
+    expect(events).toEqual([
+      { type: "houseCatRehomed", houseCat: "boxGoblin", refund: 1 }
+    ])
+  })
+
+  it("is not limited like Rehoming a Cat", () => {
+    let run = playOne(easyRun(1, { shop: oddPrices })).run
+    run = accepted(run, { type: "rehome", cat: run.roster[0].id }).run
+    run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
+
+    const after = accepted(run, { type: "rehome", houseCat: "boxGoblin" }).run
+
+    expect(after.shelf).toEqual([])
+    expect(after.treats).toBe(2)
+  })
+
+  it("is rejected for a House Cat not on the Shelf", () => {
+    const run = playOne(easyRun()).run
+
+    expect(
+      applyAction(run, { type: "rehome", houseCat: "doNotTouch" }).ok
+    ).toBe(false)
+  })
+
+  it("is rejected during a Night", () => {
+    const run = { ...startRun(1), shelf: ["doNotTouch" as const] }
+
+    expect(
+      applyAction(run, { type: "rehome", houseCat: "doNotTouch" }).ok
+    ).toBe(false)
   })
 })

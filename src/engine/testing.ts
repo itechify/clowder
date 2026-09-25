@@ -1,6 +1,7 @@
 import { type Action, applyAction } from "./actions"
 import { type Config, defaultConfig } from "./config"
 import type { Coat } from "./content/coats"
+import type { HouseCatId } from "./content/houseCats"
 import type { Personality } from "./content/personalities"
 import { startRun } from "./run"
 import type { CatId, Run } from "./types"
@@ -10,11 +11,16 @@ export type SeatSpec = Personality | `${Coat} ${Personality}` | null
 
 /**
  * A fresh Run whose Hand holds Roster Cats matching the specs, seated in order
- * from Seat 0. Test-only: stands in for a lucky draw.
+ * from Seat 0, with the given Shelf. Test-only: stands in for a lucky draw and
+ * the Shop visits before it.
  */
 export function runWithCouch(
   specs: SeatSpec[],
-  { seed = 1, config = {} }: { seed?: number; config?: Partial<Config> } = {}
+  {
+    seed = 1,
+    config = {},
+    shelf = []
+  }: { seed?: number; config?: Partial<Config>; shelf?: HouseCatId[] } = {}
 ): Run {
   const run = startRun(seed, { ...defaultConfig, ...config })
   const chosen: (CatId | null)[] = []
@@ -38,6 +44,7 @@ export function runWithCouch(
   const hand = chosen.filter((id) => id !== null)
   let next: Run = {
     ...run,
+    shelf,
     night: {
       ...run.night,
       hand,

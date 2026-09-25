@@ -14,6 +14,12 @@ export {
 } from "./content/disasters"
 export type { GatheringId } from "./content/gatherings"
 export {
+  type HouseCat,
+  type HouseCatId,
+  houseCat,
+  houseCats
+} from "./content/houseCats"
+export {
   type Personality,
   personalities
 } from "./content/personalities"
@@ -25,9 +31,10 @@ export {
   type ScoreBreakdown,
   type ScoringEvent,
   type ScoringSource,
-  type TimesEffect
+  type TimesEffect,
+  type WholePlayEffect
 } from "./scoring"
-export type { ShopAction } from "./shop"
+export { rehomeRefund, type ShopAction } from "./shop"
 export {
   type BestPlay,
   type RunStats,
@@ -37,6 +44,7 @@ export {
 export type {
   Cat,
   CatId,
+  Couch,
   Night,
   NightStatus,
   Run,

@@ -2,6 +2,7 @@ import type { Config } from "./config"
 import { coats } from "./content/coats"
 import { disasters } from "./content/disasters"
 import { gatherings } from "./content/gatherings"
+import { houseCats } from "./content/houseCats"
 import { personalities } from "./content/personalities"
 import type { BestPlay, RunStats } from "./stats"
 import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
@@ -10,7 +11,7 @@ import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
  * The shape of saved Runs. Bump it whenever Run state changes meaning, so a
  * save from before the change is discarded rather than resumed.
  */
-const SAVE_VERSION = 2
+const SAVE_VERSION = 3
 
 /** Run state as plain text, to keep on the device between visits. */
 export function serialiseRun(run: Run): string {
@@ -66,6 +67,10 @@ const shape =
     Object.entries(checks).every(([key, check]) => (check as Check)(value[key]))
 
 const isDisaster = oneOf(disasters.map((disaster) => disaster.id))
+const isHouseCat = oneOf(houseCats.map((houseCat) => houseCat.id))
+/** A whole number for every House Cat. */
+const perHouseCat: Check = (value) =>
+  isRecord(value) && houseCats.every(({ id }) => integer(value[id]))
 
 const isCat = shape<Cat>({
   id: text,
@@ -85,6 +90,7 @@ const isConfig = shape<Config>({
   }),
   handSize: integer,
   seats: integer,
+  shelfSize: integer,
   playsPerNight: integer,
   redrawsPerNight: integer,
   catsPerRedraw: integer,
@@ -105,6 +111,8 @@ const isConfig = shape<Config>({
     adoptPrice: integer,
     rehomeCatPrice: integer,
     catRehomesPerVisit: integer,
+    houseCatOffers: integer,
+    recruitPrices: perHouseCat,
     rerollPrice: integer,
     rerollPriceStep: integer
   })
@@ -115,6 +123,7 @@ const isRun = shape<Run>({
   config: isConfig,
   rng: integer,
   roster: list(isCat),
+  shelf: list(isHouseCat),
   catsCreated: integer,
   disasters: list(isDisaster),
   night: shape<Night>({
@@ -134,6 +143,7 @@ const isRun = shape<Run>({
     shape<Shop>({
       catOffers: list(isCat),
       catRehomesLeft: integer,
+      houseCatOffers: list(isHouseCat),
       rerollPrice: integer,
       nextDisaster: nullable(isDisaster)
     })
@@ -157,11 +167,13 @@ const isRun = shape<Run>({
 /**
  * Whether the Night's Cats are where they can be: seated from the Hand, and,
  * while it is in play, all in the Roster (once it is over, some may have been
- * Rehomed).
+ * Rehomed). The Shelf holds each House Cat at most once, and no more than fit.
  */
-function isConsistent({ config, roster, night }: Run): boolean {
+function isConsistent({ config, roster, shelf, night }: Run): boolean {
   const ids = new Set(roster.map((cat) => cat.id))
   return (
+    new Set(shelf).size === shelf.length &&
+    shelf.length <= config.shelfSize &&
     night.couch.length === config.seats &&
     night.couch.every((cat) => cat === null || night.hand.includes(cat)) &&
     (night.status !== "playing" ||

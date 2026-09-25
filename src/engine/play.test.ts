@@ -3,6 +3,7 @@ import {
   type Action,
   applyAction,
   defaultConfig,
+  type HouseCatId,
   previewPlay,
   type Run,
   startRun
@@ -151,10 +152,16 @@ describe("Play", () => {
 
   it("scripts events that add up to the Score, each tallying the Play so far", () => {
     const config = { ...defaultConfig, firstTarget: Number.POSITIVE_INFINITY }
+    const shelves: HouseCatId[][] = [
+      [],
+      ["doNotTouch"],
+      ["boxGoblin"],
+      ["boxGoblin", "doNotTouch"]
+    ]
     for (let seed = 1; seed <= 200; seed++) {
-      let run = startRun(seed, config)
+      let run: Run = { ...startRun(seed, config), shelf: shelves[seed % 4] }
       run.night.hand.forEach((cat, i) => {
-        const seat = (seed * (i + 5) + 2 * i) % 7
+        const seat = (seed * (i + 5) + 2 * i) % (7 + (seed % 9))
         if (seat < 5) run = apply(run, { type: "place", cat, seat })
       })
       if (run.night.couch.every((cat) => cat === null)) continue
@@ -166,7 +173,10 @@ describe("Play", () => {
       let mult = 1
       let phase = 1
       for (const event of events) {
-        if (event.type === "gatheringActivated") {
+        if (
+          event.type === "gatheringActivated" ||
+          event.type === "wholePlayEffect"
+        ) {
           expect(phase).toBe(1)
           mult += event.mult
         } else if (event.type === "catScored") {

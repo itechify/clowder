@@ -1,4 +1,5 @@
 import { type GatheringId, gatherings } from "./content/gatherings"
+import { type HouseCatId, houseCat } from "./content/houseCats"
 import { personalityBonus } from "./content/personalities"
 import type { Cat, CatId, Run } from "./types"
 
@@ -9,6 +10,13 @@ export type ActiveGathering = {
   mult: number
   /** The Seats forming it, left to right. */
   seats: number[]
+}
+
+/** A House Cat adding Mult once to the whole Play, alongside the Gatherings. */
+export type WholePlayEffect = {
+  houseCat: HouseCatId
+  name: string
+  mult: number
 }
 
 /**
@@ -29,19 +37,22 @@ export type ScoringEvent = {
   mult: number
 }
 
-/** An effect multiplying the Play's Mult, applied after every Scoring event. */
+/** A House Cat multiplying the Play's Mult, after every Scoring event. */
 export type TimesEffect = {
+  houseCat: HouseCatId
   name: string
   times: number
 }
 
 /** A Play's Score, phase by phase (ADR-0001). */
 export type ScoreBreakdown = {
-  /** Phase 1: Gatherings, each adding Mult to the starting 1. */
+  /** Phase 1: Gatherings, each adding Mult to the starting 1... */
   gatherings: ActiveGathering[]
+  /** ...and whole-Play House Cat effects, in Shelf order. */
+  wholePlayEffects: WholePlayEffect[]
   /** Phase 2: in scoring order, left to right by Seat. */
   scoringEvents: ScoringEvent[]
-  /** Phase 3: × effects, each multiplying Mult in turn. */
+  /** Phase 3: × effects, each multiplying Mult in turn, in Shelf order. */
   timesEffects: TimesEffect[]
   purr: number
   mult: number
@@ -59,7 +70,7 @@ export function previewPlay(run: Run): ScoreBreakdown {
   )
   const catAt = (seat: number): Cat | undefined => couch[seat] ?? undefined
 
-  // Phase 1: Gatherings add Mult.
+  // Phase 1: Gatherings and whole-Play effects add Mult.
   const active: ActiveGathering[] = []
   for (const gathering of gatherings) {
     const seats = gathering.seats(couch)
@@ -71,7 +82,16 @@ export function previewPlay(run: Run): ScoreBreakdown {
         seats
       })
   }
-  const gatheringMult = active.reduce((sum, g) => sum + g.mult, 1)
+  const wholePlayEffects: WholePlayEffect[] = []
+  for (const id of run.shelf) {
+    const { name, wholePlayMult } = houseCat(id)
+    const mult = wholePlayMult?.(couch) ?? null
+    if (mult !== null) wholePlayEffects.push({ houseCat: id, name, mult })
+  }
+  const addedMult = [...active, ...wholePlayEffects].reduce(
+    (sum, effect) => sum + effect.mult,
+    1
+  )
 
   // Phase 2: each Cat's Scoring event adds Purr.
   const scoringEvents: ScoringEvent[] = []
@@ -97,16 +117,23 @@ export function previewPlay(run: Run): ScoreBreakdown {
   })
   const purr = scoringEvents.reduce((sum, event) => sum + event.purr, 0)
 
-  // Phase 3: × effects multiply Mult. None exist before House Cats.
+  // Phase 3: × effects multiply Mult.
   const timesEffects: TimesEffect[] = []
+  for (const id of run.shelf) {
+    const { name, times } = houseCat(id)
+    const factor = times?.(couch) ?? null
+    if (factor !== null)
+      timesEffects.push({ houseCat: id, name, times: factor })
+  }
   const mult = timesEffects.reduce(
     (product, effect) => product * effect.times,
-    scoringEvents.reduce((sum, event) => sum + event.mult, gatheringMult)
+    scoringEvents.reduce((sum, event) => sum + event.mult, addedMult)
   )
 
   // Phase 4: Purr × Mult, rounded down only here.
   return {
     gatherings: active,
+    wholePlayEffects,
     scoringEvents,
     timesEffects,
     purr,

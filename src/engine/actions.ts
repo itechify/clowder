@@ -1,8 +1,10 @@
+import type { HouseCatId } from "./content/houseCats"
 import {
   type ActiveGathering,
   previewPlay,
   type ScoringEvent,
-  type TimesEffect
+  type TimesEffect,
+  type WholePlayEffect
 } from "./scoring"
 import {
   applyShopAction,
@@ -18,6 +20,8 @@ export type Action =
   | { type: "unseat"; cat: CatId }
   | { type: "play" }
   | { type: "redraw"; cats: CatId[] }
+  /** Moves a House Cat to another position; the others close up around it. */
+  | { type: "reorderShelf"; houseCat: HouseCatId; position: number }
   | ShopAction
 
 /** A Play's Purr and Mult so far, as its Score builds up event by event. */
@@ -30,6 +34,7 @@ export type RunEvent =
       firstTime: boolean
       tally: Tally
     } & ActiveGathering)
+  | ({ type: "wholePlayEffect"; tally: Tally } & WholePlayEffect)
   | ({ type: "catScored"; tally: Tally } & ScoringEvent)
   | ({ type: "timesEffect"; tally: Tally } & TimesEffect)
   | {
@@ -52,7 +57,15 @@ export type RunEvent =
   | { type: "shopOpened" }
   | { type: "catAdopted"; cat: Cat; price: number }
   | { type: "catRehomed"; cat: Cat; price: number }
-  | { type: "offersRerolled"; offers: Cat[]; price: number }
+  | { type: "houseCatRecruited"; houseCat: HouseCatId; price: number }
+  | { type: "houseCatRehomed"; houseCat: HouseCatId; refund: number }
+  | {
+      type: "offersRerolled"
+      catOffers: Cat[]
+      houseCatOffers: HouseCatId[]
+      price: number
+    }
+  | { type: "shelfReordered"; shelf: HouseCatId[] }
   | { type: "nightStarted"; night: number }
   | { type: "nightLost"; score: number }
   | { type: "runEnded"; outcome: Exclude<RunStatus, "playing"> }
@@ -66,6 +79,8 @@ export function applyAction(run: Run, action: Action): ActionResult {
   const reject = (reason: string): ActionResult => ({ ok: false, run, reason })
   const { night } = run
   if (run.status !== "playing") return reject("The Run is over")
+  // A Play resolves at once, so the Shelf is always outside one here.
+  if (action.type === "reorderShelf") return reorderShelf(run, action)
   if (isShopAction(action)) {
     if (!run.shop) return reject("The Shop is closed")
     return applyShopAction(run, run.shop, action)
@@ -125,6 +140,23 @@ export function applyAction(run: Run, action: Action): ActionResult {
   }
 }
 
+function reorderShelf(
+  run: Run,
+  { houseCat, position }: Extract<Action, { type: "reorderShelf" }>
+): ActionResult {
+  if (!run.shelf.includes(houseCat))
+    return { ok: false, run, reason: "That House Cat is not on the Shelf" }
+  if (!Number.isInteger(position) || !(position in run.shelf))
+    return { ok: false, run, reason: "There is no such position on the Shelf" }
+  const shelf = run.shelf.filter((id) => id !== houseCat)
+  shelf.splice(position, 0, houseCat)
+  return {
+    ok: true,
+    run: { ...run, shelf },
+    events: [{ type: "shelfReordered", shelf }]
+  }
+}
+
 /** Swaps Hand Cats for fresh draws; the Cats sent out are gone for the Night. */
 function redraw(run: Run, sentOut: CatId[]): ActionResult {
   const { night } = run
@@ -167,6 +199,10 @@ function play(run: Run): ActionResult {
         firstTime: newlyDiscovered.includes(active.gathering),
         tally: { ...tally }
       }
+    }),
+    ...breakdown.wholePlayEffects.map((effect): RunEvent => {
+      tally.mult += effect.mult
+      return { type: "wholePlayEffect", ...effect, tally: { ...tally } }
     }),
     ...breakdown.scoringEvents.map((event): RunEvent => {
       tally.purr += event.purr

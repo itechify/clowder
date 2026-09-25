@@ -30,6 +30,7 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
       config,
       rng,
       roster,
+      shelf: [],
       catsCreated: roster.length,
       disasters: order,
       shop: null,

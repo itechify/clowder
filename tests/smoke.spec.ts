@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
-import { boot, layout, tap } from "./scene"
+import { houseCat } from "../src/engine"
+import { boot, layout, shop, tap } from "./scene"
 
 test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
   await boot(page, 7)
@@ -22,7 +23,12 @@ test("plays a seeded Run through to its results", async ({ page }) => {
     const scores: [number, number][] = []
     const seed = run().seed
     while (run().status === "playing") {
-      if (run().shop) apply({ type: "leaveShop" })
+      const { shop } = run()
+      if (shop) {
+        for (const houseCat of shop.houseCatOffers)
+          apply({ type: "recruit", houseCat })
+        apply({ type: "leaveShop" })
+      }
       run()
         .night.hand.slice(0, 5)
         .forEach((cat, seat) => {
@@ -35,7 +41,7 @@ test("plays a seeded Run through to its results", async ({ page }) => {
         : undefined
       scores.push([previewed, total?.score ?? Number.NaN])
     }
-    return { seed, status: run().status, scores }
+    return { seed, status: run().status, scores, shelf: run().shelf }
   })
 
   expect(["won", "lost"]).toContain(outcome.status)
@@ -50,6 +56,12 @@ test("plays a seeded Run through to its results", async ({ page }) => {
   ).toBeVisible({ timeout: 10_000 })
   await expect(page.getByText("Nights cleared")).toBeVisible()
   await expect(page.getByText("Star Cat")).toBeVisible()
+  // This seed Recruits a House Cat, so the results list the household's.
+  expect(outcome.shelf.length).toBeGreaterThan(0)
+  await expect(page.getByText("House Cats")).toBeVisible()
+  await expect(
+    page.getByText(outcome.shelf.map((id) => houseCat(id).name).join(", "))
+  ).toBeVisible()
 
   await page.getByRole("button", { name: "New Household" }).click()
   await expect(page.getByRole("heading")).toHaveCount(0)
@@ -107,10 +119,10 @@ test("shops between Nights by tapping in the scene", async ({ page }) => {
 
   // Adopt the first offer, pick out and Rehome a Roster Cat, then Reroll
   // (see ShopScene's layout).
-  await tap(page, 105, 284)
-  await tap(page, 43, 440)
-  await tap(page, 105, 790)
-  await tap(page, 195, 345)
+  await tap(page, ...shop.offer(0))
+  await tap(page, 43, 540)
+  await tap(page, ...shop.rehome)
+  await tap(page, ...shop.reroll)
 
   const after = await page.evaluate(() => window.__clowder!.run())
   expect(after.treats).toBe(0)
@@ -118,7 +130,7 @@ test("shops between Nights by tapping in the scene", async ({ page }) => {
   expect(after.roster).toHaveLength(30)
   expect(after.shop!.rerollPrice).toBe(2)
 
-  await tap(page, 285, 790)
+  await tap(page, ...shop.leave)
   await expect
     .poll(() => page.evaluate(() => window.__clowder!.scenes()))
     .toEqual(["couch"])
@@ -128,6 +140,44 @@ test("shops between Nights by tapping in the scene", async ({ page }) => {
   expect([...next.night.hand, ...next.night.drawPile].sort()).toEqual(
     after.roster.map((cat) => cat.id).sort()
   )
+})
+
+test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
+  page
+}) => {
+  test.setTimeout(60_000)
+  await boot(page, 1)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (!run().shop) {
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+  })
+  await tap(page, ...layout.wall)
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
+      timeout: 40_000
+    })
+    .toEqual(["shop"])
+  const before = await page.evaluate(() => window.__clowder!.run())
+  expect(before.treats).toBe(5)
+  const card = before.shop!.houseCatOffers.indexOf("doNotTouch")
+
+  await tap(page, ...shop.offer(before.shop!.catOffers.length + card))
+  const recruited = await page.evaluate(() => window.__clowder!.run())
+  expect(recruited.shelf).toEqual(["doNotTouch"])
+  expect(recruited.treats).toBe(0)
+
+  await tap(page, ...shop.shelf(0))
+  await tap(page, ...shop.rehome)
+  const rehomed = await page.evaluate(() => window.__clowder!.run())
+  expect(rehomed.shelf).toEqual([])
+  expect(rehomed.treats).toBe(2)
 })
 
 test("resumes a Run where it was left after a reload", async ({ page }) => {

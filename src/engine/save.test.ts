@@ -89,6 +89,23 @@ describe("saving and resuming a Run", () => {
     expect(end.night.number).toBe(2)
   })
 
+  it("resumes with House Cats on the Shelf exactly as it would have gone on", () => {
+    const run = runInShop(1)
+
+    const end = expectResumesIdentically(run, [
+      () => ({ type: "recruit", houseCat: "doNotTouch" }),
+      (r) => ({ type: "reorderShelf", houseCat: r.shelf[0], position: 0 }),
+      () => ({ type: "leaveShop" }),
+      seatFromHand(0, 0),
+      seatFromHand(1, 2),
+      seatFromHand(2, 4),
+      play
+    ])
+
+    expect(end.shelf).toHaveLength(1)
+    expect(end.night.playsLeft).toBe(2)
+  })
+
   it("resumes a Disaster Night exactly as it would have gone on", () => {
     // Every Play clears its Night, so full Couches reach Night 3 at once.
     let run = startRun(1, { ...defaultConfig, basePurr: 1_000_000 })
@@ -162,7 +179,11 @@ describe("a damaged save", () => {
       cat: startRun(3).night.hand[0],
       seat: 2
     }).run
-    for (const run of [midNight, runInShop(1)]) {
+    const withShelf = accepted(runInShop(1), {
+      type: "recruit",
+      houseCat: "doNotTouch"
+    }).run
+    for (const run of [midNight, runInShop(1), withShelf]) {
       const saved = serialiseRun(run)
       const refusedAt = paths(JSON.parse(saved).run)
         .map((path) => ["run", ...path])
@@ -170,6 +191,19 @@ describe("a damaged save", () => {
 
       expect(refusedAt).toEqual([])
     }
+  })
+
+  it("is refused when the Shelf holds a House Cat twice, or too many", () => {
+    const run = startRun(1)
+    const twice: Run = { ...run, shelf: ["boxGoblin", "boxGoblin"] }
+    const tooMany: Run = {
+      ...run,
+      config: { ...run.config, shelfSize: 1 },
+      shelf: ["boxGoblin", "doNotTouch"]
+    }
+
+    expect(restoreRun(serialiseRun(twice))).toBeUndefined()
+    expect(restoreRun(serialiseRun(tooMany))).toBeUndefined()
   })
 
   it("is refused when the Night holds a Cat that is not in the Roster", () => {
