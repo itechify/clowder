@@ -389,7 +389,8 @@
       "art/raw/room/seatPad.png",
       "art/reference/style-sheet.png"
     ],
-    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-d4d1bbf6-2b0a-4c19-9c2f-ba47bb02f0fd.png"
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-d4d1bbf6-2b0a-4c19-9c2f-ba47bb02f0fd.png",
+    "rejected": true
   },
   {
     "key": "gathering/fullSofa",
@@ -410,5 +411,17 @@
     "height": 498,
     "rejected": true,
     "rejectionReason": "The backrest-only edit also shifted the lower support geometry; retain the prior couch correction that meets the seat pads."
+  },
+  {
+    "prompt": "Use case: precise-object-edit. First image is the EDIT TARGET: Clowder's sage-green couch sprite, transparent canvas 1170x498. Second image is only the approved STYLE REFERENCE. Correct the fit of the arms: the current arms are much too wide, causing separately-rendered cushions to overlap them. Make both arms about HALF their current horizontal thickness, keeping their outer edges where they are at x=0 and x=1170. The inside edge of the left arm must be at x=60 (5% of total width) throughout the seat area; the right inside edge at x=1110 (95%). Thus there must be a wide clear seat opening from x=60 to1110, especially between y=245 and y=335. Extend the flat seat deck and front fascia sideways to meet these slimmer arms. Arms should still look softly rounded and upholstered, with a narrow roll at their top. Preserve all vertical positions from the target: transparent headroom, top of backrest near y=72, arm tops near185, deck near297, front fascia top near333, feet at497. Keep existing sage color, five tufted back panels, dark-brown outlines, simple highlights, and short wooden feet. Do NOT add cushions, cats, pillows, meter, text or other objects. The whole 1170x498 canvas including transparent padding must be retained, genuine transparent background. Only narrow the arms and widen the clear deck/fascia opening; do not shift the deck down.",
+    "references": [
+      "/home/jjd/.t3/worktrees/clowder/t3code-efefd161/art/raw/room/couch.png",
+      "/home/jjd/.t3/worktrees/clowder/t3code-efefd161/art/reference/style-sheet.png"
+    ],
+    "source": "/home/jjd/.codex/generated_images/01a0d939-17d1-7340-838f-d9fcbe207e98/exec-2ba97832-4bc4-4574-ab75-a372b3373e23.png",
+    "key": "room/couch",
+    "width": 1170,
+    "height": 498,
+    "normalization": "Crop visible silhouette (alpha > 2), resize uniformly to 1170x411, pad on 1170x498 at x=0,y=70. Align fascia beneath the existing cushion bottoms."
   }
 ]

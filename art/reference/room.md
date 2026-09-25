@@ -16,7 +16,9 @@ Following the brief's delivery instructions, each transparent sprite was
 cropped around its visible silhouette (alpha greater than 2/255, excluding
 nearly invisible stray pixels), uniformly resized to fit its manifest canvas,
 and padded with transparent pixels. The original alpha within the crop is
-preserved. Bottom-anchored furniture aligns to the bottom; the Shelf, Seat
+preserved. The Treat jar aligns to the bottom; the Couch fits within 1170×411
+and starts at y=70 on its 1170×498 canvas to align its support deck
+with the cushions. The Shelf, Seat
 pad, and Disaster sign align to the top; other sprites are centred except
 Full Sofa, which fits within 1170×414 and starts at y=84 on its 1170×498
 canvas to frame the upholstery below the meter. Moons
@@ -32,7 +34,10 @@ Cat names; its final thin translucent halo leaves names readable and frames
 the upholstery below the meter. After author feedback that the cushions
 looked suspended, the Couch frame was edited to raise its support deck and
 front fascia to meet the cushion bottoms. Cat seating positions and the
-separate cushion image are unchanged. A later attempt to extend only the
+separate cushion image are unchanged. Follow-up author feedback exposed
+the outer cushions overlapping the arms: the final frame has slimmer arms
+and a wider support deck so all five cushions fit between them. Both end
+Seats were checked empty and occupied. An earlier attempt to extend only the
 backrest also moved the support deck, so it was rejected. The meter still
 sits approximately 11 design pixels above the backrest; this minor visual
 review finding remains open.
@@ -45,6 +50,7 @@ review finding remains open.
   its three Sleepy Cats together (Nap Club), then Cats in Seats 1, 3, and 5
   (Personal Space). No browser errors.
 - `room-preview.png` shows seed 7's furnished room and active Gatherings.
+  `room-empty-preview.png` exposes both cushion/arm joints for visual review.
 - `badges-grayscale.png` shows all five badges in grayscale, including at
   22 px near their in-game size: sun, crescent, snowflake, diamond, star.
 - Typechecking and all 273 unit tests pass. All 48 browser tests pass.
@@ -58,5 +64,6 @@ review finding remains open.
 **Correction awaiting author confirmation.** The author reviewed the initial
 Run on 2026-09-25 and reported that the cushions looked raised off the Couch.
 The frame now supports the cushion bottoms, verified by agent inspection
-both empty and occupied. Refresh `/?seed=7` to review the correction.
+both empty and occupied. The subsequent arm-overlap report is also corrected
+by narrowing the arms and widening the deck. Refresh `/?seed=7` to review the correction.
 No final author approval is claimed by this delivery.
