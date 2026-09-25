@@ -1,175 +1,343 @@
 import type { ThemeName } from "./cues"
-import { tone } from "./synth"
+import { type Instrument, playInstrument } from "./instruments"
 
-/** A note, as a MIDI note number or null for a rest, and its length in beats. */
-type Note = [note: number | null, beats: number]
+/** MIDI pitch, chord, or rest, followed by its length in beats. */
+type Note = [note: number | number[] | null, beats: number]
+type Track = {
+  instrument: Instrument
+  level: number
+  /** Fraction of a beat's duration sounded; shorter for the Shop's bounce. */
+  gate?: number
+  notes: Note[]
+}
 
-/** One synth voice's part, looping on its own. */
-type Track = { wave: OscillatorType; level: number; notes: Note[] }
-
-/**
- * Music as note data on synth voices (ADR-0004). Each track of a theme lasts
- * the same number of beats, so they loop together.
- */
+/** All parts have the same beat count and return to the downbeat together. */
 type Theme = { bpm: number; tracks: Track[] }
 
-/** Placeholders for now: the real themes replace these behind the same names. */
+// "A Place on the Couch": eight bars, with space between the two phrases.
+// The E–G–A opening is also the Night-cleared fanfare's little signature.
+const nightMelody: Note[] = [
+  [76, 0.75],
+  [79, 0.25],
+  [81, 1],
+  [79, 1],
+  [null, 1],
+  [76, 1.5],
+  [74, 0.5],
+  [72, 1],
+  [null, 1],
+  [72, 0.75],
+  [76, 0.25],
+  [79, 1],
+  [76, 1],
+  [74, 1],
+  [71, 1.5],
+  [74, 0.5],
+  [79, 1],
+  [null, 1],
+  [81, 1],
+  [84, 0.5],
+  [83, 0.5],
+  [81, 1],
+  [79, 1],
+  [76, 1.5],
+  [79, 0.5],
+  [74, 1],
+  [null, 1],
+  [77, 1],
+  [76, 0.5],
+  [74, 0.5],
+  [72, 1],
+  [74, 1],
+  [76, 1],
+  [74, 0.5],
+  [71, 0.5],
+  [72, 1],
+  [null, 1]
+]
+
+// Cmaj7 – Am7 – Fmaj7 – G6; a second phrase finds its way home.
+const nightHarmony: Note[] = [
+  [[60, 64, 71], 4],
+  [[60, 64, 69], 4],
+  [[60, 65, 69], 4],
+  [[59, 62, 67], 4],
+  [[60, 64, 69], 4],
+  [[59, 64, 67], 4],
+  [[60, 65, 69], 4],
+  [[59, 62, 67], 2],
+  [[60, 64, 67], 2]
+]
+
+/** Parallel minor keeps the Night motif recognizable during a Disaster. */
+function minor(note: number): number {
+  return [4, 9, 11].includes(note % 12) ? note - 1 : note
+}
+
+const inMinor = (notes: Note[]): Note[] =>
+  notes.map(([note, beats]) => [
+    note === null ? null : Array.isArray(note) ? note.map(minor) : minor(note),
+    beats
+  ])
+
+/** Original looping arrangements, entirely note data and runtime synthesis. */
 export const themes: Record<ThemeName, Theme> = {
-  // Cozy, unhurried, in C major.
   night: {
-    bpm: 80,
+    bpm: 76,
     tracks: [
+      { instrument: "felt", level: 0.105, notes: nightMelody },
+      { instrument: "pad", level: 0.025, notes: nightHarmony },
       {
-        wave: "triangle",
-        level: 0.14,
+        instrument: "bass",
+        level: 0.105,
+        gate: 0.85,
         notes: [
-          [64, 1],
-          [67, 1],
-          [69, 1],
-          [67, 1],
-          [64, 1],
-          [62, 1],
-          [60, 2],
-          [62, 1],
-          [64, 1],
-          [67, 1],
-          [64, 1],
-          [62, 4]
-        ]
-      },
-      {
-        wave: "sine",
-        level: 0.18,
-        notes: [
-          [48, 4],
-          [45, 4],
-          [41, 4],
-          [43, 4]
-        ]
-      }
-    ]
-  },
-  // The Night's tune, minor and a little faster, over a restless bass.
-  disaster: {
-    bpm: 96,
-    tracks: [
-      {
-        wave: "square",
-        level: 0.07,
-        notes: [
-          [63, 1],
-          [67, 1],
-          [68, 1],
-          [67, 1],
-          [63, 1],
-          [62, 1],
-          [60, 2],
-          [62, 1],
-          [63, 1],
-          [67, 1],
-          [63, 1],
-          [62, 4]
-        ]
-      },
-      {
-        wave: "triangle",
-        level: 0.2,
-        notes: [
-          [48, 2],
-          [48, 2],
-          [44, 2],
-          [44, 2],
-          [41, 2],
-          [41, 2],
-          [43, 2],
-          [43, 2]
-        ]
-      }
-    ]
-  },
-  // Bouncy, over an oom-pah bass.
-  shop: {
-    bpm: 132,
-    tracks: [
-      {
-        wave: "square",
-        level: 0.06,
-        notes: [
-          [72, 0.5],
-          [76, 0.5],
-          [79, 0.5],
-          [76, 0.5],
-          [77, 0.5],
-          [81, 0.5],
-          [79, 1],
-          [76, 0.5],
-          [79, 0.5],
-          [84, 1],
-          [83, 0.5],
-          [79, 0.5],
-          [81, 1],
-          [72, 0.5],
-          [76, 0.5],
-          [79, 0.5],
-          [76, 0.5],
-          [77, 0.5],
-          [81, 0.5],
-          [79, 1],
-          [79, 0.5],
-          [77, 0.5],
-          [76, 0.5],
-          [74, 0.5],
-          [72, 2]
-        ]
-      },
-      {
-        wave: "triangle",
-        level: 0.18,
-        notes: [
+          [48, 3],
+          [55, 1],
+          [45, 3],
+          [52, 1],
+          [41, 3],
           [48, 1],
-          [55, 1],
-          [48, 1],
-          [55, 1],
-          [53, 1],
-          [57, 1],
-          [53, 1],
-          [57, 1],
-          [48, 1],
-          [55, 1],
-          [48, 1],
-          [55, 1],
-          [55, 1],
+          [43, 3],
           [50, 1],
+          [45, 3],
+          [52, 1],
+          [40, 3],
+          [47, 1],
+          [41, 3],
+          [48, 1],
+          [43, 2],
           [48, 2]
         ]
+      },
+      {
+        instrument: "bell",
+        level: 0.038,
+        notes: [
+          [null, 6],
+          [84, 1],
+          [79, 1],
+          [null, 6],
+          [86, 1],
+          [83, 1],
+          [null, 6],
+          [88, 1],
+          [86, 1],
+          [null, 6],
+          [79, 1],
+          [84, 1]
+        ]
       }
     ]
   },
-  // A lullaby in three.
-  results: {
-    bpm: 60,
+  disaster: {
+    bpm: 94,
     tracks: [
       {
-        wave: "sine",
-        level: 0.16,
+        instrument: "felt",
+        level: 0.1,
+        gate: 0.72,
+        notes: inMinor(nightMelody)
+      },
+      { instrument: "pad", level: 0.024, notes: inMinor(nightHarmony) },
+      // Eighth-note breathing room between insistent root/fifth pairs.
+      {
+        instrument: "bass",
+        level: 0.105,
+        gate: 0.65,
+        notes: [48, 44, 41, 43, 44, 39, 41, 43].flatMap((root): Note[] => [
+          [root, 0.75],
+          [null, 0.25],
+          [root + 7, 1],
+          [root, 0.75],
+          [null, 0.25],
+          [root + 7, 1]
+        ])
+      },
+      {
+        instrument: "bell",
+        level: 0.035,
         notes: [
-          [67, 2],
-          [64, 1],
-          [67, 2],
-          [64, 1],
-          [65, 1],
-          [64, 1],
-          [62, 1],
-          [60, 3]
+          [null, 3],
+          [86, 0.5],
+          [87, 0.5],
+          [null, 4],
+          [null, 3],
+          [83, 0.5],
+          [84, 0.5],
+          [null, 4],
+          [null, 3],
+          [86, 0.5],
+          [87, 0.5],
+          [null, 4],
+          [null, 3],
+          [74, 0.5],
+          [75, 0.5],
+          [null, 4]
+        ]
+      }
+    ]
+  },
+  shop: {
+    bpm: 116,
+    tracks: [
+      // "Treat Jar": dotted skips over a plucked oom-pah accompaniment.
+      {
+        instrument: "felt",
+        level: 0.105,
+        gate: 0.62,
+        notes: [
+          [72, 0.75],
+          [76, 0.25],
+          [79, 0.5],
+          [81, 0.5],
+          [79, 1],
+          [76, 1],
+          [74, 0.75],
+          [77, 0.25],
+          [81, 1],
+          [79, 1],
+          [null, 1],
+          [76, 0.75],
+          [79, 0.25],
+          [84, 0.5],
+          [83, 0.5],
+          [81, 1],
+          [79, 1],
+          [77, 0.5],
+          [76, 0.5],
+          [74, 1],
+          [71, 1],
+          [null, 1],
+          [72, 0.75],
+          [76, 0.25],
+          [79, 0.5],
+          [81, 0.5],
+          [84, 1],
+          [83, 1],
+          [81, 0.75],
+          [79, 0.25],
+          [77, 1],
+          [74, 1],
+          [null, 1],
+          [79, 0.75],
+          [76, 0.25],
+          [77, 0.5],
+          [74, 0.5],
+          [76, 1],
+          [71, 1],
+          [72, 1.5],
+          [79, 0.5],
+          [84, 1],
+          [null, 1]
         ]
       },
       {
-        wave: "sine",
-        level: 0.14,
+        instrument: "bass",
+        level: 0.12,
+        gate: 0.55,
+        notes: [48, 50, 45, 43, 48, 41, 43, 48].flatMap((root): Note[] => [
+          [root, 1],
+          [null, 1],
+          [root + 7, 1],
+          [null, 1]
+        ])
+      },
+      {
+        instrument: "felt",
+        level: 0.036,
+        gate: 0.45,
+        notes: [
+          [64, 67],
+          [65, 69],
+          [64, 69],
+          [62, 67],
+          [64, 67],
+          [65, 69],
+          [62, 71],
+          [64, 67]
+        ].flatMap((chord): Note[] => [
+          [null, 1],
+          [chord, 1],
+          [null, 1],
+          [chord, 1]
+        ])
+      },
+      {
+        instrument: "bell",
+        level: 0.04,
+        notes: [
+          [null, 7],
+          [86, 0.5],
+          [84, 0.5],
+          [null, 7],
+          [83, 0.5],
+          [79, 0.5],
+          [null, 7],
+          [81, 0.5],
+          [77, 0.5],
+          [null, 7],
+          [79, 0.5],
+          [84, 0.5]
+        ]
+      }
+    ]
+  },
+  results: {
+    bpm: 58,
+    tracks: [
+      // "All Asleep": eight bars in three, the Night motif tucked into bed.
+      {
+        instrument: "bell",
+        level: 0.075,
+        notes: [
+          [79, 1.5],
+          [76, 0.5],
+          [72, 1],
+          [74, 2],
+          [null, 1],
+          [76, 1.5],
+          [79, 0.5],
+          [81, 1],
+          [79, 2],
+          [null, 1],
+          [77, 1.5],
+          [76, 0.5],
+          [74, 1],
+          [76, 2],
+          [72, 1],
+          [74, 1],
+          [71, 1],
+          [67, 1],
+          [72, 2],
+          [null, 1]
+        ]
+      },
+      {
+        instrument: "pad",
+        level: 0.03,
+        notes: [
+          [[60, 64, 67], 3],
+          [[59, 62, 67], 3],
+          [[60, 64, 69], 3],
+          [[59, 64, 67], 3],
+          [[60, 65, 69], 3],
+          [[60, 64, 67], 3],
+          [[59, 62, 67], 3],
+          [[60, 64, 67], 3]
+        ]
+      },
+      {
+        instrument: "bass",
+        level: 0.085,
         notes: [
           [48, 3],
           [43, 3],
+          [45, 3],
+          [40, 3],
           [41, 3],
+          [48, 3],
+          [43, 3],
           [48, 3]
         ]
       }
@@ -193,7 +361,7 @@ export function loopTheme(
   const cursors = tracks.map(() => ({ index: 0, at: context.currentTime }))
   const schedule = () => {
     const horizon = context.currentTime + LOOKAHEAD
-    tracks.forEach(({ wave, level, notes }, t) => {
+    tracks.forEach(({ instrument, level, notes, gate = 0.9 }, t) => {
       const cursor = cursors[t]
       // Fallen behind, as in a throttled background tab: pick up from now.
       cursor.at = Math.max(cursor.at, context.currentTime)
@@ -201,10 +369,14 @@ export function loopTheme(
         const [note, beats] = notes[cursor.index]
         const duration = beats * secondsPerBeat
         if (note !== null)
-          tone(
-            { context, destination: bus, at: cursor.at },
-            { wave, note, duration: duration * 0.95, level, attack: 0.02 }
-          )
+          for (const pitch of Array.isArray(note) ? note : [note])
+            playInstrument(
+              { context, destination: bus, at: cursor.at },
+              instrument,
+              pitch,
+              duration * gate,
+              level
+            )
         cursor.at += duration
         cursor.index = (cursor.index + 1) % notes.length
       }

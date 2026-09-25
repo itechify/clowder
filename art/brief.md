@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**24 of 88 images delivered; 64 still on fallback.**
+**24 of 91 images delivered; 67 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 0 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 35 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 0 of 38 |
 
 ## How to generate and deliver
 
@@ -796,12 +796,15 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [ ] `art/raw/room/rug.png`
 - [ ] `art/raw/room/shelf.png`
 - [ ] `art/raw/room/treatJar.png`
+- [ ] `art/raw/room/disasterSign.png`
 - [ ] `art/raw/ui/playButton/ready.png`
 - [ ] `art/raw/ui/redrawButton/ready.png`
 - [ ] `art/raw/ui/pip/full.png`
+- [ ] `art/raw/ui/purrMeter/full.png`
 - [ ] `art/raw/ui/playButton/disabled.png`
 - [ ] `art/raw/ui/redrawButton/disabled.png`
 - [ ] `art/raw/ui/pip/spent.png`
+- [ ] `art/raw/ui/purrMeter/empty.png`
 - [ ] `art/raw/gathering/cuddlePuddle/3.png`
 - [ ] `art/raw/gathering/cuddlePuddle/4.png`
 - [ ] `art/raw/gathering/cuddlePuddle/5.png`
@@ -1084,6 +1087,19 @@ A long, narrow wooden wall shelf seen straight on: a single plank with small bra
 A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it. Transparent background. Front-on, with no perspective. It will be resized to exactly 132×156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
+### Disaster sign: `art/raw/room/disasterSign.png`
+
+**On fallback.**
+
+- Key: `room/disasterSign`
+- Size: 492×186
+- Anchor: (246, 0): top centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
 ### Play button, ready: `art/raw/ui/playButton/ready.png`
 
 **On fallback.**
@@ -1123,6 +1139,19 @@ A small, chunky, tactile plump, pillowy, pill-shaped button, in warm dark brown 
 A small, round pip: a glowing golden bead, full and still to spend. Transparent background. Front-on, with no perspective. It will be resized to exactly 42×42 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
+### Purr meter, full: `art/raw/ui/purrMeter/full.png`
+
+**On fallback.**
+
+- Key: `ui/purrMeter/full`
+- Size: 900×78
+- Anchor: (450, 39): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A long, slim, rounded meter like a little bolster laid along the top of a sofa's backrest, filled end to end with a warm, glowing orange, like a cat's purr made visible. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×78 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
 ### Play button, disabled: `art/raw/ui/playButton/disabled.png`
 
 **On fallback.**
@@ -1160,6 +1189,19 @@ A small pillowy, pill-shaped button pressed flat and faded to a dusty beige-brow
 
 ```text
 A small, round pip already spent: an empty, hollow ring. Transparent background. Front-on, with no perspective. It will be resized to exactly 42×42 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Purr meter, empty: `art/raw/ui/purrMeter/empty.png`
+
+**On fallback.**
+
+- Key: `ui/purrMeter/empty`
+- Size: 900×78
+- Anchor: (450, 39): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+The same long, slim, rounded meter empty: a soft cream fabric channel with a darker inset where the glow will fill it, exactly the same shape and outline as the full one. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×78 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Cuddle Puddle, across 3 Seats: `art/raw/gathering/cuddlePuddle/3.png`

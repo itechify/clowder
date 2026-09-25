@@ -7,6 +7,7 @@ import {
   type UiPiece
 } from "../art/manifest"
 import { defaultConfig } from "../engine"
+import { displayFont, OUTLINE } from "./fonts"
 import { seatX, shelfX, WIDTH } from "./layout"
 
 type Graphics = Phaser.GameObjects.Graphics
@@ -14,6 +15,10 @@ type Paint = (g: Graphics, ctx: CanvasRenderingContext2D) => void
 
 /** The night sky through the window, which the moon's shadow matches. */
 const NIGHT_SKY = 0x2d3561
+/** The bold dark-brown outline round everything drawn in the game's style. */
+export const INK = 0x3b2a22
+/** The red of a Disaster, wherever one is announced. */
+export const DISASTER_RED = 0x8a3a2e
 
 /**
  * Like a delivered image, the Couch and the Shelf are drawn once for a Run as
@@ -155,21 +160,66 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.fillStyle(0xdff1f7, 0.45).lineStyle(2, 0x8fb4d6, 1)
     g.fillRoundedRect(4, 14, 36, 37, 10).strokeRoundedRect(4, 14, 36, 37, 10)
     g.fillStyle(0xd46a4f, 1).fillRoundedRect(7, 5, 30, 10, 4)
+  },
+  disasterSign: (g) => {
+    // A string from the nail to the sign's top corners.
+    g.lineStyle(2, INK, 1)
+      .lineBetween(82, 5, 22, 18)
+      .lineBetween(82, 5, 142, 18)
+    g.fillStyle(DISASTER_RED, 1).fillRoundedRect(3, 16, 158, 44, 12)
+    g.lineStyle(2, 0xf0b28c, 1).strokeRoundedRect(8, 21, 148, 34, 8)
+    g.lineStyle(3, INK, 1).strokeRoundedRect(3, 16, 158, 44, 12)
+    g.fillStyle(0x5e3a25, 1).fillCircle(82, 5, 3.5)
   }
 }
 
+/**
+ * A chunky pill of a button, `w` × `h`: a face over a darker lip, so it looks
+ * pressable, and flattened onto its lip when it is not.
+ */
+function button(g: Graphics, w: number, h: number, face: number, lip: number) {
+  g.fillStyle(lip, 1).fillRoundedRect(1.5, 1.5, w - 3, h - 3, (h - 3) / 2)
+  g.fillStyle(face, 1).fillRoundedRect(1.5, 1.5, w - 3, h - 9, (h - 9) / 2)
+  g.fillStyle(0xffffff, 0.22).fillRoundedRect(h / 3, 6, w - (2 * h) / 3, 7, 3.5)
+  g.lineStyle(3, INK, 1).strokeRoundedRect(1.5, 1.5, w - 3, h - 3, (h - 3) / 2)
+}
+
+/** A pressable button's face and lip, then a pressed-flat one's. */
+const buttonColours = {
+  primary: { face: 0xe8893a, lip: 0xa8541f },
+  secondary: { face: 0x7a5a3c, lip: 0x4a3426 },
+  disabled: { face: 0xcbb69c, lip: 0xa8927a }
+}
+
+/** The purr meter's channel, and the glow filling it. */
+const meter = {
+  cloth: 0xf3e3c8,
+  channel: 0xd9bf98,
+  glow: 0xe8893a,
+  shine: 0xf8c07a
+}
+
 const ui: Record<UiPiece, (g: Graphics, ready: boolean) => void> = {
-  playButton: (g, ready) =>
-    g
-      .fillStyle(ready ? 0x4a3426 : 0x9c8672, 1)
-      .fillRoundedRect(0, 0, 230, 58, 29),
-  redrawButton: (g, ready) =>
-    g
-      .fillStyle(ready ? 0x4a3426 : 0x9c8672, 1)
-      .fillRoundedRect(0, 0, 108, 58, 29),
+  playButton: (g, ready) => {
+    const { face, lip } = buttonColours[ready ? "primary" : "disabled"]
+    button(g, 230, 58, face, lip)
+  },
+  redrawButton: (g, ready) => {
+    const { face, lip } = buttonColours[ready ? "secondary" : "disabled"]
+    button(g, 108, 58, face, lip)
+  },
   pip: (g, ready) => {
-    if (ready) g.fillStyle(0xf6c453, 1).fillCircle(7, 7, 6)
-    g.lineStyle(1.5, ready ? 0x4a3426 : 0x9c8672, 1).strokeCircle(7, 7, 6)
+    g.fillStyle(ready ? 0xf6c453 : INK, ready ? 1 : 0.25).fillCircle(7, 7, 5.5)
+    if (ready) g.fillStyle(0xfff1b0, 1).fillCircle(5.5, 5.5, 1.8)
+    g.lineStyle(2, INK, ready ? 1 : 0.6).strokeCircle(7, 7, 5.5)
+  },
+  purrMeter: (g, ready) => {
+    g.fillStyle(meter.cloth, 1).fillRoundedRect(1.5, 1.5, 297, 23, 11.5)
+    if (ready) {
+      g.fillStyle(meter.glow, 1).fillRoundedRect(5, 5, 290, 16, 8)
+      g.fillStyle(meter.shine, 1).fillRoundedRect(10, 7, 280, 4, 2)
+    } else g.fillStyle(meter.channel, 1).fillRoundedRect(5, 5, 290, 16, 8)
+    g.lineStyle(3, INK, 1).strokeRoundedRect(1.5, 1.5, 297, 23, 11.5)
   }
 }
 
@@ -184,34 +234,39 @@ function gathering(
   const w = width / 3
   switch (entry.gathering) {
     case "fullSofa":
-      g.lineStyle(5, 0xf6c453, 0.9).strokeRoundedRect(4, 4, 382, 158, 24)
+      // A warm halo, softest furthest out.
+      g.lineStyle(9, 0xf6c453, 0.25).strokeRoundedRect(5, 5, 380, 156, 24)
+      g.lineStyle(4, 0xf6c453, 1).strokeRoundedRect(5, 5, 380, 156, 24)
       break
     case "personalSpace":
-      g.fillStyle(0xdff1f7, 0.35).fillCircle(34, 34, 32)
-      g.lineStyle(2, 0xa7d3e3, 0.9).strokeCircle(34, 34, 32)
+      g.fillStyle(0xdff1f7, 0.3).fillCircle(34, 34, 32)
+      g.lineStyle(2.5, 0x5d9ab8, 0.9).strokeCircle(34, 34, 32)
+      g.lineStyle(3, 0xffffff, 0.8).beginPath()
+      g.arc(34, 34, 26, Math.PI * 1.1, Math.PI * 1.4).strokePath()
       break
     case "varietyPack":
-      g.lineStyle(2, 0x7a5a3c, 1).lineBetween(0, 1, w, 1)
-      for (let x = 8, i = 0; x < w - 8; x += 18, i++)
-        g.fillStyle(bunting[i % bunting.length], 1).fillTriangle(
-          x - 6,
-          1,
-          x + 6,
-          1,
-          x,
-          13
-        )
+      g.lineStyle(2, INK, 1).lineBetween(0, 1.5, w, 1.5)
+      for (let x = 9, i = 0; x < w - 8; x += 18, i++) {
+        g.fillStyle(bunting[i % bunting.length], 1)
+        g.fillTriangle(x - 6, 1.5, x + 6, 1.5, x, 12.5)
+        g.lineStyle(1.5, INK, 1).strokeTriangle(x - 6, 1.5, x + 6, 1.5, x, 12.5)
+      }
       break
     case "cuddlePuddle":
-      g.fillStyle(0xf2c6c2, 0.95).fillRoundedRect(0, 0, w, 18, 8)
+      g.fillStyle(0xf2c6c2, 1).fillRoundedRect(1, 1, w - 2, 16, 8)
       g.lineStyle(2, 0xd98f8a, 1)
-      for (let x = 12; x < w - 6; x += 16) g.lineBetween(x, 3, x, 15)
+      for (let x = 12; x < w - 6; x += 16) g.lineBetween(x, 4, x, 14)
+      g.lineStyle(2, INK, 1).strokeRoundedRect(1, 1, w - 2, 16, 8)
       break
     case "napClub":
-      ctx.font = "900 15px system-ui, sans-serif"
-      ctx.fillStyle = "#6b7fd7"
+      ctx.font = displayFont(15)
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
+      ctx.lineJoin = "round"
+      ctx.lineWidth = 3
+      ctx.strokeStyle = OUTLINE
+      ctx.strokeText("z Z", 21, 12.5)
+      ctx.fillStyle = "#a9b6f2"
       ctx.fillText("z Z", 21, 12.5)
       break
   }

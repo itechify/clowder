@@ -37,12 +37,13 @@ All nine House Cats were inspected on the Shelf in seeded Run fixtures, and
 their triggered/signature textures were also drawn on the same Shelf through
 the atlas. The current branch selects idle poses during ordinary play;
 automatic pose switching belongs to the separate presentation work. The
-production atlas passes the offline checks (2.6 MB total precache of 15 MB).
+production atlas passes the offline checks (2.7 MB total precache of 15 MB).
 
 The author reviewed the Run captures (idle Shelf and signature poses) and the
 full contact sheet in the implementation session on 2026-09-25, including the
 Skadi/Freya likenesses, and explicitly approved: “Approve the delivered art”.
 
-Typechecking, Biome, all 265 unit tests, all 28 browser tests, and the production
-build/precache checks pass. The standards review found no violations; the spec
+After integrating the latest HUD and audio changes from main, typechecking,
+Biome, all 273 unit tests, all 48 browser tests, and the production build/precache
+checks pass. The standards review found no violations; the spec
 review's only outstanding item was author review, now satisfied above.

@@ -13,10 +13,11 @@ import {
   personalities,
   rehomeRefund
 } from "../engine"
-import { DISASTER_RED, font } from "./CouchScene"
 import { drawCat, drawHouseCat } from "./characters"
+import { font } from "./fonts"
 import { HEIGHT, RESOLUTION, WIDTH } from "./layout"
 import { presentation } from "./presentation"
+import { DISASTER_RED } from "./roomArt"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 import { drawTreat } from "./treatArt"
