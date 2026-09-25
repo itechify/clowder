@@ -54,7 +54,7 @@ export const shop = {
   offer: (i: number): [number, number] => [56 + i * 92.5, 286],
   /** A House Cat at the `position`th position on the Shelf. */
   shelf: (position: number): [number, number] => [64 + position * 87.5, 422],
-  reroll: [195, 338] as [number, number],
+  reroll: [285, 338] as [number, number],
   rehome: [105, 790] as [number, number],
   leave: [285, 790] as [number, number]
 }

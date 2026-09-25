@@ -8,6 +8,7 @@ import {
   disasterById,
   type HouseCatId,
   houseCat,
+  notEnoughTreats,
   personalities,
   rehomeRefund
 } from "../engine"
@@ -16,12 +17,15 @@ import { drawCat } from "./catArt"
 import { drawHouseCat } from "./houseCatArt"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
+import { drawTreat } from "./treatArt"
 
 /** Below the next Disaster, when one is announced. */
 const SECTION_Y = 110
 const CARD_TOP = 122
 const CARD_HEIGHT = 190
-const REROLL_BUTTON = { x: WIDTH / 2, y: 338, w: 150, h: 40 }
+/** The Treats to spend, just below the offers, beside Reroll. */
+const TREAT_TOTAL = { x: 105, y: 338, w: 170, h: 40 }
+const REROLL_BUTTON = { x: 285, y: 338, w: 170, h: 40 }
 const SHELF_LABEL_Y = 376
 /** The top of the Shelf's plank. */
 const SHELF_Y = 442
@@ -36,6 +40,51 @@ const REHOME_BUTTON = { x: 105, y: 790, w: 170, h: 58 }
 const LEAVE_BUTTON = { x: 285, y: 790, w: 170, h: 58 }
 
 type Area = { x: number; y: number; w: number; h: number }
+type AddToLayer = <T extends Phaser.GameObjects.GameObject>(object: T) => T
+/**
+ * Whether a button may be tapped; one the engine refuses for want of Treats
+ * looks different from one refused for any other reason.
+ */
+type ButtonState = "ready" | "unaffordable" | "unavailable"
+/** What a button reads, and how it is set. */
+type ButtonLabel = {
+  text: string
+  /** Any change to the player's Treats: a cost is negative, a gain positive. */
+  treats?: number
+  size?: number
+  /** The Treats go below the text rather than beside it, on a narrow button. */
+  stacked?: boolean
+}
+/** Something to lay out in a row, with the width it takes up. */
+type RowPiece = [
+  (
+    | Phaser.GameObjects.Text
+    | Phaser.GameObjects.Graphics
+    | Phaser.GameObjects.Container
+  ),
+  number
+]
+
+/** A change to the player's Treats with a true minus sign: "−3" or "+2". */
+const signedTreats = (change: number) =>
+  change < 0 ? `−${-change}` : `+${change}`
+
+/** How each button state is coloured; a cost and a gain read differently. */
+const buttonColours = {
+  ready: { fill: 0x4a3426, text: "#fdf6ea", cost: "#ffd7a8", gain: "#bfe8a0" },
+  unaffordable: {
+    fill: 0xf1e2cf,
+    text: "#9c8672",
+    cost: "#8a3a2e",
+    gain: "#8a3a2e"
+  },
+  unavailable: {
+    fill: 0x9c8672,
+    text: "#e6d8c6",
+    cost: "#e6d8c6",
+    gain: "#e6d8c6"
+  }
+} satisfies Record<ButtonState, unknown>
 /** What is picked out to Rehome: a Roster Cat, or a House Cat on the Shelf. */
 type Picked = { cat: CatId } | { houseCat: HouseCatId } | null
 
@@ -139,14 +188,17 @@ export class ShopScene extends Phaser.Scene {
       this.layer.add(object)
       return object
     }
-    const can = (action: Action) => applyAction(run, action).ok
-
+    /** Whether the engine allows an action, or refuses it for want of Treats. */
+    const stateOf = (action: Action | null): ButtonState => {
+      if (!action) return "unavailable"
+      const result = applyAction(run, action)
+      return result.ok
+        ? "ready"
+        : result.reason === notEnoughTreats
+          ? "unaffordable"
+          : "unavailable"
+    }
     add(this.add.text(20, 22, "Shop", font(24, "#4a3426", "800")))
-    add(
-      this.add
-        .text(WIDTH - 20, 26, `Treats ${run.treats}`, font(18))
-        .setOrigin(1, 0)
-    )
     const next = run.night.number + 1
     const disaster = shop.nextDisaster && disasterById(shop.nextDisaster)
     add(
@@ -211,6 +263,20 @@ export class ShopScene extends Phaser.Scene {
       w: cardWidth - 10,
       h: 36
     })
+    /** The button on an offer card, with the offer's price. */
+    const offerButton = (
+      x: number,
+      text: string,
+      action: Action,
+      price: number
+    ) =>
+      this.button(
+        buttonArea(x),
+        { text, treats: -price, size: 13, stacked: true },
+        stateOf(action),
+        () => session.apply(action),
+        add
+      )
     const section = (label: string, from: number, count: number) => {
       if (count > 0)
         add(
@@ -247,14 +313,7 @@ export class ShopScene extends Phaser.Scene {
           .text(x, CARD_TOP + 108, coatAndPersonality(cat), font(11))
           .setOrigin(0.5)
       )
-      this.button(
-        buttonArea(x),
-        `Adopt ${adoptPrice}`,
-        can({ type: "adopt", cat: cat.id }),
-        () => session.apply({ type: "adopt", cat: cat.id }),
-        add,
-        15
-      )
+      offerButton(x, "Adopt", { type: "adopt", cat: cat.id }, adoptPrice)
     })
     this.houseCatCards.forEach((id, i) => {
       const x = xs[this.offerCards.length + i]
@@ -285,22 +344,20 @@ export class ShopScene extends Phaser.Scene {
             .setLineSpacing(-2)
         ).height
       }
-      this.button(
-        buttonArea(x),
-        `Recruit ${run.config.shop.recruitPrices[id]}`,
-        can({ type: "recruit", houseCat: id }),
-        () => session.apply({ type: "recruit", houseCat: id }),
-        add,
-        14
+      offerButton(
+        x,
+        "Recruit",
+        { type: "recruit", houseCat: id },
+        run.config.shop.recruitPrices[id]
       )
     })
+    this.drawTreatTotal(run.treats, add)
     this.button(
       REROLL_BUTTON,
-      `Reroll ${shop.rerollPrice}`,
-      can({ type: "reroll" }),
+      { text: "Reroll", treats: -shop.rerollPrice, size: 18 },
+      stateOf({ type: "reroll" }),
       () => session.apply({ type: "reroll" }),
-      add,
-      18
+      add
     )
 
     // The Shelf, where a House Cat may be moved or picked out to Rehome.
@@ -375,10 +432,13 @@ export class ShopScene extends Phaser.Scene {
         : null
     this.button(
       REHOME_BUTTON,
-      pickedHouseCat
-        ? `Rehome +${rehomeRefund(run.config, pickedHouseCat)}`
-        : `Rehome ${rehomePrice}`,
-      rehome !== null && can(rehome),
+      {
+        text: "Rehome",
+        treats: pickedHouseCat
+          ? rehomeRefund(run.config, pickedHouseCat)
+          : -rehomePrice
+      },
+      stateOf(rehome),
       () => {
         if (rehome) session.apply(rehome)
       },
@@ -386,8 +446,8 @@ export class ShopScene extends Phaser.Scene {
     )
     this.button(
       LEAVE_BUTTON,
-      "Leave Shop",
-      can({ type: "leaveShop" }),
+      { text: "Leave Shop" },
+      stateOf({ type: "leaveShop" }),
       () => session.apply({ type: "leaveShop" }),
       add
     )
@@ -422,27 +482,106 @@ export class ShopScene extends Phaser.Scene {
     if (!action || !session.apply(action).ok) this.draw()
   }
 
+  /** The Treats there are to spend, on a golden pill below the offers. */
+  private drawTreatTotal(treats: number, add: AddToLayer) {
+    const { x, y, w, h } = TREAT_TOTAL
+    add(this.add.graphics())
+      .fillStyle(0xf6d58e, 1)
+      .fillRoundedRect(x - w / 2, y - h / 2, w, h, h / 2)
+      .lineStyle(2, 0xb07a3a, 1)
+      .strokeRoundedRect(x - w / 2, y - h / 2, w, h, h / 2)
+    add(
+      this.inline([
+        [drawTreat(this, 22), 22],
+        this.rowText(`${treats} Treats`, font(18, "#4a3426", "800"))
+      ])
+    ).setPosition(x, y)
+  }
+
+  /** Text centred on its origin, to lay out in a row. */
+  private rowText(
+    content: string,
+    style: Phaser.Types.GameObjects.Text.TextStyle
+  ): RowPiece {
+    const text = this.add.text(0, 0, content, style).setOrigin(0.5)
+    return [text, text.width]
+  }
+
+  /**
+   * Lays pieces out in a row centred on the origin, each piece centred on its
+   * own origin, like the treat. The row is as wide as its pieces.
+   */
+  private inline(pieces: RowPiece[]) {
+    const gap = 5
+    const total =
+      pieces.reduce((sum, [, width]) => sum + width, 0) +
+      gap * (pieces.length - 1)
+    let left = -total / 2
+    for (const [piece, width] of pieces) {
+      piece.setPosition(left + width / 2, 0)
+      left += width + gap
+    }
+    return this.add
+      .container(
+        0,
+        0,
+        pieces.map(([piece]) => piece)
+      )
+      .setSize(total, 0)
+  }
+
+  /**
+   * A pill button. Any change to the player's Treats shows as a treat and a
+   * signed amount; a cost the player cannot afford is outlined in red.
+   */
   private button(
     area: Area,
-    label: string,
-    ready: boolean,
+    label: ButtonLabel,
+    state: ButtonState,
     onTap: () => void,
-    add: <T extends Phaser.GameObjects.GameObject>(object: T) => T,
-    size = 22
+    add: AddToLayer
   ) {
+    const { text, treats, size = 22, stacked = false } = label
+    const colour = buttonColours[state]
     const g = this.add.graphics()
-    g.fillStyle(ready ? 0x4a3426 : 0x9c8672, 1).fillRoundedRect(
-      -area.w / 2,
-      -area.h / 2,
+    const [left, top, radius] = [-area.w / 2, -area.h / 2, area.h / 2]
+    g.fillStyle(colour.fill, 1).fillRoundedRect(
+      left,
+      top,
       area.w,
       area.h,
-      area.h / 2
+      radius
     )
-    const text = this.add
-      .text(0, 0, label, font(size, ready ? "#fdf6ea" : "#e6d8c6", "800"))
-      .setOrigin(0.5)
-    const button = add(this.add.container(area.x, area.y, [g, text]))
-    if (ready)
+    if (state === "unaffordable")
+      g.lineStyle(2, DISASTER_RED, 1).strokeRoundedRect(
+        left,
+        top,
+        area.w,
+        area.h,
+        radius
+      )
+    const captionPiece = this.rowText(text, font(size, colour.text, "800"))
+    const [caption] = captionPiece
+    const pieces: Phaser.GameObjects.GameObject[] = [g]
+    if (treats === undefined) pieces.push(caption)
+    else {
+      const amountSize = stacked ? size + 1 : size
+      const amountColour = treats < 0 ? colour.cost : colour.gain
+      const amount = this.inline([
+        [drawTreat(this, amountSize), amountSize],
+        this.rowText(
+          signedTreats(treats),
+          font(amountSize, amountColour, "800")
+        )
+      ])
+      if (stacked) {
+        caption.setPosition(0, -area.h / 4 + 1)
+        amount.setPosition(0, area.h / 4 - 1)
+        pieces.push(caption, amount)
+      } else pieces.push(this.inline([captionPiece, [amount, amount.width]]))
+    }
+    const button = add(this.add.container(area.x, area.y, pieces))
+    if (state === "ready")
       button
         .setSize(area.w, area.h)
         .setInteractive({ useHandCursor: true })

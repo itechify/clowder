@@ -168,13 +168,27 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.treats).toBe(5)
   const card = before.shop!.houseCatOffers.indexOf("doNotTouch")
+  // Every price is a signed cost, read just after its button's label, beside
+  // the Treats there are to spend.
+  const texts = () => page.evaluate(() => window.__clowder!.texts())
+  /** The text drawn right after each of a label's appearances. */
+  const after = async (label: string) =>
+    (await texts()).filter((_, i, all) => all[i - 1] === label)
+  expect(await texts()).toContain("5 Treats")
+  expect(await after("Adopt")).toContain("−3")
+  expect(await after("Recruit")).toContain("−5")
+  expect(await after("Reroll")).toEqual(["−1"])
+  expect(await after("Rehome")).toEqual(["−1"])
 
   await tap(page, ...shop.offer(before.shop!.catOffers.length + card))
   const recruited = await page.evaluate(() => window.__clowder!.run())
   expect(recruited.shelf).toEqual(["doNotTouch"])
   expect(recruited.treats).toBe(0)
+  expect(await texts()).toContain("0 Treats")
 
+  // Rehoming a House Cat refunds Treats: a signed gain.
   await tap(page, ...shop.shelf(0))
+  expect(await after("Rehome")).toEqual(["+2"])
   await tap(page, ...shop.rehome)
   const rehomed = await page.evaluate(() => window.__clowder!.run())
   expect(rehomed.shelf).toEqual([])

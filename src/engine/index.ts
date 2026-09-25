@@ -39,7 +39,7 @@ export {
   type WarmUp,
   type WholePlayEffect
 } from "./scoring"
-export { rehomeRefund, type ShopAction } from "./shop"
+export { notEnoughTreats, rehomeRefund, type ShopAction } from "./shop"
 export {
   type BestPlay,
   type RunStats,
