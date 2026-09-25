@@ -388,11 +388,11 @@ describe("Recruit", () => {
     ])
   })
   it("is rejected with a full Shelf", () => {
-    const cheap = {
+    const shop = {
       ...defaultConfig.shop,
       recruitPrices: { boxGoblin: 1, doNotTouch: 1 }
     }
-    const run = playOne(easyRun(1, { shelfSlots: 1, shop: cheap })).run
+    const run = playOne(easyRun(1, { shelfSize: 1, shop })).run
     const [first, second] = run.shop!.houseCatOffers
     const full = accepted(run, { type: "recruit", houseCat: first }).run
 
@@ -455,13 +455,14 @@ describe("Recruit", () => {
 })
 
 describe("Rehoming a House Cat", () => {
-  const cheap = {
+  /** An odd price, to show the refund rounds down. */
+  const oddPrices = {
     ...defaultConfig.shop,
     recruitPrices: { boxGoblin: 3, doNotTouch: 5 }
   }
 
   it("removes it from the Shelf and refunds half its price, rounded down", () => {
-    let run = playOne(easyRun(1, { shop: cheap })).run
+    let run = playOne(easyRun(1, { shop: oddPrices })).run
     run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
     expect(run.treats).toBe(2)
 
@@ -478,7 +479,7 @@ describe("Rehoming a House Cat", () => {
   })
 
   it("is not limited like Rehoming a Cat", () => {
-    let run = playOne(easyRun(1, { shop: cheap })).run
+    let run = playOne(easyRun(1, { shop: oddPrices })).run
     run = accepted(run, { type: "rehome", cat: run.roster[0].id }).run
     run = accepted(run, { type: "recruit", houseCat: "boxGoblin" }).run
 

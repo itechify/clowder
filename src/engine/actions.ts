@@ -20,8 +20,8 @@ export type Action =
   | { type: "unseat"; cat: CatId }
   | { type: "play" }
   | { type: "redraw"; cats: CatId[] }
-  /** Moves a House Cat to another slot; the others close up around it. */
-  | { type: "reorderShelf"; houseCat: HouseCatId; slot: number }
+  /** Moves a House Cat to another position; the others close up around it. */
+  | { type: "reorderShelf"; houseCat: HouseCatId; position: number }
   | ShopAction
 
 /** A Play's Purr and Mult so far, as its Score builds up event by event. */
@@ -137,14 +137,14 @@ export function applyAction(run: Run, action: Action): ActionResult {
 
 function reorderShelf(
   run: Run,
-  { houseCat, slot }: { houseCat: HouseCatId; slot: number }
+  { houseCat, position }: Extract<Action, { type: "reorderShelf" }>
 ): ActionResult {
   if (!run.shelf.includes(houseCat))
     return { ok: false, run, reason: "That House Cat is not on the Shelf" }
-  if (!Number.isInteger(slot) || !(slot in run.shelf))
-    return { ok: false, run, reason: "There is no such slot on the Shelf" }
+  if (!Number.isInteger(position) || !(position in run.shelf))
+    return { ok: false, run, reason: "There is no such position on the Shelf" }
   const shelf = run.shelf.filter((id) => id !== houseCat)
-  shelf.splice(slot, 0, houseCat)
+  shelf.splice(position, 0, houseCat)
   return {
     ok: true,
     run: { ...run, shelf },

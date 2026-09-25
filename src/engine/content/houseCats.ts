@@ -19,7 +19,7 @@ export type HouseCat = {
   times?: (couch: Couch) => number | null
 }
 
-const played = (couch: Couch) => couch.filter((cat) => cat !== null).length
+const catsPlayed = (couch: Couch) => couch.filter((cat) => cat !== null).length
 
 /** Every House Cat that may be Recruited, in no particular order. */
 export const houseCats: readonly HouseCat[] = [
@@ -28,7 +28,7 @@ export const houseCats: readonly HouseCat[] = [
     name: "Do Not Touch",
     ability: "+2 Mult per empty Seat",
     wholePlayMult: (couch) => {
-      const empty = couch.length - played(couch)
+      const empty = couch.length - catsPlayed(couch)
       return empty > 0 ? 2 * empty : null
     }
   },
@@ -36,7 +36,7 @@ export const houseCats: readonly HouseCat[] = [
     id: "boxGoblin",
     name: "Box Goblin",
     ability: "×2 Mult if exactly three Cats are played",
-    times: (couch) => (played(couch) === 3 ? 2 : null)
+    times: (couch) => (catsPlayed(couch) === 3 ? 2 : null)
   }
 ]
 

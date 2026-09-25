@@ -119,7 +119,7 @@ export const font = (size: number, colour = "#4a3426", weight = "600") => ({
 export class CouchScene extends Phaser.Scene {
   /** The Cat picked up from the Hand, waiting for a Seat. */
   private held: CatId | null = null
-  /** The House Cat picked up from the Shelf, waiting for another slot. */
+  /** The House Cat picked up from the Shelf, waiting for another position. */
   private heldHouseCat: HouseCatId | null = null
   /** The last Play's Couch, where its Cats doze off once the Run ends. */
   private lastCouch: (CatId | null)[] = []
@@ -356,11 +356,11 @@ export class CouchScene extends Phaser.Scene {
     this.draw()
   }
 
-  /** Picks a House Cat up from the Shelf, or puts one down in another slot. */
-  private tapShelfSlot(slot: number) {
+  /** Picks a House Cat up from the Shelf, or puts one down in another position. */
+  private tapShelfPosition(position: number) {
     if (this.redrawing) return
     this.held = null
-    const { held, action } = tapShelf(session.run, this.heldHouseCat, slot)
+    const { held, action } = tapShelf(session.run, this.heldHouseCat, position)
     this.heldHouseCat = held
     if (!action || !session.apply(action).ok) this.draw()
   }
@@ -567,7 +567,7 @@ export class CouchScene extends Phaser.Scene {
       size: SHELF_CAT_SIZE,
       held: this.heldHouseCat,
       notes: shelfNotes(preview),
-      onTap: (slot) => this.tapShelfSlot(slot)
+      onTap: (position) => this.tapShelfPosition(position)
     })
 
     // A Cat chosen to Redraw glows cool, like one about to leave.
@@ -633,7 +633,7 @@ export class CouchScene extends Phaser.Scene {
     // from the Shelf does.
     const picked = this.heldHouseCat && houseCat(this.heldHouseCat)
     const breakdown = picked
-      ? `${picked.name}: ${picked.ability}. Tap a slot to move it.`
+      ? `${picked.name}: ${picked.ability}. Tap elsewhere on the Shelf to move it.`
       : multBreakdown(preview)
     if (breakdown)
       add(

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { houseCat } from "../src/engine"
 import { boot, layout, shop, tap } from "./scene"
 
 test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
@@ -59,13 +60,7 @@ test("plays a seeded Run through to its results", async ({ page }) => {
   expect(outcome.shelf.length).toBeGreaterThan(0)
   await expect(page.getByText("House Cats")).toBeVisible()
   await expect(
-    page.getByText(
-      outcome.shelf
-        .map(
-          (id) => ({ boxGoblin: "Box Goblin", doNotTouch: "Do Not Touch" })[id]
-        )
-        .join(", ")
-    )
+    page.getByText(outcome.shelf.map((id) => houseCat(id).name).join(", "))
   ).toBeVisible()
 
   await page.getByRole("button", { name: "New Household" }).click()

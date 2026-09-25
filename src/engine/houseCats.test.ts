@@ -64,12 +64,12 @@ describe("Box Goblin", () => {
 
   it("applies after whole-Play Mult, whatever the Shelf order", () => {
     const specs = ["aloof", null, "clingy", null, "aloof"] as const
-    const score = (shelf: ("boxGoblin" | "doNotTouch")[]) =>
+    const breakdown = (shelf: HouseCatId[]) =>
       previewPlay(runWithCouch([...specs], { shelf }))
 
     // (1 + Personal Space 2 + Do Not Touch 4) × 2.
-    expect(score(["boxGoblin", "doNotTouch"]).mult).toBe(14)
-    expect(score(["doNotTouch", "boxGoblin"]).mult).toBe(14)
+    expect(breakdown(["boxGoblin", "doNotTouch"]).mult).toBe(14)
+    expect(breakdown(["doNotTouch", "boxGoblin"]).mult).toBe(14)
   })
 })
 
@@ -109,13 +109,13 @@ describe("a Play with House Cats", () => {
 })
 
 describe("reordering the Shelf", () => {
-  it("moves a House Cat to another slot during a Night", () => {
+  it("moves a House Cat to another position during a Night", () => {
     const run = withShelf(["boxGoblin", "doNotTouch"])
 
     const { run: after, events } = accepted(run, {
       type: "reorderShelf",
       houseCat: "doNotTouch",
-      slot: 0
+      position: 0
     })
 
     expect(after.shelf).toEqual(["doNotTouch", "boxGoblin"])
@@ -135,21 +135,21 @@ describe("reordering the Shelf", () => {
     run = accepted(run, {
       type: "reorderShelf",
       houseCat: "boxGoblin",
-      slot: 1
+      position: 1
     }).run
     run = accepted(run, { type: "leaveShop" }).run
 
     expect(run.shelf).toEqual(["doNotTouch", "boxGoblin"])
   })
 
-  it("is rejected for a House Cat not on the Shelf, or a slot beyond it", () => {
+  it("is rejected for a House Cat not on the Shelf, or a position beyond it", () => {
     const run = withShelf(["boxGoblin"])
 
     for (const action of [
-      { type: "reorderShelf", houseCat: "doNotTouch", slot: 0 },
-      { type: "reorderShelf", houseCat: "boxGoblin", slot: 1 },
-      { type: "reorderShelf", houseCat: "boxGoblin", slot: -1 },
-      { type: "reorderShelf", houseCat: "boxGoblin", slot: 0.5 }
+      { type: "reorderShelf", houseCat: "doNotTouch", position: 0 },
+      { type: "reorderShelf", houseCat: "boxGoblin", position: 1 },
+      { type: "reorderShelf", houseCat: "boxGoblin", position: -1 },
+      { type: "reorderShelf", houseCat: "boxGoblin", position: 0.5 }
     ] as const)
       expect(applyAction(run, action).ok).toBe(false)
   })
@@ -161,8 +161,11 @@ describe("reordering the Shelf", () => {
     }
 
     expect(
-      applyAction(run, { type: "reorderShelf", houseCat: "boxGoblin", slot: 1 })
-        .ok
+      applyAction(run, {
+        type: "reorderShelf",
+        houseCat: "boxGoblin",
+        position: 1
+      }).ok
     ).toBe(false)
   })
 })

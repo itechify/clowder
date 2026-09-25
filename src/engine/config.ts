@@ -13,7 +13,7 @@ export type Config = {
   handSize: number
   seats: number
   /** The most House Cats the Shelf holds. */
-  shelfSlots: number
+  shelfSize: number
   playsPerNight: number
   redrawsPerNight: number
   /** The most Cats one Redraw may swap. */
@@ -56,7 +56,7 @@ export const defaultConfig: Config = {
   },
   handSize: 8,
   seats: 5,
-  shelfSlots: 4,
+  shelfSize: 4,
   playsPerNight: 3,
   redrawsPerNight: 2,
   catsPerRedraw: 3,

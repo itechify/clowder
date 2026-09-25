@@ -98,12 +98,11 @@ export class ShopScene extends Phaser.Scene {
         this.scene.start("couch")
         return
       }
-      const { picked } = this
+      const cat = this.pickedCat()
+      const houseCat = this.pickedHouseCat()
       if (
-        picked &&
-        ("cat" in picked
-          ? !session.run.roster.some((cat) => cat.id === picked.cat)
-          : !session.run.shelf.includes(picked.houseCat))
+        (cat && !session.run.roster.some((c) => c.id === cat)) ||
+        (houseCat && !session.run.shelf.includes(houseCat))
       )
         this.picked = null
       this.draw()
@@ -279,20 +278,18 @@ export class ShopScene extends Phaser.Scene {
     )
 
     // The Shelf, where a House Cat may be moved or picked out to Rehome.
-    const { picked } = this
-    const pickedHouseCat =
-      picked && "houseCat" in picked ? picked.houseCat : null
-    const { shelfSlots } = run.config
+    const pickedHouseCat = this.pickedHouseCat()
+    const { shelfSize } = run.config
     add(
       this.add
         .text(
           WIDTH / 2,
           SHELF_LABEL_Y,
           pickedHouseCat
-            ? `Rehome ${houseCat(pickedHouseCat).name} for ${rehomeRefund(run.config, pickedHouseCat)} Treats back, or tap a slot to move it.`
+            ? `Rehome ${houseCat(pickedHouseCat).name} for ${rehomeRefund(run.config, pickedHouseCat)} Treats back, or tap elsewhere on the Shelf to move it.`
             : run.shelf.length > 0
-              ? `Shelf ${run.shelf.length}/${shelfSlots}. Tap a House Cat to move or Rehome it.`
-              : `Shelf 0/${shelfSlots}. Recruit a House Cat to join it.`,
+              ? `Shelf ${run.shelf.length}/${shelfSize}. Tap a House Cat to move or Rehome it.`
+              : `Shelf 0/${shelfSize}. Recruit a House Cat to join it.`,
           {
             ...font(13, "#4a3426", "700"),
             align: "center",
@@ -306,14 +303,12 @@ export class ShopScene extends Phaser.Scene {
       y: SHELF_Y,
       size: SHELF_CAT_SIZE,
       held: pickedHouseCat,
-      onTap: (slot) => this.tapShelfSlot(slot)
+      onTap: (position) => this.tapShelfPosition(position)
     })
 
     // The Roster, where a Cat may be picked out to Rehome.
     const rehomePrice = run.config.shop.rehomeCatPrice
-    const pickedCat = run.roster.find(
-      (cat) => picked && "cat" in picked && cat.id === picked.cat
-    )
+    const pickedCat = run.roster.find((cat) => cat.id === this.pickedCat())
     add(
       this.add
         .text(
@@ -372,22 +367,30 @@ export class ShopScene extends Phaser.Scene {
     )
   }
 
+  private pickedCat(): CatId | null {
+    return this.picked && "cat" in this.picked ? this.picked.cat : null
+  }
+
+  private pickedHouseCat(): HouseCatId | null {
+    return this.picked && "houseCat" in this.picked
+      ? this.picked.houseCat
+      : null
+  }
+
   /** Picks a Cat out to Rehome, or puts it back; the engine decides if it may go. */
   private tapRosterCat(cat: CatId) {
-    const { picked } = this
-    if (picked && "cat" in picked && picked.cat === cat) this.picked = null
+    if (this.pickedCat() === cat) this.picked = null
     else if (applyAction(session.run, { type: "rehome", cat }).ok)
       this.picked = { cat }
     this.draw()
   }
 
   /** Picks a House Cat out to move or Rehome, or moves the one picked out. */
-  private tapShelfSlot(slot: number) {
-    const { picked } = this
+  private tapShelfPosition(position: number) {
     const { held, action } = tapShelf(
       session.run,
-      picked && "houseCat" in picked ? picked.houseCat : null,
-      slot
+      this.pickedHouseCat(),
+      position
     )
     this.picked = held ? { houseCat: held } : null
     if (!action || !session.apply(action).ok) this.draw()

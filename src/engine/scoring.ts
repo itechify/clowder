@@ -121,8 +121,9 @@ export function previewPlay(run: Run): ScoreBreakdown {
   const timesEffects: TimesEffect[] = []
   for (const id of run.shelf) {
     const { name, times } = houseCat(id)
-    const by = times?.(couch) ?? null
-    if (by !== null) timesEffects.push({ houseCat: id, name, times: by })
+    const factor = times?.(couch) ?? null
+    if (factor !== null)
+      timesEffects.push({ houseCat: id, name, times: factor })
   }
   const mult = timesEffects.reduce(
     (product, effect) => product * effect.times,
