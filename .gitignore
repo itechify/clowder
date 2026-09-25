@@ -4,3 +4,6 @@ test-results/
 playwright-report/
 *.log
 .wrangler/
+
+# Photos of the author's own cats, attached to Astra generations only.
+art/reference/photos/

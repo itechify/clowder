@@ -27,7 +27,7 @@ export const CHARACTER_SPAN = 384
  * Where a character sits (its base) on its canvas: bottom centre, with 64
  * pixels beneath for a tail dangling over the Shelf's edge.
  */
-const CHARACTER_BASE = { x: 0.5, y: 448 / CHARACTER_CANVAS }
+export const CHARACTER_BASE = { x: 0.5, y: 448 / CHARACTER_CANVAS }
 
 /** The room, its furniture, and the UI are authored at 3× the 390×844 design size. */
 export const ROOM_SCALE = 3
@@ -37,6 +37,10 @@ export const MOON_PHASES = defaultConfig.nights
 /** Freya warms up in stages, from reserved to affectionate. */
 export const FREYA_STAGES = 3
 
+/**
+ * A pose turned to one side, like a reacting Cat's, faces the viewer's right;
+ * the game mirrors it to face left.
+ */
 export type CatPose = "content" | "reacting"
 export type HouseCatPose =
   | "idle"
