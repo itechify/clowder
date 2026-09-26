@@ -337,12 +337,12 @@ function* entries(): Generator<ArtEntry> {
     key: art.room.stormClouds,
     ...room(150, 44)
   }
-  // Standing open between the Couch and the rug, the offers waiting in it.
+  // Standing open where the Couch stands by night, the offers waiting in it.
   yield {
     kind: "room",
     piece: "frontDoor",
     key: art.room.frontDoor,
-    ...room(372, 100, bottomCentre)
+    ...room(372, 130, bottomCentre)
   }
   // Pinned to the wall before a Disaster Night; the game writes the
   // Disaster and its rule on it.

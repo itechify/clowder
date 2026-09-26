@@ -27,6 +27,7 @@ import { addArt } from "./art"
 import { CAT_BASE } from "./catArt"
 import { drawCat, drawGrowthBadge, drawHouseCat } from "./characters"
 import { display, font, numbers, OUTLINE } from "./fonts"
+import { HOUSE_CAT_BASE } from "./houseCatArt"
 import {
   doorwayX,
   fanX,
@@ -35,8 +36,6 @@ import {
   RESOLUTION,
   RUG_ROWS,
   rugX,
-  SEAT_Y,
-  SEATED_SIZE,
   SHELF_CAT_SIZE,
   SHELF_Y,
   seatX,
@@ -52,21 +51,19 @@ import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 import { drawTreat } from "./treatArt"
 
-/** The Shop's piles sit on five Seats and in four positions to a rug row. */
-const PILE_SEATS = 5
-const PILE_RUG_POSITIONS = 4
 /**
- * The piles on each rug row: their centres' height, and how big they are
- * shown, a little further back than the Hand lies, clear of the doorway.
+ * Your household, on the rug and set apart from the offers: its heading,
+ * then its grid of piles, a column per Coat and a row per Personality, each
+ * pile's Cat this big.
  */
-const PILE_RUG_ROWS = {
-  back: { y: 624, size: 56 },
-  front: { y: 702, size: 62 }
-} as const
-/** The windowsill's two spots, along the window's bottom frame. */
-const SILL = { xs: [58, 104], base: 137, size: 38 }
+const HOUSEHOLD = {
+  headingY: 522,
+  columnsX: [64, 130.5, 197, 263.5, 330],
+  rowsY: [580, 640, 700],
+  size: 48
+}
 /** A pile's count, on a badge at its Cat's feet. */
-const COUNT_BADGE = { dx: 0.4, dy: 0.34 }
+const COUNT_BADGE = { dx: 0.44, dy: 0.34 }
 /** The sun's place in the window, where the moon is by night. */
 const SUN = { x: 162, y: 88 }
 /** How far below their places the sun and moon rise from and set to. */
@@ -76,18 +73,28 @@ const CLOUDS = { x: WINDOW.x, y: 88, drift: 6, ms: 2600 }
 /** How warm the lights are by day, over the room as it is by night. */
 const WARM = { colour: 0xffc46b, alpha: 0.1 }
 const DUSK = { colour: NIGHT_SKY, alpha: 0.3 }
-/** The sunbeam from the front door, lying across the rug. */
-const SUNBEAM = { x: WIDTH / 2, y: 598 }
+/** The sunbeam from the front door, lying across the floor before it. */
+const SUNBEAM = { x: WIDTH / 2, y: 470 }
+/** What can be done with the Shelf, just beneath it. */
+const SHELF_PROMPT_Y = 240
 /**
- * The front door, standing open between the Couch and the rug: the bottom
- * of its doorway; where each offer stands in it, its tag, and its button.
+ * At the door, where the Couch stands by night: its heading, with Reroll
+ * beside it; the bottom of the open doorway; the floor each offer stands on
+ * in it, how big it is shown, and its tag and button beneath.
  */
-const DOOR_Y = 526
-const OFFER = { y: 470, catSize: 46, houseCatSize: 42, tagY: 490, buttonY: 566 }
+const DOOR_HEADING_Y = 262
+const DOOR_Y = 410
+const OFFER = {
+  baseY: 402,
+  catSize: 56,
+  houseCatSize: 50,
+  tagY: 408,
+  button: { y: 480, width: 84, height: 48 }
+}
 /** How wide a tag's words may run, and how tall, inside its border. */
-const TAG_TEXT = { width: 78, height: 40 }
-/** The line saying what can be done, just above the Couch's back. */
-const PROMPT_Y = 244
+const TAG_TEXT = { width: 78, height: 34 }
+/** A section's heading, on a pill: its height and padding. */
+const HEADING = { height: 24, padding: 10, left: 16 }
 /** An opened pile's fan: its Cats' size, spacing, and panel. */
 const FAN = {
   size: 44,
@@ -99,20 +106,21 @@ const FAN = {
 }
 /** The room dims behind an opened pile's fan. */
 const SCRIM = { colour: 0x2e1f19, alpha: 0.35 }
-/** How far above an opened pile its fan sits, or below one on the windowsill. */
+/** How far above an opened pile its fan sits. */
 const FAN_ABOVE = 96
-const FAN_BELOW = 124
 /**
- * The buttons along the bottom, scaled from the living room's: Reroll and
- * Rehome from Redraw's, Nightfall from Get Comfy's; each offer's from
- * Redraw's, smaller.
+ * The buttons, in the living room's art: Reroll beside the door's heading,
+ * and along the bottom Rehome, as big as Redraw, and Nightfall, as big as
+ * Get Comfy.
  */
-const BUTTON_Y = 800
-const BUTTON_SCALE = 46 / 58
-const REROLL_X = 50
-const REHOME_X = 142
-const NIGHTFALL_X = 291
-const OFFER_BUTTON_SCALE = 84 / 108
+const REROLL = { x: 318, y: DOOR_HEADING_Y, width: 108, height: 40 }
+const REHOME = { x: 70, y: 800, width: 108, height: 58 }
+const NIGHTFALL = { x: 262, y: 800, width: 230, height: 58 }
+/**
+ * Where a button's words fit on its face, above its lip: as fractions of
+ * its width and height, and how far above its centre.
+ */
+const BUTTON_FACE = { width: 0.72, height: 0.5, above: 0.07 }
 /** How long each transition between night and day takes. */
 const TRANSITION_MS = 1200
 
@@ -139,6 +147,12 @@ type Move = {
 const signedTreats = (change: number) =>
   change < 0 ? `−${-change}` : `+${change}`
 
+/** Where an offer's Cat or House Cat is centred, standing in the doorway. */
+const visitorY = (offer: Offer) =>
+  "cat" in offer
+    ? OFFER.baseY - OFFER.catSize * CAT_BASE
+    : OFFER.baseY - OFFER.houseCatSize * HOUSE_CAT_BASE
+
 /** The colour of a price on a button, by its state; a gain reads differently. */
 const priceColour = (state: ButtonState, treats: number) =>
   state === "unaffordable"
@@ -150,9 +164,10 @@ const priceColour = (state: ButtonState, treats: number) =>
         : "#bfe8a0"
 
 /**
- * The Shop between Nights, in the living room by day: the Roster lounging as
- * one pile per Kind, offers waiting in the open front door, the Shelf above
- * the Couch, and the next Disaster brewing in the window. Adopt or Recruit an
+ * The Shop between Nights, in the living room by day, in two parts: at the
+ * door, where the Couch stands by night, the offers waiting to come in; and
+ * on the rug, your household, one pile per Kind. The Shelf stays where it
+ * lives, and the next Disaster brews in the window. Adopt or Recruit an
  * offer, Rehome a Cat from its pile or a House Cat from the Shelf, rearrange
  * the Shelf, Reroll the offers, or leave as night falls. It draws what the
  * Shop's staging shows and sends taps to the Session as actions; the engine
@@ -167,6 +182,8 @@ export class ShopScene extends Phaser.Scene {
   private staged: ShopStaging | null = null
   /** The room by day, over the room by night, and what shows only by day. */
   private day!: {
+    /** The Couch and its Seats' pads, which step aside for the door by day. */
+    couch: Phaser.GameObjects.GameObject[]
     window: Phaser.GameObjects.Image
     sun: Phaser.GameObjects.Image
     warmth: Phaser.GameObjects.Rectangle
@@ -208,8 +225,10 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0)
       .setInteractive()
       .on("pointerdown", () => this.tapElsewhere())
-    drawFurniture(this, seatX(PILE_SEATS))
-    this.day = this.drawDay()
+    const { couch } = drawFurniture(this, seatX(session.run.config.seats))
+    // By day the Couch makes way for the open front door.
+    for (const piece of couch) Object.assign(piece, { alpha: 0 })
+    this.day = { couch, ...this.drawDay() }
     addArt(this, art.room.treatJar, TREAT_JAR.x, TREAT_JAR.y)
     this.treatCount = this.add
       .text(TREAT_COUNT.x, TREAT_COUNT.y, "", numbers(30, "#f6c453"))
@@ -227,11 +246,12 @@ export class ShopScene extends Phaser.Scene {
       }
       const cat = this.pickedCat()
       const houseCat = this.pickedHouseCat()
-      if (
-        (cat && !session.run.roster.some((c) => c.id === cat)) ||
-        (houseCat && !session.run.shelf.includes(houseCat))
-      )
+      // Once the Cat picked out is Rehomed, its pile closes too.
+      if (cat && !session.run.roster.some((c) => c.id === cat)) {
         this.picked = null
+        this.opened = null
+      }
+      if (houseCat && !session.run.shelf.includes(houseCat)) this.picked = null
       const before = this.staged
       this.draw()
       if (events.some((event) => event.type === "offersRerolled"))
@@ -302,22 +322,34 @@ export class ShopScene extends Phaser.Scene {
   }
 
   /** Where a pile's Cat is shown: its centre, and how big it is. */
-  private pileAt(spot: PileSpot): Point & { size: number } {
-    if (spot.on === "couch")
-      return {
-        x: seatX(PILE_SEATS)[spot.seat],
-        y: SEAT_Y - 12,
-        size: SEATED_SIZE
-      }
-    if (spot.on === "rug") {
-      const { y, size } = PILE_RUG_ROWS[spot.row]
-      return { x: rugX(PILE_RUG_POSITIONS)[spot.row][spot.position], y, size }
-    }
+  private pileAt({ column, row }: PileSpot): Point & { size: number } {
     return {
-      x: SILL.xs[spot.position],
-      y: SILL.base - SILL.size * CAT_BASE,
-      size: SILL.size
+      x: HOUSEHOLD.columnsX[column],
+      y: HOUSEHOLD.rowsY[row],
+      size: HOUSEHOLD.size
     }
+  }
+
+  /** A section's heading, on a pill from the room's left. */
+  private heading(add: Add, y: number, words: string) {
+    const text = this.add
+      .text(0, y, words, display(15, "#4a3426"))
+      .setOrigin(0, 0.5)
+    const width = text.width + 2 * HEADING.padding
+    const pill = [
+      HEADING.left,
+      y - HEADING.height / 2,
+      width,
+      HEADING.height,
+      HEADING.height / 2
+    ] as const
+    add(this.add.graphics())
+      .fillStyle(0xfdf6ea, 1)
+      .fillRoundedRect(...pill)
+      .lineStyle(2, INK, 1)
+      .strokeRoundedRect(...pill)
+    add(text.setX(HEADING.left + HEADING.padding))
+    return width
   }
 
   private draw() {
@@ -358,14 +390,43 @@ export class ShopScene extends Phaser.Scene {
     )
     add(
       this.add
-        .text(WIDTH / 2, PROMPT_Y, this.prompt(), {
-          ...font(13, "#4a3426", "800"),
+        .text(WIDTH / 2, SHELF_PROMPT_Y, this.shelfPrompt(), {
+          ...font(12, "#4a3426", "800"),
           align: "center",
           wordWrap: { width: WIDTH - 30 }
         })
         .setOrigin(0.5)
     )
 
+    // At the door, the offers; Reroll sends them away for new ones.
+    this.heading(add, DOOR_HEADING_Y, "At the door")
+    this.button(
+      add,
+      REROLL,
+      { text: "Reroll", treats: -run.shop.rerollPrice, inline: true },
+      this.stateOf({ type: "reroll" }),
+      () => session.apply({ type: "reroll" })
+    )
+
+    // On the rug, the household, with what may be done with it.
+    const width = this.heading(
+      add,
+      HOUSEHOLD.headingY,
+      `Your household · ${run.roster.length}`
+    )
+    add(
+      this.add
+        .text(
+          HEADING.left + width + 8,
+          HOUSEHOLD.headingY,
+          run.shop.catRehomesLeft > 0
+            ? "Tap a pile to Rehome a Cat"
+            : "No more Rehoming this visit",
+          font(12, "#fdf6ea", "800")
+        )
+        .setOrigin(0, 0.5)
+        .setStroke(OUTLINE, 3)
+    )
     for (const pile of staged.piles) this.drawPile(add, pile)
     const xs = doorwayX(staged.doorway.length)
     this.visitors = staged.doorway.map((spot, i) =>
@@ -375,19 +436,15 @@ export class ShopScene extends Phaser.Scene {
     this.drawButtons(add, staged)
   }
 
-  /** What the player may do, just above the Couch, unless a pile is open. */
-  private prompt() {
+  /** What may be done with the Shelf, beneath it. */
+  private shelfPrompt() {
     const { run } = session
     const picked = this.pickedHouseCat()
     if (picked)
       return `Rehome ${houseCat(picked).name} for ${rehomeRefund(run.config, picked)} Treats back, or tap elsewhere on the Shelf to move it.`
-    const cats =
-      run.shop!.catRehomesLeft > 0
-        ? "Tap a pile to Rehome a Cat"
-        : "No more Rehoming Cats this visit"
     return run.shelf.length > 0
-      ? `${cats}, or a House Cat to move or Rehome it.`
-      : `${cats}.`
+      ? "Tap a House Cat to move or Rehome it."
+      : "Recruit a House Cat for the Shelf."
   }
 
   /** A Kind's pile: its Cat at rest, with how many there are on a badge. */
@@ -420,7 +477,7 @@ export class ShopScene extends Phaser.Scene {
         this.add
           .text(
             x,
-            OFFER.tagY + 20,
+            OFFER.tagY + 22,
             "cat" in holds ? "Adopted!" : "Recruited!",
             font(12, "#9c8672", "800")
           )
@@ -428,7 +485,7 @@ export class ShopScene extends Phaser.Scene {
       )
       return null
     }
-    const visitor = add(this.drawVisitor(offer)).setPosition(x, OFFER.y)
+    const visitor = add(this.drawVisitor(offer)).setPosition(x, visitorY(offer))
     add(addArt(this, art.room.offerTag, x, OFFER.tagY))
     const { name, title, about } = offer.tag
     const lines = [
@@ -453,7 +510,7 @@ export class ShopScene extends Phaser.Scene {
     }
     this.button(
       add,
-      { x, y: OFFER.buttonY, scale: OFFER_BUTTON_SCALE },
+      { x, ...OFFER.button },
       { text: "cat" in offer ? "Adopt" : "Recruit", treats: -offer.price },
       this.stateOf(offer.action),
       () => session.apply(offer.action)
@@ -478,7 +535,7 @@ export class ShopScene extends Phaser.Scene {
     const { run } = session
     const pile = piles.find(({ kind }) => sameKind(fan.kind, kind))!
     const at = this.pileAt(pile.spot)
-    const y = pile.spot.on === "sill" ? at.y + FAN_BELOW : at.y - FAN_ABOVE
+    const y = at.y - FAN_ABOVE
     const xs = fanX(fan.cats.length, at.x, FAN)
     // The panel is wide enough for its words, however few its Cats.
     const width = Math.max(FAN.minWidth, xs.at(-1)! - xs[0] + FAN.step)
@@ -545,14 +602,6 @@ export class ShopScene extends Phaser.Scene {
   /** Reroll and Rehome, each with its signed price, and Nightfall. */
   private drawButtons(add: Add, staged: ShopStaging) {
     const { run } = session
-    const shop = run.shop!
-    this.button(
-      add,
-      { x: REROLL_X, y: BUTTON_Y, scale: BUTTON_SCALE },
-      { text: "Reroll", treats: -shop.rerollPrice },
-      this.stateOf({ type: "reroll" }),
-      () => session.apply({ type: "reroll" })
-    )
     // Rehoming a Cat costs Treats; Rehoming a House Cat refunds some.
     const houseCat = this.pickedHouseCat()
     const cat = this.pickedCat()
@@ -563,7 +612,7 @@ export class ShopScene extends Phaser.Scene {
         : null
     this.button(
       add,
-      { x: REHOME_X, y: BUTTON_Y, scale: BUTTON_SCALE },
+      REHOME,
       {
         text: "Rehome",
         treats: houseCat
@@ -577,7 +626,7 @@ export class ShopScene extends Phaser.Scene {
     )
     this.button(
       add,
-      { x: NIGHTFALL_X, y: BUTTON_Y, scale: BUTTON_SCALE, primary: true },
+      { ...NIGHTFALL, primary: true },
       { text: "Nightfall", below: staged.nightfall },
       this.stateOf({ type: "leaveShop" }),
       () => session.apply({ type: "leaveShop" })
@@ -596,69 +645,95 @@ export class ShopScene extends Phaser.Scene {
   }
 
   /**
-   * A button in the living room's art, `scale` times the size of Redraw's (or
-   * Get Comfy's, if `primary`), its words above and, beneath them, any change
-   * to the player's Treats as a treat and a signed amount, or another line.
-   * Tapped, one that spends Treats sounds like Treats being spent.
+   * A button in the living room's art, `width` × `height`: Redraw's, or Get
+   * Comfy's if `primary`. Its words sit on its face: a label with, beneath it
+   * or `inline` beside it, any change to the player's Treats as a treat and a
+   * signed amount, or another line `below`; together they shrink to fit the
+   * face, however flat. Tapped, one that spends Treats sounds like Treats
+   * being spent.
    */
   private button(
     add: Add,
     {
       x,
       y,
-      scale,
+      width,
+      height,
       primary = false
-    }: Point & { scale: number; primary?: boolean },
-    { text, treats, below }: { text: string; treats?: number; below?: string },
+    }: Point & { width: number; height: number; primary?: boolean },
+    {
+      text,
+      treats,
+      below,
+      inline = false
+    }: { text: string; treats?: number; below?: string; inline?: boolean },
     state: ButtonState,
     onTap: () => void
   ) {
     const ready = state === "ready"
     const key = primary ? art.playButton(ready) : art.redrawButton(ready)
-    const face = add(addArt(this, key, x, y))
-    face.setDisplaySize(face.displayWidth * scale, face.displayHeight * scale)
-    const labelY = y - 8 * scale
-    const lineY = y + 11 * scale
-    add(
-      this.add
-        .text(
-          x,
-          below || treats !== undefined ? labelY : y - 3 * scale,
-          text,
-          display(
-            Math.round((primary ? 24 : 19) * scale),
-            ready ? "#fdf6ea" : "#f3e9da"
-          )
-        )
+    add(addArt(this, key, x, y)).setDisplaySize(width, height)
+    const labelSize = primary ? 26 : 20
+    const label = this.add
+      .text(0, 0, text, display(labelSize, ready ? "#fdf6ea" : "#f3e9da"))
+      .setOrigin(0.5)
+      .setStroke(OUTLINE, 4)
+    // The second part: the change to the Treats, or another line.
+    const size = 16
+    let part: Phaser.GameObjects.Text | Phaser.GameObjects.Container | null =
+      null
+    let second = { width: 0, height: 0 }
+    if (below) {
+      part = this.add
+        .text(0, 0, below, font(14, "#fdf6ea", "900"))
         .setOrigin(0.5)
-        .setStroke(OUTLINE, 4)
-    )
-    if (below)
-      add(
-        this.add
-          .text(x, lineY, below, font(Math.round(13 * scale), "#fdf6ea", "900"))
-          .setOrigin(0.5)
-          .setStroke(OUTLINE, 3)
-      )
-    if (treats !== undefined) {
-      const size = Math.round(15 * scale)
+        .setStroke(OUTLINE, 3)
+      second = { width: part.width, height: part.height }
+    } else if (treats !== undefined) {
+      const treat = drawTreat(this, size)
       const amount = this.add
         .text(
           0,
-          lineY,
+          0,
           signedTreats(treats),
           numbers(size, priceColour(state, treats))
         )
         .setOrigin(0, 0.5)
-      const treat = drawTreat(this, size)
-      const width = size + 3 + amount.width
-      treat.setPosition(x - width / 2 + size / 2, lineY)
-      amount.setX(x - width / 2 + size + 3)
-      add(treat)
-      add(amount)
+      const across = size + 3 + amount.width
+      treat.setX(-across / 2 + size / 2)
+      amount.setX(-across / 2 + size + 3)
+      part = this.add.container(0, 0, [treat, amount])
+      second = { width: across, height: size * 1.2 }
     }
+    let content = { width: label.width, height: label.height }
+    if (part && inline) {
+      const gap = 6
+      const across = label.width + gap + second.width
+      label.setX(-across / 2 + label.width / 2)
+      part.setX(across / 2 - second.width / 2)
+      content = { width: across, height: Math.max(label.height, second.height) }
+    } else if (part) {
+      const tall = label.height * 0.85 + second.height
+      label.setY(-tall / 2 + (label.height * 0.85) / 2)
+      part.setY(tall / 2 - second.height / 2)
+      content = { width: Math.max(label.width, second.width), height: tall }
+    }
+    const fit = Math.min(
+      1,
+      (width * BUTTON_FACE.width) / content.width,
+      (height * BUTTON_FACE.height) / content.height
+    )
+    add(
+      this.add
+        .container(
+          x,
+          y - height * BUTTON_FACE.above,
+          part ? [label, part] : [label]
+        )
+        .setScale(fit)
+    )
     if (ready)
-      add(this.add.zone(x, y, face.displayWidth, face.displayHeight))
+      add(this.add.zone(x, y, width, height))
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => {
           sound.cue({ name: treats && treats < 0 ? "treatsSpent" : "uiTap" })
@@ -719,7 +794,7 @@ export class ShopScene extends Phaser.Scene {
     const xs = doorwayX(before.doorway.length)
     before.doorway.forEach(({ offer }, i) => {
       if (!offer) return
-      const away = this.drawVisitor(offer).setPosition(xs[i], OFFER.y)
+      const away = this.drawVisitor(offer).setPosition(xs[i], visitorY(offer))
       const side = xs[i] < WIDTH / 2 ? -1 : 1
       this.tweens.add({
         targets: away,
@@ -745,8 +820,9 @@ export class ShopScene extends Phaser.Scene {
 
   /**
    * Dawn, after a cleared Night: the moon sets, the sun rises in the
-   * window, the lights warm, and the Hand's Cats wander off before the Shop
-   * shows. A tap skips it; under Reduced motion it is a plain crossfade.
+   * window, the lights warm, the Hand's Cats wander off, and the Couch makes
+   * way for the open front door before the Shop shows. A tap skips it;
+   * under Reduced motion it is a plain crossfade.
    */
   private dawn() {
     const { run } = session
@@ -762,14 +838,14 @@ export class ShopScene extends Phaser.Scene {
       return [drawCat(this, byId.get(cat)!, look, size).setPosition(x, y)]
     })
     night.push(...wanderers)
-    const { window, sun, warmth, fixtures } = this.day
+    const { couch, window, sun, warmth, fixtures } = this.day
     this.children.bringToTop(this.shelf)
     this.children.bringToTop(this.layer)
 
     const moves: Move[] = settings.reducedMotion
       ? [
           {
-            targets: night,
+            targets: [...night, ...couch],
             from: { alpha: 1 },
             to: { alpha: 0 },
             at: 0,
@@ -820,6 +896,14 @@ export class ShopScene extends Phaser.Scene {
             at: 200,
             ms: 800
           },
+          // The Couch steps aside for the front door.
+          {
+            targets: couch,
+            from: { alpha: 1 },
+            to: { alpha: 0 },
+            at: 250,
+            ms: 500
+          },
           ...wanderers.map(
             (cat, i): Move => ({
               targets: cat,
@@ -850,8 +934,9 @@ export class ShopScene extends Phaser.Scene {
   }
 
   /**
-   * Dusk, on leaving: the Shop fades, the sun sets, the room dims, and the
-   * next Night's moon rises in the window before the Night begins. A tap
+   * Dusk, on leaving: the Shop fades, the sun sets, the room dims, the
+   * Couch comes back, and the next Night's moon rises in the window before
+   * the Night begins. A tap
    * skips it; under Reduced motion it is a plain crossfade.
    */
   private nightfall() {
@@ -861,13 +946,14 @@ export class ShopScene extends Phaser.Scene {
     const dusk = this.add
       .rectangle(0, 0, WIDTH, HEIGHT, DUSK.colour, 0)
       .setOrigin(0)
-    const { window, sun, warmth, fixtures } = this.day
+    const { couch, window, sun, warmth, fixtures } = this.day
     this.children.bringToTop(this.shelf)
     const leaving = [window, sun, ...fixtures, this.layer]
     const moves: Move[] = settings.reducedMotion
       ? [
           { targets: leaving, to: { alpha: 0 }, at: 0, ms: TRANSITION_MS },
           { targets: warmth, to: { alpha: 0 }, at: 0, ms: TRANSITION_MS },
+          { targets: couch, to: { alpha: 1 }, at: 0, ms: TRANSITION_MS },
           {
             targets: moon,
             from: { alpha: 0 },
@@ -891,6 +977,8 @@ export class ShopScene extends Phaser.Scene {
             ease: "Sine.easeIn"
           },
           { targets: window, to: { alpha: 0 }, at: 200, ms: 600 },
+          // The Couch comes back for the Night.
+          { targets: couch, to: { alpha: 1 }, at: 300, ms: 600 },
           { targets: warmth, to: { alpha: 0 }, at: 0, ms: 700 },
           { targets: dusk, to: { alpha: DUSK.alpha }, at: 0, ms: 600 },
           // Then the lamps come on for the Night.

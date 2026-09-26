@@ -248,7 +248,7 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   stormClouds:
     "A small bank of dark, puffy slate-gray storm clouds with a little yellow zigzag of lightning beneath, as seen through a window, clearly ominous but still cute.",
   frontDoor:
-    "A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is much wider than it is tall. Keep the middle of the doorway uncluttered: four visitors will stand in it.",
+    "A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is nearly three times as wide as it is tall, standing against the back wall in place of the sofa. Keep the middle of the doorway uncluttered: four visitors will stand in it.",
   disasterNote:
     "A brick-red paper note pinned to a wall with one gold drawing pin at its top centre, a corner curling slightly, with a cream inner border. Leave it blank: the game writes the coming trouble on it.",
   offerTag:

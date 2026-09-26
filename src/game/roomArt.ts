@@ -250,18 +250,20 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
       [79, 36]
     ]).fillPath()
   },
-  frontDoor: (g) => {
+  frontDoor: (g, entry) => {
     // A wide doorway onto a sunny day, its two doors swung open either side.
-    g.fillStyle(DAY_SKY, 1).fillRect(34, 6, 304, 70)
-    g.fillStyle(0x9ccf7a, 1).fillRect(34, 58, 304, 34)
+    const h = entry.canvas.height / ROOM_SCALE
+    const grass = h * 0.62
+    g.fillStyle(DAY_SKY, 1).fillRect(34, 6, 304, grass - 6)
+    g.fillStyle(0x9ccf7a, 1).fillRect(34, grass, 304, h - 8 - grass)
     trace(g.fillStyle(0xe9d8b4, 1), [
-      [160, 58],
-      [212, 58],
-      [250, 92],
-      [122, 92]
+      [160, grass],
+      [212, grass],
+      [250, h - 8],
+      [122, h - 8]
     ]).fillPath()
-    g.fillStyle(0xfff1b0, 0.35).fillRect(34, 6, 304, 86)
-    g.lineStyle(6, 0xfaf3e6, 1).strokeRect(34, 6, 304, 90)
+    g.fillStyle(0xfff1b0, 0.35).fillRect(34, 6, 304, h - 14)
+    g.lineStyle(6, 0xfaf3e6, 1).strokeRect(34, 6, 304, h - 10)
     for (const [hinge, edge] of [
       [34, 4],
       [338, 368]
@@ -269,15 +271,15 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
       const door: Point[] = [
         [hinge, 6],
         [edge, 0],
-        [edge, 100],
-        [hinge, 96]
+        [edge, h],
+        [hinge, h - 4]
       ]
       trace(g.fillStyle(0x7a5a3c, 1), door).fillPath()
       trace(g.lineStyle(2.5, INK, 1), door).strokePath()
     }
     // A doormat on the threshold.
-    g.fillStyle(0xc98a4b, 1).fillRoundedRect(136, 84, 100, 14, 4)
-    g.lineStyle(2, INK, 1).strokeRoundedRect(136, 84, 100, 14, 4)
+    g.fillStyle(0xc98a4b, 1).fillRoundedRect(136, h - 16, 100, 14, 4)
+    g.lineStyle(2, INK, 1).strokeRoundedRect(136, h - 16, 100, 14, 4)
   },
   disasterNote: (g) => {
     // A red note pinned to the wall, a corner curling.

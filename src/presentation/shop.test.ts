@@ -182,7 +182,7 @@ describe("an opened pile", () => {
 })
 
 describe("the Shop's Kind piles", () => {
-  it("piles each Kind in its own spot, by Coat then Personality: the Seats, the rug, then the windowsill", () => {
+  it("piles each Kind in its own cell of the household's grid: Coats across, Personalities down", () => {
     const { piles } = stageShop(inShop())
 
     expect(
@@ -192,53 +192,21 @@ describe("the Shop's Kind piles", () => {
         count
       }))
     ).toEqual([
-      { kind: "orange clingy", spot: { on: "couch", seat: 0 }, count: 2 },
-      { kind: "orange aloof", spot: { on: "couch", seat: 1 }, count: 2 },
-      { kind: "orange sleepy", spot: { on: "couch", seat: 2 }, count: 2 },
-      { kind: "black clingy", spot: { on: "couch", seat: 3 }, count: 2 },
-      { kind: "black aloof", spot: { on: "couch", seat: 4 }, count: 2 },
-      {
-        kind: "black sleepy",
-        spot: { on: "rug", row: "back", position: 0 },
-        count: 2
-      },
-      {
-        kind: "white clingy",
-        spot: { on: "rug", row: "back", position: 1 },
-        count: 2
-      },
-      {
-        kind: "white aloof",
-        spot: { on: "rug", row: "back", position: 2 },
-        count: 2
-      },
-      {
-        kind: "white sleepy",
-        spot: { on: "rug", row: "back", position: 3 },
-        count: 2
-      },
-      {
-        kind: "gray clingy",
-        spot: { on: "rug", row: "front", position: 0 },
-        count: 2
-      },
-      {
-        kind: "gray aloof",
-        spot: { on: "rug", row: "front", position: 1 },
-        count: 2
-      },
-      {
-        kind: "gray sleepy",
-        spot: { on: "rug", row: "front", position: 2 },
-        count: 2
-      },
-      {
-        kind: "calico clingy",
-        spot: { on: "rug", row: "front", position: 3 },
-        count: 2
-      },
-      { kind: "calico aloof", spot: { on: "sill", position: 0 }, count: 2 },
-      { kind: "calico sleepy", spot: { on: "sill", position: 1 }, count: 2 }
+      { kind: "orange clingy", spot: { column: 0, row: 0 }, count: 2 },
+      { kind: "orange aloof", spot: { column: 0, row: 1 }, count: 2 },
+      { kind: "orange sleepy", spot: { column: 0, row: 2 }, count: 2 },
+      { kind: "black clingy", spot: { column: 1, row: 0 }, count: 2 },
+      { kind: "black aloof", spot: { column: 1, row: 1 }, count: 2 },
+      { kind: "black sleepy", spot: { column: 1, row: 2 }, count: 2 },
+      { kind: "white clingy", spot: { column: 2, row: 0 }, count: 2 },
+      { kind: "white aloof", spot: { column: 2, row: 1 }, count: 2 },
+      { kind: "white sleepy", spot: { column: 2, row: 2 }, count: 2 },
+      { kind: "gray clingy", spot: { column: 3, row: 0 }, count: 2 },
+      { kind: "gray aloof", spot: { column: 3, row: 1 }, count: 2 },
+      { kind: "gray sleepy", spot: { column: 3, row: 2 }, count: 2 },
+      { kind: "calico clingy", spot: { column: 4, row: 0 }, count: 2 },
+      { kind: "calico aloof", spot: { column: 4, row: 1 }, count: 2 },
+      { kind: "calico sleepy", spot: { column: 4, row: 2 }, count: 2 }
     ])
   })
 
@@ -254,12 +222,12 @@ describe("the Shop's Kind piles", () => {
     const { piles } = stageShop(run)
     expect(piles).toHaveLength(14)
     expect(piles.map((pile) => pile.spot)).not.toContainEqual({
-      on: "couch",
-      seat: 2
+      column: 0,
+      row: 2
     })
     expect(piles[2]).toMatchObject({
       kind: { coat: "black", personality: "clingy" },
-      spot: { on: "couch", seat: 3 }
+      spot: { column: 1, row: 0 }
     })
   })
 

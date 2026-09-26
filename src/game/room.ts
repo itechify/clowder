@@ -15,14 +15,17 @@ import {
 /**
  * The living room's furniture, the same by night and by day: the wall, the
  * rug, the window as it looks by night, and the Couch, a pad on each of the
- * Seats at `seatXs`.
+ * Seats at `seatXs`. Returns the Couch and its pads.
  */
 export function drawFurniture(scene: Phaser.Scene, seatXs: number[]) {
   addArt(scene, art.room.wall)
   addArt(scene, art.room.rug, WIDTH / 2, RUG_Y)
   addArt(scene, art.room.window, WINDOW.x, WINDOW.y)
-  addArt(scene, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y)
-  for (const x of seatXs) addArt(scene, art.room.seatPad, x, SEAT_PAD_Y)
+  const couch = [
+    addArt(scene, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y),
+    ...seatXs.map((x) => addArt(scene, art.room.seatPad, x, SEAT_PAD_Y))
+  ]
+  return { couch }
 }
 
 /**

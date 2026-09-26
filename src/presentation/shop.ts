@@ -13,7 +13,7 @@ import {
   type Run
 } from "../engine"
 import type { DisasterSign } from "./hud"
-import { atRest, type CatLook, type Placement } from "./staging"
+import { atRest, type CatLook } from "./staging"
 
 /**
  * The presentation model's staging of the Shop: what the living room shows by
@@ -29,20 +29,12 @@ export const kinds: readonly Kind[] = coats.flatMap((coat) =>
   personalities.map((personality) => ({ coat, personality }))
 )
 
-/** Where a Kind's pile sits: on a Seat, on the rug, or on the windowsill. */
-export type PileSpot = Placement | { on: "sill"; position: number }
-
 /**
- * The Kinds' spots, in Kind order and the same at every Shop: the Couch's
- * five Seats, the rug's back row then its front row, then the windowsill.
+ * Where a Kind's pile sits in the household, set apart from the offers: its
+ * cell in a grid with a column per Coat and a row per Personality, the same
+ * at every Shop.
  */
-export const pileSpots: readonly PileSpot[] = [
-  ...[0, 1, 2, 3, 4].map((seat): PileSpot => ({ on: "couch", seat })),
-  ...(["back", "front"] as const).flatMap((row) =>
-    [0, 1, 2, 3].map((position): PileSpot => ({ on: "rug", row, position }))
-  ),
-  ...[0, 1].map((position): PileSpot => ({ on: "sill", position }))
-]
+export type PileSpot = { column: number; row: number }
 
 /** A Kind's Cats in the Roster, lounging together. */
 export type Pile = {
@@ -174,7 +166,7 @@ function offerFor(run: Run, id: OfferId): Offer | null {
 }
 
 /**
- * Stages the open Shop: each Kind's pile in its spot, the pile `opened`, if
+ * Stages the open Shop: each Kind's pile in its cell of the household, the pile `opened`, if
  * any, fanned out, the offers in the doorway as last shown in `doorway`, and
  * the coming Night.
  */
@@ -182,14 +174,17 @@ export function stageShop(
   run: Run,
   { opened = null, doorway = [] }: ShopView = {}
 ): ShopStaging {
-  const piles = kinds.flatMap((kind, i): Pile[] => {
+  const piles = kinds.flatMap((kind): Pile[] => {
     const cats = run.roster.filter((cat) => sameKind(cat, kind))
     if (cats.length === 0) return []
     const [cat] = cats
     return [
       {
         kind,
-        spot: pileSpots[i],
+        spot: {
+          column: coats.indexOf(kind.coat),
+          row: personalities.indexOf(kind.personality)
+        },
         count: cats.length,
         cat,
         look: atRest(run, cat)

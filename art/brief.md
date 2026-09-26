@@ -1433,12 +1433,12 @@ A small bank of dark, puffy slate-gray storm clouds with a little yellow zigzag 
 **On fallback.**
 
 - Key: `room/frontDoor`
-- Size: 1116×300
-- Anchor: (558, 300): bottom centre
+- Size: 1116×390
+- Anchor: (558, 390): bottom centre
 - Attach: `art/reference/style-sheet.png`
 
 ```text
-A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is much wider than it is tall. Keep the middle of the doorway uncluttered: four visitors will stand in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1116×300 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is nearly three times as wide as it is tall, standing against the back wall in place of the sofa. Keep the middle of the doorway uncluttered: four visitors will stand in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1116×390 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Disaster note: `art/raw/room/disasterNote.png`
