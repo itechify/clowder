@@ -11,13 +11,14 @@ import {
   type DisasterId,
   disasterById,
   type HouseCatId,
+  nightTarget,
   previewPlay,
   type Run,
   startRun
 } from "../src/engine"
 
 /** How a simulated player shops; every one arranges the Couch perfectly. */
-export type Strategy = {
+type Strategy = {
   name: string
   /** House Cats worth Recruiting, most wanted first. */
   priority: HouseCatId[]
@@ -29,7 +30,7 @@ export type Strategy = {
 
 const never = () => false
 
-export const strategies: Strategy[] = [
+const strategies: Strategy[] = [
   {
     name: "no purchases",
     priority: [],
@@ -96,9 +97,9 @@ function bestCouch(run: Run): { score: number; couch: (CatId | null)[] } {
   const couch: (CatId | null)[] = Array(run.config.seats).fill(null)
   const seated = new Set<CatId>()
   let best = { score: -1, couch: [...couch] }
-  // Cats with identical stats are interchangeable, so each Seat tries one.
+  // Cats of one Kind and base Purr are interchangeable, so each Seat tries one.
   const byId = new Map(run.roster.map((cat) => [cat.id, cat]))
-  const stats = (id: CatId) => {
+  const kindAndPurr = (id: CatId) => {
     const cat = byId.get(id)!
     return `${cat.coat}/${cat.personality}/${cat.basePurr}`
   }
@@ -114,8 +115,8 @@ function bestCouch(run: Run): { score: number; couch: (CatId | null)[] } {
     if (count >= catsPerPlay) return
     const tried = new Set<string>()
     for (const id of hand) {
-      if (seated.has(id) || tried.has(stats(id))) continue
-      tried.add(stats(id))
+      if (seated.has(id) || tried.has(kindAndPurr(id))) continue
+      tried.add(kindAndPurr(id))
       seated.add(id)
       couch[seat] = id
       fill(seat + 1, count + 1)
@@ -142,9 +143,10 @@ function playNight(run: Run): Run {
         run.config.catsPerRedraw,
         run.night.drawPile.length
       )
-      const out = run.night.hand.filter((id) => !kept.has(id)).slice(0, limit)
-      if (out.length === 0) break
-      run = act(run, { type: "redraw", cats: out })
+      const unused = run.night.hand.filter((id) => !kept.has(id))
+      const cats = unused.slice(0, limit)
+      if (cats.length === 0) break
+      run = act(run, { type: "redraw", cats })
       best = bestCouch(run)
     }
     best.couch.forEach((cat, seat) => {
@@ -155,7 +157,8 @@ function playNight(run: Run): Run {
   return run
 }
 
-function shop(run: Run, strategy: Strategy): Run {
+/** Recruits, Rehomes, Adopts, and Rerolls as the strategy likes, then leaves. */
+function visitShop(run: Run, strategy: Strategy): Run {
   let rerolls = 0
   for (;;) {
     const shop = run.shop!
@@ -201,21 +204,20 @@ function shop(run: Run, strategy: Strategy): Run {
   }
 }
 
-/** Each Night's Target, as startRun and the Nights after it set them. */
-export function targets(config: Config): number[] {
-  return Array.from({ length: config.nights }, (_, i) => {
-    const target = Math.round(config.firstTarget * config.targetGrowth ** i)
-    return config.disasterNights.includes(i + 1)
-      ? Math.round(target * config.disasterTargetFactor)
-      : target
-  })
-}
+/** Each Night's Target, in order. */
+const targets = (config: Config) =>
+  Array.from({ length: config.nights }, (_, i) =>
+    nightTarget(config, i + 1, config.disasterNights.includes(i + 1))
+  )
 
-/** Seeds are spread out so neighboring Runs share no structure. */
-const seed = (n: number) => n * 7919
+/** Run n's seed, spread out so neighboring Runs share no structure. */
+const seedOf = (n: number) => n * 7919
 
-const percent = (part: number, whole: number) =>
-  whole === 0 ? "-" : `${Math.round((100 * part) / whole)}%`
+/** How many Runs reached something, and how many of those cleared it. */
+type Tally = { reached: number; cleared: number }
+
+const clearRate = ({ reached, cleared }: Tally) =>
+  reached === 0 ? "-" : `${Math.round((100 * cleared) / reached)}%`
 
 /** How one strategy's Runs went, as a few report lines. */
 function simulateStrategy(
@@ -224,45 +226,55 @@ function simulateStrategy(
   config: Config
 ): string[] {
   const { nights, disasterNights } = config
-  const reached: number[] = Array(nights + 1).fill(0)
-  const lost: number[] = Array(nights + 1).fill(0)
-  const byDisaster = new Map<number, Map<DisasterId, [number, number]>>(
+  const byNight: Tally[] = Array.from({ length: nights + 1 }, () => ({
+    reached: 0,
+    cleared: 0
+  }))
+  const byDisaster = new Map<number, Map<DisasterId, Tally>>(
     disasterNights.map((night) => [night, new Map()])
   )
   const shelves: number[] = []
   let won = 0
   for (let n = 1; n <= runs; n++) {
-    let run = startRun(seed(n), config)
+    let run = startRun(seedOf(n), config)
     while (run.status === "playing") {
-      if (run.shop) run = shop(run, strategy)
+      if (run.shop) run = visitShop(run, strategy)
       const { number, disaster } = run.night
       if (number === SHELF_NIGHT) shelves.push(run.shelf.length)
       run = playNight(run)
-      const cleared = run.status !== "lost"
-      reached[number]++
-      if (!cleared) lost[number]++
+      const tallies = [byNight[number]]
       if (disaster) {
         const tally = byDisaster.get(number)!
-        const [clears, total] = tally.get(disaster) ?? [0, 0]
-        tally.set(disaster, [clears + (cleared ? 1 : 0), total + 1])
+        if (!tally.has(disaster))
+          tally.set(disaster, { reached: 0, cleared: 0 })
+        tallies.push(tally.get(disaster)!)
+      }
+      for (const tally of tallies) {
+        tally.reached++
+        if (run.status !== "lost") tally.cleared++
       }
     }
     if (run.status === "won") won++
   }
-  const each = (f: (night: number) => string) =>
-    Array.from({ length: nights }, (_, i) => f(i + 1)).join(" ")
+  const perNight = (f: (tally: Tally) => string | number) =>
+    byNight
+      .slice(1)
+      .map((tally, i) => `${i + 1}:${f(tally)}`)
+      .join(" ")
+  const wins = { reached: runs, cleared: won }
   const lines = [
     `${strategy.name} (${runs} Runs)`,
-    `  clear rate per Night reached: ${each((night) => `${night}:${percent(reached[night] - lost[night], reached[night])}`)}`,
-    `  lost on Night: ${each((night) => `${night}:${lost[night]}`)}`,
-    `  win rate: ${percent(won, runs)} (${won}/${runs})`
+    `  clear rate per Night reached: ${perNight(clearRate)}`,
+    `  lost on Night: ${perNight((tally) => tally.reached - tally.cleared)}`,
+    `  win rate: ${clearRate(wins)} (${won}/${runs})`
   ]
   for (const [night, tally] of byDisaster) {
     const rates = [...tally]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([id, [clears, total]]) => {
-        const rate = percent(clears, total)
-        return `${disasterById(id).name} ${rate} (${clears}/${total})`
+      .map(([id, tally]) => {
+        const { reached, cleared } = tally
+        const name = disasterById(id).name
+        return `${name} ${clearRate(tally)} (${cleared}/${reached})`
       })
     lines.push(
       `  Night ${night} clear rate by Disaster: ${rates.join(", ") || "-"}`
@@ -283,9 +295,9 @@ export type SimArgs = {
 }
 
 /** The balance report for seeded Runs 1..runs; the same args, the same report. */
-export function simulate({ runs, config, strategies: only }: SimArgs): string {
-  const chosen = strategies.filter((s) => !only || only.includes(s.name))
-  const unknown = only?.filter(
+export function simulate({ runs, config, strategies: names }: SimArgs): string {
+  const chosen = strategies.filter((s) => !names || names.includes(s.name))
+  const unknown = names?.filter(
     (name) => !strategies.some((s) => s.name === name)
   )
   if (unknown?.length)
@@ -321,6 +333,7 @@ export function simArgs(argv: string[], defaults: Config): SimArgs {
   return args
 }
 
+/** Overrides one config setting, which must exist and keep its type. */
 function setPath(config: Config, path: string, value: unknown) {
   const keys = path.split(".")
   const last = keys.pop()!
@@ -331,5 +344,8 @@ function setPath(config: Config, path: string, value: unknown) {
     target = target[key] as Record<string, unknown>
   }
   if (!(last in target)) throw new Error(`No config setting ${path}`)
+  const type = (v: unknown) => (Array.isArray(v) ? "array" : typeof v)
+  if (type(value) !== type(target[last]))
+    throw new Error(`Expected ${path} to be a ${type(target[last])}`)
   target[last] = value
 }

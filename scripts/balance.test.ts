@@ -9,7 +9,7 @@ describe("the balance simulation", () => {
     expect(simulate({ runs: 2, config: defaultConfig })).toBe(report)
     expect(report).toContain("growing void (2 Runs)")
     expect(report).toMatch(/clear rate per Night reached: +1:\d+%/)
-    expect(report).toMatch(/Night 3 clear rate by Disaster: .*\d+\/\d+/)
+    expect(report).toMatch(/Night \d+ clear rate by Disaster: .*\d+\/\d+/)
     expect(report).toMatch(/win rate: \d+%/)
     expect(report).toMatch(/avg House Cats on Night 6: /)
   }, 120_000)
@@ -25,6 +25,7 @@ describe("the simulation's arguments", () => {
   })
 
   it("take a Run count, strategies, and config overrides by path", () => {
+    const defaults = structuredClone(defaultConfig)
     const args = simArgs(
       [
         "--runs",
@@ -43,12 +44,21 @@ describe("the simulation's arguments", () => {
     expect(args.strategies).toEqual(["no purchases", "growing void"])
     expect(args.config.disasterTargetFactor).toBe(1)
     expect(args.config.shop.recruitPrices.theVoid).toBe(4)
-    expect(defaultConfig.shop.recruitPrices.theVoid).toBe(6)
+    expect(defaultConfig).toEqual(defaults)
   })
 
   it("reject a config setting that does not exist", () => {
     expect(() => simArgs(["--disasterFactor", "1"], defaultConfig)).toThrow(
       /disasterFactor/
+    )
+  })
+
+  it("reject a config override of the wrong type", () => {
+    expect(() => simArgs(["--firstTarget", '"abc"'], defaultConfig)).toThrow(
+      /firstTarget/
+    )
+    expect(() => simArgs(["--disasterNights", "6"], defaultConfig)).toThrow(
+      /disasterNights/
     )
   })
 })

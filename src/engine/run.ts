@@ -51,6 +51,18 @@ export function disasterOn(
   return run.disasters[run.config.disasterNights.indexOf(night)] ?? null
 }
 
+/** Night `number`'s Target, raised if it is a Disaster Night. */
+export function nightTarget(
+  config: Config,
+  number: number,
+  disaster: boolean
+): number {
+  const target = Math.round(
+    config.firstTarget * config.targetGrowth ** (number - 1)
+  )
+  return disaster ? Math.round(target * config.disasterTargetFactor) : target
+}
+
 /** Shuffles the whole Roster into a fresh Draw pile and draws a Hand. */
 export function startNight(run: Omit<Run, "night">, number: number): Run {
   const { config, roster } = run
@@ -65,15 +77,10 @@ export function startNight(run: Omit<Run, "night">, number: number): Run {
     redraws: config.redrawsPerNight,
     ...(disaster && disasterById(disaster).changes)
   }
-  const target = Math.round(
-    config.firstTarget * config.targetGrowth ** (number - 1)
-  )
   const night: Night = {
     number,
     disaster,
-    target: disaster
-      ? Math.round(target * config.disasterTargetFactor)
-      : target,
+    target: nightTarget(config, number, disaster !== null),
     catsPerPlay: rules.catsPerPlay,
     score: 0,
     playsLeft: rules.plays,
