@@ -20,6 +20,7 @@
     "test:e2e": "playwright test",
     "icons": "node scripts/icons.mjs",
     "brief": "node scripts/brief.ts",
+    "sim": "node scripts/sim.ts",
     "deploy": "pnpm build && wrangler deploy"
   },
   "dependencies": {

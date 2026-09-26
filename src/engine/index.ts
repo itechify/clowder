@@ -26,7 +26,7 @@ export {
   type Personality,
   personalities
 } from "./content/personalities"
-export { startRun } from "./run"
+export { nightTarget, startRun } from "./run"
 export { restoreRun, serialiseRun } from "./save"
 export {
   type ActiveGathering,
