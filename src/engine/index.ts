@@ -14,7 +14,6 @@ export {
 } from "./content/disasters"
 export type { GatheringId } from "./content/gatherings"
 export {
-  abilityOf,
   clearTreats,
   copying,
   type HouseCat,

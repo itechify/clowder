@@ -21,8 +21,8 @@ export type HouseCatId =
 export type HouseCat = {
   id: HouseCatId
   name: string
-  /** What it does, as the Shop and the Shelf describe it; see `abilityOf`. */
-  ability: string | ((config: Config) => string)
+  /** What it does, as the Shop and the Shelf describe it. */
+  ability: (tuning: Config["houseCats"]) => string
   /** Phase 1: Mult added once to the Play. */
   wholePlayMult?: (couch: Couch) => number | null
   /** Phase 2: Mult added by each Scoring event of `cat`. */
@@ -33,7 +33,11 @@ export type HouseCat = {
    * After the Play: base Purr a played Cat gains for good, given how many
    * Gatherings the Play activated.
    */
-  grows?: (cat: Cat, gatherings: number, config: Config) => number | null
+  grows?: (
+    cat: Cat,
+    gatherings: number,
+    tuning: Config["houseCats"]
+  ) => number | null
   /** Treats it pays on clearing `night`, as the Night stands when cleared. */
   paysOnClear?: (night: Night) => number | null
   /** Whether the Play warms it up, raising its × for the rest of the Night. */
@@ -56,19 +60,19 @@ export const houseCats: readonly HouseCat[] = [
   {
     id: "oneBraincell",
     name: "One Braincell",
-    ability: "+2 Mult each time an Orange Cat scores",
+    ability: () => "+2 Mult each time an Orange Cat scores",
     perScoreMult: (cat) => (cat.coat === "orange" ? 2 : null)
   },
   {
     id: "bigLoaf",
     name: "The Big Loaf",
-    ability: "Played Sleepy Cats get one Repeat",
+    ability: () => "Played Sleepy Cats get one Repeat",
     repeats: (couch, seat) => (couch[seat]?.personality === "sleepy" ? 1 : 0)
   },
   {
     id: "doNotTouch",
     name: "Do Not Touch",
-    ability: "+2 Mult per empty Seat",
+    ability: () => "+2 Mult per empty Seat",
     wholePlayMult: (couch) => {
       const empty = couch.length - catsPlayed(couch)
       return empty > 0 ? 2 * empty : null
@@ -77,27 +81,27 @@ export const houseCats: readonly HouseCat[] = [
   {
     id: "skadi",
     name: "Skadi (Belly Up)",
-    ability: "Cats in Seats 1 and 5 get one Repeat",
+    ability: () => "Cats in Seats 1 and 5 get one Repeat",
     repeats: (couch, seat) =>
       couch[seat] && (seat === 0 || seat === couch.length - 1) ? 1 : 0
   },
   {
     id: "copycat",
     name: "Copycat",
-    ability: "Copies the House Cat to its left"
+    ability: () => "Copies the House Cat to its left"
   },
   {
     id: "theVoid",
     name: "The Void",
-    ability: (config) =>
-      `After a Play with a Gathering, its Black Cats gain +${config.voidGrowth} base Purr`,
-    grows: (cat, gatherings, config) =>
-      gatherings > 0 && cat.coat === "black" ? config.voidGrowth : null
+    ability: ({ voidGrowth }) =>
+      `After a Play with a Gathering, its Black Cats gain +${voidGrowth} base Purr`,
+    grows: (cat, gatherings, { voidGrowth }) =>
+      gatherings > 0 && cat.coat === "black" ? voidGrowth : null
   },
   {
     id: "freya",
     name: "Freya (Slow to Warm Up)",
-    ability: "×1, +×0.5 per Play tonight an Aloof Cat has no Neighbors",
+    ability: () => "×1, +×0.5 per Play tonight an Aloof Cat has no Neighbors",
     warmsUp: aloofAlone,
     times: (couch, night) =>
       1 + 0.5 * (night.warmPlays + (aloofAlone(couch) ? 1 : 0))
@@ -105,25 +109,19 @@ export const houseCats: readonly HouseCat[] = [
   {
     id: "treatDealer",
     name: "Treat Dealer",
-    ability: "+1 Treat per unused Redraw when a Night is cleared",
+    ability: () => "+1 Treat per unused Redraw when a Night is cleared",
     paysOnClear: (night) => (night.redrawsLeft > 0 ? night.redrawsLeft : null)
   },
   {
     id: "boxGoblin",
     name: "Box Goblin",
-    ability: "×2 Mult if exactly three Cats are played",
+    ability: () => "×2 Mult if exactly three Cats are played",
     times: (couch) => (catsPlayed(couch) === 3 ? 2 : null)
   }
 ]
 
 export const houseCat = (id: HouseCatId): HouseCat =>
   houseCats.find((h) => h.id === id)!
-
-/** What a House Cat does, with the amounts `config` gives it. */
-export const abilityOf = (id: HouseCatId, config: Config): string => {
-  const { ability } = houseCat(id)
-  return typeof ability === "string" ? ability : ability(config)
-}
 
 /**
  * What each Shelf position's Copycat copies: the House Cat immediately to its

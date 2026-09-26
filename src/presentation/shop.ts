@@ -1,7 +1,6 @@
 import { houseCatArt } from "../art/manifest"
 import {
   type Action,
-  abilityOf,
   type Cat,
   type CatId,
   type Coat,
@@ -154,13 +153,13 @@ function offerFor(run: Run, id: OfferId): Offer | null {
     }
   }
   if (!shop.houseCatOffers.includes(id.houseCat)) return null
-  const { name } = houseCat(id.houseCat)
+  const { name, ability } = houseCat(id.houseCat)
   // A name with a title, like "Skadi (Belly Up)", gives the title its own line.
   const [called, title = null] = name.split(/ \((.*)\)$/)
   return {
     houseCat: id.houseCat,
     pose: houseCatArt(id.houseCat),
-    tag: { name: called, title, about: abilityOf(id.houseCat, run.config) },
+    tag: { name: called, title, about: ability(run.config.houseCats) },
     action: { type: "recruit", houseCat: id.houseCat },
     price: prices.recruitPrices[id.houseCat]
   }

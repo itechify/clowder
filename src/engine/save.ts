@@ -88,6 +88,9 @@ const isConfig = shape<Config>({
     aloofWithoutNeighbors: integer,
     sleepyBesideSleepy: integer
   }),
+  houseCats: shape<Config["houseCats"]>({
+    voidGrowth: integer
+  }),
   handSize: integer,
   seats: integer,
   shelfSize: integer,
@@ -99,7 +102,6 @@ const isConfig = shape<Config>({
   targetGrowth: finite,
   disasterNights: list(integer),
   disasterTargetFactor: finite,
-  voidGrowth: integer,
   clearReward: shape<Config["clearReward"]>({
     early: integer,
     earlyNights: integer,

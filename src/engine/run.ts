@@ -51,7 +51,10 @@ export function disasterOn(
   return run.disasters[run.config.disasterNights.indexOf(night)] ?? null
 }
 
-/** Night `number`'s Target, scaled by the Disaster Target factor on a Disaster Night. */
+/**
+ * Night `number`'s Target, scaled by the Disaster Target factor on a Disaster
+ * Night.
+ */
 export function nightTarget(
   config: Config,
   number: number,

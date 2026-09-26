@@ -68,7 +68,7 @@ describe("the doorway", () => {
   })
 
   it("tags The Void with the growth it is configured to give", () => {
-    const { doorway } = stageShop(inShop(1, { voidGrowth: 7 }))
+    const { doorway } = stageShop(inShop(1, { houseCats: { voidGrowth: 7 } }))
 
     expect(
       doorway.find(({ offer }) => offer?.tag.name === "The Void")?.offer?.tag

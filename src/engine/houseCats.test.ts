@@ -403,7 +403,7 @@ describe("The Void", () => {
         ...defaultConfig,
         handSize: 30,
         firstTarget: 1,
-        voidGrowth
+        houseCats: { voidGrowth }
       })
     )
   const basePurr = (run: Run, cat: string) =>
@@ -550,7 +550,7 @@ describe("a Play with the remaining House Cats", () => {
   it("scripts Repeats with their source, per-score Mult, Freya warming up, then Void growth", () => {
     const run = runWithCouch(["orange sleepy", null, "black aloof"], {
       shelf: ["bigLoaf", "oneBraincell", "freya", "theVoid"],
-      config: { voidGrowth: 2 }
+      config: { houseCats: { voidGrowth: 2 } }
     })
     const [orange, , black] = run.night.couch
     const braincell = {

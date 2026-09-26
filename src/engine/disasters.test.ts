@@ -101,7 +101,7 @@ describe("a Disaster Night's Target", () => {
     return targets
   }
 
-  it("is what a normal Night at that point would require", () => {
+  it("is by default what a normal Night at that point would require", () => {
     expect(targets()).toEqual([
       300, 480, 768, 1229, 1966, 3146, 5033, 8053, 12885
     ])

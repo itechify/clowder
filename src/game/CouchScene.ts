@@ -4,7 +4,6 @@ import { sound } from "../audio/sound"
 import {
   type Action,
   type ActiveGathering,
-  abilityOf,
   applyAction,
   type Cat,
   type CatId,
@@ -963,7 +962,7 @@ export class CouchScene extends Phaser.Scene {
     // from the Shelf does.
     const picked = this.heldHouseCat && houseCat(this.heldHouseCat)
     const breakdown = picked
-      ? `${picked.name}: ${abilityOf(picked.id, run.config)}. Tap elsewhere on the Shelf to move it.`
+      ? `${picked.name}: ${picked.ability(run.config.houseCats)}. Tap elsewhere on the Shelf to move it.`
       : multBreakdown(preview)
     if (breakdown)
       add(

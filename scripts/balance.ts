@@ -310,7 +310,7 @@ export function simulate({ runs, config, strategies: names }: SimArgs): string {
 
 /**
  * Reads `--runs N`, `--strategies a,b`, and any config setting by its path,
- * such as `--voidGrowth 3` or `--shop.recruitPrices.theVoid 4`.
+ * such as `--houseCats.voidGrowth 3` or `--shop.recruitPrices.theVoid 4`.
  */
 export function simArgs(argv: string[], defaults: Config): SimArgs {
   const args: SimArgs = {
