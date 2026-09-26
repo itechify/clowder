@@ -196,15 +196,40 @@ export const voices: Record<CueName, Voice> = {
     })
     playInstrument({ ...out, at: out.at + 0.42 }, "bass", 41, 0.65, 0.13)
   },
-  // A placeholder: a papery flick, then a rising bell flourish.
+  // Paper lifts and flutters, felt notes rise, then a soft binding tap and
+  // music-box sixth settle the page into the Scrapbook.
   pageChosen: (out) => {
-    noise(out, { duration: 0.12, level: 0.1, cutoff: 3200, sweepTo: 900 })
-    arpeggio(out, [72, 76, 79, 84], {
-      instrument: "bell",
-      spacing: 0.06,
-      duration: 0.3,
-      level: 0.12
+    noise(out, { duration: 0.09, level: 0.12, cutoff: 4800, sweepTo: 1400 })
+    noise(out, {
+      delay: 0.1,
+      duration: 0.18,
+      level: 0.07,
+      cutoff: 3100,
+      sweepTo: 700
     })
+    arpeggio({ ...out, at: out.at + 0.08 }, [72, 76, 79, 81], {
+      instrument: "felt",
+      spacing: 0.11,
+      duration: 0.22,
+      level: 0.11
+    })
+    tone(out, {
+      wave: "sine",
+      note: 55,
+      glideTo: 43,
+      delay: 0.65,
+      duration: 0.1,
+      level: 0.13
+    })
+    noise(out, {
+      delay: 0.65,
+      duration: 0.055,
+      level: 0.075,
+      cutoff: 1500,
+      sweepTo: 400
+    })
+    for (const note of [76, 84])
+      playInstrument({ ...out, at: out.at + 0.65 }, "bell", note, 0.48, 0.09)
   },
   // Two glassy Treats falling into a wooden dish.
   treatsSpent: (out) => {
