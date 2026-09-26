@@ -7,6 +7,9 @@ export type GatheringId =
   | "varietyPack"
   | "fullSofa"
 
+/** Purr and Mult a Gathering adds to a Play, or a Gathering level adds to it. */
+export type GatheringBonus = { purr: number; mult: number }
+
 export type Gathering = {
   id: GatheringId
   name: string

@@ -1,4 +1,4 @@
-import type { GatheringId } from "./content/gatherings"
+import type { GatheringBonus, GatheringId } from "./content/gatherings"
 import type { HouseCatId } from "./content/houseCats"
 
 /** Tuning numbers for a Run. Playtesting changes belong here, not in rules. */
@@ -23,7 +23,7 @@ export type Config = {
    * What each Gathering level above 1 adds to a Gathering, whenever it is
    * active: Purr, and Mult on top of its own.
    */
-  gatheringLevelBonus: Record<GatheringId, { purr: number; mult: number }>
+  gatheringLevelBonus: Record<GatheringId, GatheringBonus>
   /** Scrapbook pages offered after each cleared Night but the last. */
   scrapbookPages: number
   /** Clearing the last Night wins the Run. */

@@ -1,7 +1,7 @@
 import type { Config } from "./config"
 import { coats } from "./content/coats"
 import { disasters } from "./content/disasters"
-import { type GatheringId, gatherings } from "./content/gatherings"
+import { type GatheringBonus, gatherings } from "./content/gatherings"
 import { houseCats } from "./content/houseCats"
 import { personalities } from "./content/personalities"
 import type { BestPlay, RunStats } from "./stats"
@@ -101,7 +101,7 @@ const isConfig = shape<Config>({
   redrawsPerNight: integer,
   catsPerRedraw: integer,
   gatheringLevelBonus: perGathering(
-    shape<Config["gatheringLevelBonus"][GatheringId]>({
+    shape<GatheringBonus>({
       purr: integer,
       mult: integer
     })
@@ -184,7 +184,8 @@ const isRun = shape<Run>({
  * Whether the Night's Cats are where they can be: seated from the Hand, and,
  * while it is in play, all in the Roster (once it is over, some may have been
  * Rehomed). The Shelf holds each House Cat at most once, and no more than fit.
- * The Scrapbook's pages are different Gatherings, offered before the Shop opens.
+ * The Scrapbook's pages are different Gatherings, offered once the Night is
+ * cleared and before the Shop opens.
  */
 function isConsistent({
   config,
@@ -199,6 +200,7 @@ function isConsistent({
     new Set(shelf).size === shelf.length &&
     (!scrapbookPages ||
       (new Set(scrapbookPages).size === scrapbookPages.length &&
+        night.status === "cleared" &&
         shop === null)) &&
     shelf.length <= config.shelfSize &&
     night.couch.length === config.seats &&

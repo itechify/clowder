@@ -29,8 +29,8 @@ type Strategy = {
   /** The most Rerolls per Shop visit spent looking for a wanted House Cat. */
   rerolls: number
   /**
-   * The Gatherings its build forms, whose Scrapbook pages it chooses first,
-   * most wanted first; otherwise it levels the Gathering its Plays form most.
+   * The Gatherings its build forms, whose Scrapbook pages it chooses over
+   * any others: the one its Plays have formed most, ties to the first listed.
    */
   pages: GatheringId[]
 }
@@ -106,7 +106,7 @@ const accepted = (run: Run, action: Action) => {
 const act = (run: Run, action: Action): Run => accepted(run, action).run
 
 /** How many Plays this Run have formed each Gathering. */
-type Formed = Map<GatheringId, number>
+type TimesFormed = Map<GatheringId, number>
 
 /** The highest-scoring legal Couch from the Hand, trying every arrangement. */
 function bestCouch(run: Run): { score: number; couch: (CatId | null)[] } {
@@ -149,7 +149,7 @@ function bestCouch(run: Run): { score: number; couch: (CatId | null)[] } {
  * Plays the best Couch each time, Redrawing while it falls short of pace, and
  * counts the Gatherings each Play forms.
  */
-function playNight(run: Run, formed: Formed): Run {
+function playNight(run: Run, formed: TimesFormed): Run {
   while (run.night.status === "playing" && run.status === "playing") {
     let best = bestCouch(run)
     const pace = (run.night.target - run.night.score) / run.night.playsLeft
@@ -182,11 +182,11 @@ function playNight(run: Run, formed: Formed): Run {
 }
 
 /**
- * Chooses the Scrapbook page the strategy wants most: its build's Gatherings
- * if any are offered, in its order, and otherwise whichever its Plays have
- * formed most.
+ * Chooses the Scrapbook page the strategy wants most: of its build's
+ * Gatherings if any are offered, otherwise of all offered, whichever its
+ * Plays have formed most, ties going to the first listed.
  */
-function choosePage(run: Run, strategy: Strategy, formed: Formed): Run {
+function choosePage(run: Run, strategy: Strategy, formed: TimesFormed): Run {
   const pages = run.scrapbookPages!
   const wanted = strategy.pages.filter((page) => pages.includes(page))
   const page = (wanted.length > 0 ? wanted : pages).reduce((best, page) =>
@@ -276,7 +276,7 @@ function simulateStrategy(
   let won = 0
   for (let n = 1; n <= runs; n++) {
     let run = startRun(seedOf(n), config)
-    const formed: Formed = new Map()
+    const formed: TimesFormed = new Map()
     while (run.status === "playing") {
       if (run.scrapbookPages) run = choosePage(run, strategy, formed)
       if (run.shop) run = visitShop(run, strategy)

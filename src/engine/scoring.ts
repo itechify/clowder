@@ -1,5 +1,6 @@
 import type { Config } from "./config"
 import {
+  type GatheringBonus,
   type GatheringId,
   gatheringById,
   gatherings
@@ -21,9 +22,6 @@ export type ActiveGathering = {
   /** The Seats forming it, left to right. */
   seats: number[]
 }
-
-/** What a Gathering adds to a Play at a Gathering level. */
-export type GatheringBonus = { purr: number; mult: number }
 
 /**
  * What a Gathering adds at `level`: its own Mult, and for each level above 1

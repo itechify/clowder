@@ -231,14 +231,15 @@ describe("a damaged save", () => {
     expect(restoreRun(serialiseRun(tooMany))).toBeUndefined()
   })
 
-  it("is refused when the Scrapbook offers a Gathering twice, or with the Shop open", () => {
+  it("is refused when the Scrapbook offers a Gathering twice, mid-Night, or with the Shop open", () => {
     const run = runInScrapbook(1)
     const [page] = run.scrapbookPages!
     const twice: Run = { ...run, scrapbookPages: [page, page, page] }
+    const midNight: Run = { ...startRun(1), scrapbookPages: [page] }
     const withShop: Run = { ...runInShop(1), scrapbookPages: [page] }
 
-    expect(restoreRun(serialiseRun(twice))).toBeUndefined()
-    expect(restoreRun(serialiseRun(withShop))).toBeUndefined()
+    for (const refused of [twice, midNight, withShop])
+      expect(restoreRun(serialiseRun(refused))).toBeUndefined()
   })
 
   it("is refused when the Night holds a Cat that is not in the Roster", () => {

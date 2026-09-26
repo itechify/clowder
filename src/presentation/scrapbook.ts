@@ -3,7 +3,6 @@ import {
   type ActiveGathering,
   type GatheringBonus,
   type GatheringId,
-  gatheringBonus,
   gatheringById,
   type Run
 } from "../engine"
@@ -53,9 +52,8 @@ export function scrapbookChoice(run: Run): ScrapbookChoice | null {
     title: "Choose a Scrapbook page",
     pages: run.scrapbookPages.map((gathering) => {
       const from = run.gatheringLevels[gathering]
-      const now = gatheringBonus(run.config, gathering, from)
-      const next = gatheringBonus(run.config, gathering, from + 1)
-      const change = { purr: next.purr - now.purr, mult: next.mult - now.mult }
+      // Every level adds the same.
+      const change = run.config.gatheringLevelBonus[gathering]
       const { name, requirement } = gatheringById(gathering)
       return {
         gathering,

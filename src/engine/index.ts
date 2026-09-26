@@ -14,6 +14,7 @@ export {
 } from "./content/disasters"
 export {
   type Gathering,
+  type GatheringBonus,
   type GatheringId,
   gatheringById,
   gatherings
@@ -35,7 +36,6 @@ export { nightTarget, startRun } from "./run"
 export { restoreRun, serialiseRun } from "./save"
 export {
   type ActiveGathering,
-  type GatheringBonus,
   type Growth,
   gatheringBonus,
   previewPlay,
