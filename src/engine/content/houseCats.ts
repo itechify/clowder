@@ -1,3 +1,4 @@
+import type { Config } from "../config"
 import type { Cat, Couch, Night } from "../types"
 
 export type HouseCatId =
@@ -20,8 +21,8 @@ export type HouseCatId =
 export type HouseCat = {
   id: HouseCatId
   name: string
-  /** What it does, as the Shop and the Shelf describe it. */
-  ability: string
+  /** What it does, as the Shop and the Shelf describe it; see `abilityOf`. */
+  ability: string | ((config: Config) => string)
   /** Phase 1: Mult added once to the Play. */
   wholePlayMult?: (couch: Couch) => number | null
   /** Phase 2: Mult added by each Scoring event of `cat`. */
@@ -32,7 +33,7 @@ export type HouseCat = {
    * After the Play: base Purr a played Cat gains for good, given how many
    * Gatherings the Play activated.
    */
-  grows?: (cat: Cat, gatherings: number) => number | null
+  grows?: (cat: Cat, gatherings: number, config: Config) => number | null
   /** Treats it pays on clearing `night`, as the Night stands when cleared. */
   paysOnClear?: (night: Night) => number | null
   /** Whether the Play warms it up, raising its × for the rest of the Night. */
@@ -88,9 +89,10 @@ export const houseCats: readonly HouseCat[] = [
   {
     id: "theVoid",
     name: "The Void",
-    ability: "After a Play with a Gathering, its Black Cats gain +2 base Purr",
-    grows: (cat, gatherings) =>
-      gatherings > 0 && cat.coat === "black" ? 2 : null
+    ability: (config) =>
+      `After a Play with a Gathering, its Black Cats gain +${config.voidGrowth} base Purr`,
+    grows: (cat, gatherings, config) =>
+      gatherings > 0 && cat.coat === "black" ? config.voidGrowth : null
   },
   {
     id: "freya",
@@ -116,6 +118,12 @@ export const houseCats: readonly HouseCat[] = [
 
 export const houseCat = (id: HouseCatId): HouseCat =>
   houseCats.find((h) => h.id === id)!
+
+/** What a House Cat does, with the amounts `config` gives it. */
+export const abilityOf = (id: HouseCatId, config: Config): string => {
+  const { ability } = houseCat(id)
+  return typeof ability === "string" ? ability : ability(config)
+}
 
 /**
  * What each Shelf position's Copycat copies: the House Cat immediately to its

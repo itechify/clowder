@@ -11,7 +11,7 @@ import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
  * The shape of saved Runs. Bump it whenever Run state changes meaning, so a
  * save from before the change is discarded rather than resumed.
  */
-const SAVE_VERSION = 4
+const SAVE_VERSION = 5
 
 /** Run state as plain text, to keep on the device between visits. */
 export function serialiseRun(run: Run): string {
@@ -99,6 +99,7 @@ const isConfig = shape<Config>({
   targetGrowth: finite,
   disasterNights: list(integer),
   disasterTargetFactor: finite,
+  voidGrowth: integer,
   clearReward: shape<Config["clearReward"]>({
     early: integer,
     earlyNights: integer,

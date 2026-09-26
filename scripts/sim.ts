@@ -1,5 +1,5 @@
 // Prints the balance report (scripts/balance.ts): `pnpm sim --runs 100`, with
-// config overrides by path such as `--disasterTargetFactor 1`.
+// config overrides by path such as `--voidGrowth 3`.
 
 import { runnerImport } from "vite"
 

@@ -452,7 +452,7 @@ describe("staging the Shelf", () => {
     ])
     // Two Black Cats apart form Personal Space, a Gathering, so both grow.
     run = accepted(run, { type: "play" }).run
-    expect(stage(run).houseCats[0].state).toBe("+4 Purr")
+    expect(stage(run).houseCats[0].state).toBe("+10 Purr")
   })
 })
 

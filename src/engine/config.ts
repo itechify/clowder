@@ -27,6 +27,8 @@ export type Config = {
   disasterNights: number[]
   /** A Disaster Night's Target is the Night's normal Target × this, rounded. */
   disasterTargetFactor: number
+  /** Base Purr The Void grows each Black Cat after a Play with a Gathering. */
+  voidGrowth: number
   /**
    * Treats for clearing a Night: `early` through Night `earlyNights`, `later`
    * after, and `disaster` for any Disaster Night.
@@ -72,7 +74,8 @@ export const defaultConfig: Config = {
   firstTarget: 300,
   targetGrowth: 1.6,
   disasterNights: [3, 6, 9],
-  disasterTargetFactor: 1.5,
+  disasterTargetFactor: 1,
+  voidGrowth: 5,
   clearReward: {
     early: 3,
     earlyNights: 2,
