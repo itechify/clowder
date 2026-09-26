@@ -1,8 +1,10 @@
+import { type GatheringId, gatherings } from "./content/gatherings"
 import {
   clearTreats,
   type HouseCatId,
   type HouseCatTreats
 } from "./content/houseCats"
+import { shuffle } from "./rng"
 import {
   type ActiveGathering,
   type Growth,
@@ -28,6 +30,8 @@ export type Action =
   | { type: "redraw"; cats: CatId[] }
   /** Moves a House Cat to another position; the others close up around it. */
   | { type: "reorderShelf"; houseCat: HouseCatId; position: number }
+  /** Chooses one of the Scrapbook pages offered, then opens the Shop. */
+  | { type: "choosePage"; gathering: GatheringId }
   | ShopAction
 
 /** A Play's Purr and Mult so far, as its Score builds up event by event. */
@@ -67,6 +71,15 @@ export type RunEvent =
       forHouseCats: HouseCatTreats[]
       treats: number
     }
+  /** The Scrapbook opens on a cleared Night, offering these pages. */
+  | { type: "scrapbookOpened"; pages: GatheringId[] }
+  /** A page chosen, raising its Gathering to `level`, and perhaps revealing it. */
+  | {
+      type: "pageChosen"
+      gathering: GatheringId
+      level: number
+      discovered: boolean
+    }
   | { type: "shopOpened" }
   | { type: "catAdopted"; cat: Cat; price: number }
   | { type: "catRehomed"; cat: Cat; price: number }
@@ -92,6 +105,11 @@ export function applyAction(run: Run, action: Action): ActionResult {
   const reject = (reason: string): ActionResult => ({ ok: false, run, reason })
   const { night } = run
   if (run.status !== "playing") return reject("The Run is over")
+  if (run.scrapbookPages)
+    return action.type === "choosePage"
+      ? choosePage(run, run.scrapbookPages, action.gathering)
+      : reject("Choose a Scrapbook page first")
+  if (action.type === "choosePage") return reject("The Scrapbook is closed")
   // A Play resolves at once, so the Shelf is always outside one here.
   if (action.type === "reorderShelf") return reorderShelf(run, action)
   if (isShopAction(action)) {
@@ -153,6 +171,34 @@ export function applyAction(run: Run, action: Action): ActionResult {
   }
 }
 
+/** Raises the chosen page's Gathering a level, revealing it, and opens the Shop. */
+function choosePage(
+  run: Run,
+  pages: GatheringId[],
+  gathering: GatheringId
+): ActionResult {
+  if (!pages.includes(gathering))
+    return { ok: false, run, reason: "That page is not offered" }
+  const level = run.gatheringLevels[gathering] + 1
+  const discovered = !run.discoveredGatherings.includes(gathering)
+  const chosen: Run = {
+    ...run,
+    gatheringLevels: { ...run.gatheringLevels, [gathering]: level },
+    discoveredGatherings: discovered
+      ? [...run.discoveredGatherings, gathering]
+      : run.discoveredGatherings,
+    scrapbookPages: null
+  }
+  return {
+    ok: true,
+    run: openShop(chosen),
+    events: [
+      { type: "pageChosen", gathering, level, discovered },
+      { type: "shopOpened" }
+    ]
+  }
+}
+
 function reorderShelf(
   run: Run,
   { houseCat, position }: Extract<Action, { type: "reorderShelf" }>
@@ -205,6 +251,7 @@ function play(run: Run): ActionResult {
   const tally: Tally = { purr: 0, mult: 1 }
   const events: RunEvent[] = [
     ...breakdown.gatherings.map((active): RunEvent => {
+      tally.purr += active.purr
       tally.mult += active.mult
       return {
         type: "gatheringActivated",
@@ -305,7 +352,10 @@ function loseRun(run: Run, events: RunEvent[]): ActionResult {
   }
 }
 
-/** Pays the cleared Night's Treats, then opens the Shop or wins the Run. */
+/**
+ * Pays the cleared Night's Treats, then opens the Scrapbook before the Shop,
+ * or wins the Run.
+ */
 function clearNight(run: Run, events: RunEvent[]): ActionResult {
   const { config, night } = run
   const reward = config.clearReward
@@ -330,8 +380,14 @@ function clearNight(run: Run, events: RunEvent[]): ActionResult {
     stats: { ...run.stats, nightsCleared: run.stats.nightsCleared + 1 }
   }
   if (night.number < config.nights) {
-    events.push({ type: "shopOpened" })
-    return { ok: true, run: openShop(paid), events }
+    // Different Gatherings, drawn evenly from them all.
+    const [shuffled, rng] = shuffle(
+      paid.rng,
+      gatherings.map((gathering) => gathering.id)
+    )
+    const pages = shuffled.slice(0, config.scrapbookPages)
+    events.push({ type: "scrapbookOpened", pages })
+    return { ok: true, run: { ...paid, rng, scrapbookPages: pages }, events }
   }
   events.push({ type: "runEnded", outcome: "won" })
   return { ok: true, run: { ...paid, status: "won" }, events }

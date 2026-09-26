@@ -6,12 +6,13 @@ import {
   type Run,
   startRun
 } from "../engine"
-import { accepted } from "../engine/testing"
+import { accepted, chooseFirstPage } from "../engine/testing"
 import { type DoorwaySpot, stageShop } from "./shop"
 
 /**
  * A Run just into its first Shop, with Treats to spare: in a Run where any
- * Play clears its Night, the first Hand Cat is played alone.
+ * Play clears its Night, the first Hand Cat is played alone, and the first
+ * Scrapbook page chosen.
  */
 function inShop(seed = 1, config: Partial<Config> = {}): Run {
   const run = startRun(seed, {
@@ -21,42 +22,44 @@ function inShop(seed = 1, config: Partial<Config> = {}): Run {
   })
   const cat = run.night.hand[0]
   const seated = accepted(run, { type: "place", cat, seat: 0 }).run
-  return { ...accepted(seated, { type: "play" }).run, treats: 50 }
+  const cleared = accepted(seated, { type: "play" }).run
+  return { ...chooseFirstPage(cleared).run, treats: 50 }
 }
 
 describe("the doorway", () => {
   /** What waits in each doorway spot: a tagged name, or nothing. */
   const waiting = (spots: DoorwaySpot[]) =>
     spots.map(({ offer }) => offer?.tag.name ?? null)
+  /** A first Shop offering a House Cat with a title. */
+  const seed = 14
 
   it("has the offered Cats then House Cats waiting, each tagged and priced", () => {
-    const run = inShop()
+    const run = inShop(seed)
     const { doorway } = stageShop(run)
 
     expect(doorway.map(({ offer }) => offer)).toMatchObject([
       {
         cat: { id: "cat-31" },
-        tag: { name: "Inky", title: null, about: "Black Clingy" },
+        tag: { name: "Pistachio", title: null, about: "Black Clingy" },
         action: { type: "adopt", cat: "cat-31" },
         price: 3
       },
       {
         cat: { id: "cat-32" },
-        tag: { name: "Tofu", title: null, about: "White Clingy" },
+        tag: { name: "Sesame", title: null, about: "White Sleepy" },
         action: { type: "adopt", cat: "cat-32" },
         price: 3
       },
       {
-        houseCat: "theVoid",
-        pose: "houseCat/theVoid/idle",
+        houseCat: "treatDealer",
+        pose: "houseCat/treatDealer/idle",
         tag: {
-          name: "The Void",
+          name: "Treat Dealer",
           title: null,
-          about:
-            "After a Play with a Gathering, its Black Cats gain +5 base Purr"
+          about: "+1 Treat per unused Redraw when a Night is cleared"
         },
-        action: { type: "recruit", houseCat: "theVoid" },
-        price: 6
+        action: { type: "recruit", houseCat: "treatDealer" },
+        price: 5
       },
       {
         houseCat: "freya",
@@ -68,7 +71,8 @@ describe("the doorway", () => {
   })
 
   it("tags The Void with the growth it is configured to give", () => {
-    const { doorway } = stageShop(inShop(1, { houseCats: { voidGrowth: 7 } }))
+    // This seed's first Shop offers The Void.
+    const { doorway } = stageShop(inShop(6, { houseCats: { voidGrowth: 7 } }))
 
     expect(
       doorway.find(({ offer }) => offer?.tag.name === "The Void")?.offer?.tag
@@ -77,36 +81,36 @@ describe("the doorway", () => {
   })
 
   it("leaves an empty spot where a Cat was Adopted, the rest keeping theirs", () => {
-    const run = inShop()
+    const run = inShop(seed)
     const before = stageShop(run).doorway
     const adopted = accepted(run, { type: "adopt", cat: "cat-31" }).run
 
     expect(waiting(stageShop(adopted, { doorway: before }).doorway)).toEqual([
       null,
-      "Tofu",
-      "The Void",
+      "Sesame",
+      "Treat Dealer",
       "Freya"
     ])
   })
 
   it("leaves an empty spot where a House Cat was Recruited", () => {
-    const run = inShop()
+    const run = inShop(seed)
     const before = stageShop(run).doorway
     const recruited = accepted(run, {
       type: "recruit",
-      houseCat: "theVoid"
+      houseCat: "treatDealer"
     }).run
 
     expect(waiting(stageShop(recruited, { doorway: before }).doorway)).toEqual([
-      "Inky",
-      "Tofu",
+      "Pistachio",
+      "Sesame",
       null,
       "Freya"
     ])
   })
 
   it("keeps empty spots empty as more offers are taken", () => {
-    const run = inShop()
+    const run = inShop(seed)
     const first = stageShop(run).doorway
     const adopted = accepted(run, { type: "adopt", cat: "cat-32" }).run
     const second = stageShop(adopted, { doorway: first }).doorway
@@ -115,13 +119,13 @@ describe("the doorway", () => {
     expect(waiting(stageShop(both, { doorway: second }).doorway)).toEqual([
       null,
       null,
-      "The Void",
+      "Treat Dealer",
       "Freya"
     ])
   })
 
   it("replaces every offer on a Reroll, filling the spots taken ones left", () => {
-    const run = inShop()
+    const run = inShop(seed)
     const first = stageShop(run).doorway
     const adopted = accepted(run, { type: "adopt", cat: "cat-31" }).run
     const second = stageShop(adopted, { doorway: first }).doorway

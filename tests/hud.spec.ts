@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 import { disasterById } from "../src/engine"
+import { gatheringLabel } from "../src/presentation/scrapbook"
 import { boot, layout, tap } from "./scene"
 
 const texts = (page: Page) => page.evaluate(() => window.__clowder!.texts())
@@ -42,9 +43,7 @@ test("names Gatherings on the Couch as they form", async ({ page }) => {
 
   expect(gatherings.length).toBeGreaterThan(0)
   expect(await texts(page)).toEqual(
-    expect.arrayContaining(
-      gatherings.map(({ name, mult }) => `${name} +${mult}`)
-    )
+    expect.arrayContaining(gatherings.map(gatheringLabel))
   )
 })
 
@@ -57,8 +56,13 @@ test("hangs tonight's Disaster in the room throughout its Night", async ({
     const { run, apply } = window.__clowder!
     while (
       run().status === "playing" &&
-      (!run().night.disaster || run().shop)
+      (!run().night.disaster || run().shop || run().scrapbookPages)
     ) {
+      const pages = run().scrapbookPages
+      if (pages) {
+        apply({ type: "choosePage", gathering: pages[0] })
+        continue
+      }
       if (run().shop) {
         apply({ type: "leaveShop" })
         continue

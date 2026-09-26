@@ -65,7 +65,9 @@ export const layout = {
   /** Once the Results show, over Play and Redraw, which no longer answer. */
   newHousehold: [268, 790] as [number, number],
   /** Open wall below the Shelf, clear of anything that answers a tap. */
-  wall: [195, 240] as [number, number]
+  wall: [195, 240] as [number, number],
+  /** The `i`th of the three Scrapbook pages, once a Night is cleared. */
+  page: (i: number): [number, number] => [74 + i * 121, 590]
 }
 
 /** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */
@@ -95,15 +97,15 @@ export const shop = {
 }
 
 /**
- * Plays a seeded Run's first Nights by the debug hook until the Shop opens,
- * skipping the clearing Play's sequence; resolves once the Shop shows, as
- * dawn begins to break.
+ * Plays a seeded Run's first Nights by the debug hook until the Scrapbook
+ * opens, skipping the clearing Play's sequence; resolves once the Scrapbook
+ * shows.
  */
-export async function toShop(page: Page, seed: number) {
+export async function toScrapbook(page: Page, seed: number) {
   await boot(page, seed)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
-    while (!run().shop) {
+    while (!run().scrapbookPages) {
       run()
         .night.hand.slice(0, 5)
         .forEach((cat, seat) => {
@@ -113,6 +115,22 @@ export async function toShop(page: Page, seed: number) {
     }
   })
   await tap(page, ...layout.wall)
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scoring()))
+    .toBe(false)
+}
+
+/**
+ * Plays a seeded Run's first Nights by the debug hook until the Scrapbook
+ * opens, then chooses its first page by the debug hook too; resolves once the
+ * Shop shows, as dawn begins to break.
+ */
+export async function toShop(page: Page, seed: number) {
+  await toScrapbook(page, seed)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    apply({ type: "choosePage", gathering: run().scrapbookPages![0] })
+  })
   await expect
     .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
       timeout: 40_000

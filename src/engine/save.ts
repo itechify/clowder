@@ -1,7 +1,7 @@
 import type { Config } from "./config"
 import { coats } from "./content/coats"
 import { disasters } from "./content/disasters"
-import { gatherings } from "./content/gatherings"
+import { type GatheringBonus, gatherings } from "./content/gatherings"
 import { houseCats } from "./content/houseCats"
 import { personalities } from "./content/personalities"
 import type { BestPlay, RunStats } from "./stats"
@@ -11,7 +11,7 @@ import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
  * The shape of saved Runs. Bump it whenever Run state changes meaning, so a
  * save from before the change is discarded rather than resumed.
  */
-const SAVE_VERSION = 5
+const SAVE_VERSION = 6
 
 /** Run state as plain text, to keep on the device between visits. */
 export function serialiseRun(run: Run): string {
@@ -68,9 +68,15 @@ const shape =
 
 const isDisaster = oneOf(disasters.map((disaster) => disaster.id))
 const isHouseCat = oneOf(houseCats.map((houseCat) => houseCat.id))
+const isGathering = oneOf(gatherings.map((gathering) => gathering.id))
 /** A whole number for every House Cat. */
 const perHouseCat: Check = (value) =>
   isRecord(value) && houseCats.every(({ id }) => integer(value[id]))
+/** A value for every Gathering, each checked. */
+const perGathering =
+  (check: Check): Check =>
+  (value) =>
+    isRecord(value) && gatherings.every(({ id }) => check(value[id]))
 
 const isCat = shape<Cat>({
   id: text,
@@ -97,6 +103,13 @@ const isConfig = shape<Config>({
   playsPerNight: integer,
   redrawsPerNight: integer,
   catsPerRedraw: integer,
+  gatheringLevelBonus: perGathering(
+    shape<GatheringBonus>({
+      purr: integer,
+      mult: integer
+    })
+  ),
+  scrapbookPages: integer,
   nights: integer,
   firstTarget: finite,
   targetGrowth: finite,
@@ -152,7 +165,9 @@ const isRun = shape<Run>({
       nextDisaster: nullable(isDisaster)
     })
   ),
-  discoveredGatherings: list(oneOf(gatherings.map((g) => g.id))),
+  discoveredGatherings: list(isGathering),
+  gatheringLevels: perGathering(integer),
+  scrapbookPages: nullable(list(isGathering)),
   status: memberOf<RunStatus>({ playing: true, won: true, lost: true }),
   treats: integer,
   stats: shape<RunStats>({
@@ -172,11 +187,24 @@ const isRun = shape<Run>({
  * Whether the Night's Cats are where they can be: seated from the Hand, and,
  * while it is in play, all in the Roster (once it is over, some may have been
  * Rehomed). The Shelf holds each House Cat at most once, and no more than fit.
+ * The Scrapbook's pages are different Gatherings, offered once the Night is
+ * cleared and before the Shop opens.
  */
-function isConsistent({ config, roster, shelf, night }: Run): boolean {
+function isConsistent({
+  config,
+  roster,
+  shelf,
+  night,
+  shop,
+  scrapbookPages
+}: Run): boolean {
   const ids = new Set(roster.map((cat) => cat.id))
   return (
     new Set(shelf).size === shelf.length &&
+    (!scrapbookPages ||
+      (new Set(scrapbookPages).size === scrapbookPages.length &&
+        night.status === "cleared" &&
+        shop === null)) &&
     shelf.length <= config.shelfSize &&
     night.couch.length === config.seats &&
     night.couch.every((cat) => cat === null || night.hand.includes(cat)) &&

@@ -22,6 +22,11 @@ import {
   purrMeter
 } from "../presentation/hud"
 import {
+  gatheringLabel,
+  type ScrapbookChoice,
+  scrapbookChoice
+} from "../presentation/scrapbook"
+import {
   atRest,
   type CatLook,
   type Placement,
@@ -168,6 +173,19 @@ const CAT_BED = {
 /** The rosette on the Star Cat's flank, from the Cat's centre. */
 const ROSETTE = { dx: 16, dy: 8 }
 const NEW_HOUSEHOLD = { x: 268, y: 790, w: 230, h: 58 }
+/**
+ * The Scrapbook, open in the room once a Night is cleared: its cover, where
+ * the preview was and over the rug, its title across the top, and its pages
+ * side by side beneath, each `step` apart.
+ */
+const SCRAPBOOK = { y: 574, titleY: 472, cover: { w: 376, h: 250 } }
+const PAGE = { y: 590, w: 112, h: 186, step: 121 }
+/** The Scrapbook's page centres, side by side. */
+const pageX = (count: number) =>
+  Array.from(
+    { length: count },
+    (_, page) => WIDTH / 2 + (page - (count - 1) / 2) * PAGE.step
+  )
 /** How long the Results take to appear once the household is asleep. */
 const RESULTS_FADE_MS = 700
 /** From the end of the Run's last scoring sequence until the Cats are all asleep. */
@@ -267,6 +285,8 @@ export class CouchScene extends Phaser.Scene {
   private skipArea!: Phaser.GameObjects.Zone
   /** New Household's tap area, listening only while the Results show. */
   private newHouseholdArea!: Phaser.GameObjects.Zone
+  /** Each Scrapbook page's tap area, listening only while the Scrapbook is open. */
+  private pageAreas: Phaser.GameObjects.Zone[] = []
   private layer!: Phaser.GameObjects.Container
   /** The sign naming tonight's Disaster, when there is one. */
   private disasterSign: Phaser.GameObjects.Container | null = null
@@ -344,6 +364,14 @@ export class CouchScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.tapNewHousehold())
     this.newHouseholdArea.disableInteractive()
+    // Over the rug, whose Cats wait while a page is chosen.
+    this.pageAreas = pageX(session.run.config.scrapbookPages).map((x, page) =>
+      this.add
+        .zone(x, PAGE.y, PAGE.w, PAGE.h)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", () => this.tapPage(page))
+        .disableInteractive()
+    )
     // Over everything, but listening only while a scoring sequence plays.
     this.skipArea = this.add
       .zone(0, 0, WIDTH, HEIGHT)
@@ -363,11 +391,11 @@ export class CouchScene extends Phaser.Scene {
       // A sequence still playing is overtaken: it ends at its final state.
       this.scoring?.finish("overtaken")
       this.bedtime?.remove()
-      // A cleared Night's sequence opens the Shop when it finishes; opened
-      // any other way, the Shop takes over at once.
-      const shopOpened = events.some((event) => event.type === "shopOpened")
-      if (session.run.shop && !shopOpened) {
-        this.scene.start("shop")
+      // A chosen Scrapbook page opens the Shop as the day dawns; opened any
+      // other way, the Shop takes over at once.
+      if (session.run.shop) {
+        const shopOpened = events.some((event) => event.type === "shopOpened")
+        this.scene.start("shop", shopOpened ? { dawn: true } : undefined)
         return
       }
       const before = this.lastDrawn
@@ -451,7 +479,7 @@ export class CouchScene extends Phaser.Scene {
   }
 
   private startPress(pointer: Phaser.Input.Pointer, target: PressTarget) {
-    if (session.run.status !== "playing") return
+    if (session.run.status !== "playing" || session.run.scrapbookPages) return
     this.press = { target, at: this.worldPoint(pointer) }
   }
 
@@ -589,6 +617,14 @@ export class CouchScene extends Phaser.Scene {
     } else {
       session.apply({ type: "redraw", cats: this.redrawing })
     }
+  }
+
+  /** Chooses the Scrapbook page tapped, and the Shop opens. */
+  private tapPage(page: number) {
+    const chosen = scrapbookChoice(session.run)?.pages[page]
+    if (!chosen) return
+    sound.cue({ name: "uiTap" })
+    session.apply(chosen.action)
   }
 
   /** Starts a fresh Run, from the Results. */
@@ -900,15 +936,21 @@ export class CouchScene extends Phaser.Scene {
       return
     }
 
-    // The Shelf, each House Cat noting what it adds to the Play as it stands.
+    // The Shelf, each House Cat noting what it adds to the Play as it stands;
+    // it waits while a Scrapbook page is chosen.
     const preview = previewPlay(run)
+    const choice = scrapbookChoice(run)
+    this.pageAreas.forEach((area, page) => {
+      if (choice?.pages[page]) area.setInteractive()
+      else area.disableInteractive()
+    })
     drawShelf(this, add, {
       run,
       y: SHELF_Y,
       size: SHELF_CAT_SIZE,
       held: this.heldHouseCat,
       notes: shelfNotes(run, preview),
-      onTap: (position) => this.tapShelfPosition(position)
+      onTap: choice ? undefined : (position) => this.tapShelfPosition(position)
     })
 
     const chosen = new Set(this.redrawing)
@@ -944,27 +986,28 @@ export class CouchScene extends Phaser.Scene {
     this.drawGatherings(add, preview.gatherings, "over")
 
     // Live preview: Purr × Mult = Score, and where it would leave the Night.
-    add(
-      this.add
-        .text(
-          WIDTH / 2,
-          PREVIEW_Y,
-          this.redrawing
-            ? `Choose up to ${run.config.catsPerRedraw} Cats to Redraw`
-            : preview.scoringEvents.length
-              ? `${purrTimesMult(preview.purr, preview.mult)} = ${preview.score}`
-              : "Tap or drag a Cat to a Seat",
-          numbers(22)
-        )
-        .setOrigin(0.5)
-    )
+    if (!choice)
+      add(
+        this.add
+          .text(
+            WIDTH / 2,
+            PREVIEW_Y,
+            this.redrawing
+              ? `Choose up to ${run.config.catsPerRedraw} Cats to Redraw`
+              : preview.scoringEvents.length
+                ? `${purrTimesMult(preview.purr, preview.mult)} = ${preview.score}`
+                : "Tap or drag a Cat to a Seat",
+            numbers(22)
+          )
+          .setOrigin(0.5)
+      )
     // Beneath it, where the Mult comes from; or what a House Cat picked up
     // from the Shelf does.
     const picked = this.heldHouseCat && houseCat(this.heldHouseCat)
     const breakdown = picked
       ? `${picked.name}: ${picked.ability(run.config.houseCats)}. Tap elsewhere on the Shelf to move it.`
       : multBreakdown(preview)
-    if (breakdown)
+    if (breakdown && !choice)
       add(
         this.add
           .text(WIDTH / 2, BREAKDOWN_Y, breakdown, {
@@ -1016,6 +1059,66 @@ export class CouchScene extends Phaser.Scene {
     // A Cat being dragged is carried over everything else.
     const carried = this.dragging && this.shown.get(this.dragging)
     if (carried) this.layer.bringToTop(carried.sprite)
+    if (choice) this.drawScrapbook(add, choice)
+  }
+
+  /**
+   * The Scrapbook open over the rug after a cleared Night, its pages side by
+   * side, each naming its Gathering, what forms it, and exactly what its next
+   * level adds; tapping one chooses it.
+   */
+  private drawScrapbook(add: Add, { title, pages }: ScrapbookChoice) {
+    const { w, h } = SCRAPBOOK.cover
+    const cover = [WIDTH / 2 - w / 2, SCRAPBOOK.y - h / 2, w, h, 14] as const
+    add(this.add.graphics())
+      .fillStyle(0x8a5a3c, 1)
+      .fillRoundedRect(...cover)
+      .lineStyle(3, INK, 1)
+      .strokeRoundedRect(...cover)
+    add(
+      this.add
+        .text(WIDTH / 2, SCRAPBOOK.titleY, title, display(22, "#fdf6ea"))
+        .setOrigin(0.5)
+        .setStroke(OUTLINE, 5)
+    )
+    const xs = pageX(pages.length)
+    const wrapped = { wordWrap: { width: PAGE.w - 14 }, align: "center" }
+    pages.forEach(({ name, requirement, label }, page) => {
+      const x = xs[page]
+      const { y } = PAGE
+      const sheet = [x - PAGE.w / 2, y - PAGE.h / 2, PAGE.w, PAGE.h, 6] as const
+      add(this.add.graphics())
+        .fillStyle(0xfdf6ea, 1)
+        .fillRoundedRect(...sheet)
+        .lineStyle(2, INK, 1)
+        .strokeRoundedRect(...sheet)
+      add(
+        this.add
+          .text(x, y - 64, name, { ...display(17), ...wrapped })
+          .setOrigin(0.5)
+      )
+      add(
+        this.add
+          .text(x, y - 14, requirement, {
+            ...font(11, "#7a5a3c", "700"),
+            ...wrapped
+          })
+          .setOrigin(0.5)
+      )
+      add(
+        this.add
+          .text(x, y + 40, label.levels, font(16, "#4a3426", "800"))
+          .setOrigin(0.5)
+      )
+      add(
+        this.add
+          .text(x, y + 66, label.adds, {
+            ...font(12, "#b4561f", "800"),
+            ...wrapped
+          })
+          .setOrigin(0.5)
+      )
+    })
   }
 
   /**
@@ -1325,8 +1428,8 @@ export class CouchScene extends Phaser.Scene {
     if (layer === "behind") return
 
     // Each Gathering's name, above the Seats that form it.
-    const labels = row.map(({ name, mult }) =>
-      this.add.text(0, GATHERING_NAME_Y, `${name} +${mult}`, numbers(14))
+    const labels = row.map((active) =>
+      this.add.text(0, GATHERING_NAME_Y, gatheringLabel(active), numbers(14))
     )
     const pillWidth = (label: Phaser.GameObjects.Text) =>
       label.width + 2 * GATHERING_PILL.padding
@@ -1804,12 +1907,7 @@ export class CouchScene extends Phaser.Scene {
       presentation.update({ scoring: false })
       // Overtaken, the next sequence or draw shows what comes after.
       if (ending === "overtaken") return
-      // The Night is cleared: its celebration is over, so the day dawns and
-      // the Shop opens.
-      if (session.run.shop) {
-        this.scene.start("shop", { dawn: true })
-        return
-      }
+      // A cleared Night's celebration over, the Scrapbook shows open.
       this.draw(ended ? "nodOff" : null)
       if (ended)
         this.bedtime = this.time.delayedCall(SLEEP_MOMENT_MS, () => {

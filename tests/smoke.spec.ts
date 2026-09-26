@@ -23,6 +23,8 @@ test("plays a seeded Run through to its results", async ({ page }) => {
     const scores: [number, number][] = []
     const seed = run().seed
     while (run().status === "playing") {
+      const pages = run().scrapbookPages
+      if (pages) apply({ type: "choosePage", gathering: pages[0] })
       const { shop } = run()
       if (shop) {
         for (const houseCat of shop.houseCatOffers)
@@ -150,7 +152,7 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
 }) => {
   test.setTimeout(60_000)
   // This seed's first Shop offers Do Not Touch, for all 5 Treats.
-  await toShop(page, 2)
+  await toShop(page, 1)
   await settled(page)
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.treats).toBe(5)
@@ -190,15 +192,17 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
 
 test("rearranges the Shelf by tapping in the Shop", async ({ page }) => {
   test.setTimeout(60_000)
-  // This seed Recruits a second House Cat in its second Shop.
   await boot(page, 14)
-  // Recruits whatever it can afford until the Shelf holds two House Cats.
+  // Recruits whatever it can afford, one at a time, until the Shelf holds two
+  // House Cats.
   const shelf = await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     while (run().status === "playing") {
+      const pages = run().scrapbookPages
+      if (pages) apply({ type: "choosePage", gathering: pages[0] })
       if (run().shop) {
         for (const houseCat of run().shop!.houseCatOffers)
-          apply({ type: "recruit", houseCat })
+          if (run().shelf.length < 2) apply({ type: "recruit", houseCat })
         if (run().shelf.length >= 2) break
         apply({ type: "leaveShop" })
       }
@@ -262,6 +266,8 @@ test("starts afresh once the saved Run has finished", async ({ page }) => {
   const seed = await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     while (run().status === "playing") {
+      const pages = run().scrapbookPages
+      if (pages) apply({ type: "choosePage", gathering: pages[0] })
       if (run().shop) apply({ type: "leaveShop" })
       run()
         .night.hand.slice(0, 5)
@@ -287,6 +293,11 @@ test("resumes a Run left in the Shop there", async ({ page }) => {
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     while (!run().shop) {
+      const pages = run().scrapbookPages
+      if (pages) {
+        apply({ type: "choosePage", gathering: pages[0] })
+        continue
+      }
       run()
         .night.hand.slice(0, 5)
         .forEach((cat, seat) => {

@@ -10,7 +10,7 @@ import {
   type Run,
   startRun
 } from "./index"
-import { accepted } from "./testing"
+import { accepted, chooseFirstPage } from "./testing"
 
 /** Every House Cat's Recruit price set to `price`. */
 const pricedAt = (price: number) =>
@@ -25,11 +25,16 @@ const shopPricedAt = (price: number) => ({
   recruitPrices: pricedAt(price)
 })
 
-/** Plays the first Hand Cat alone; in an easy Run that clears the Night. */
+/**
+ * Plays the first Hand Cat alone; in an easy Run that clears the Night, and
+ * the first Scrapbook page offered is chosen to open the Shop.
+ */
 const playOne = (run: Run) => {
   const cat = run.night.hand[0]
   const seated = accepted(run, { type: "place", cat, seat: 0 }).run
-  return accepted(seated, { type: "play" })
+  const played = accepted(seated, { type: "play" })
+  const chosen = chooseFirstPage(played.run)
+  return { run: chosen.run, events: [...played.events, ...chosen.events] }
 }
 
 /** A Run in which every Play, however small, clears its Night. */

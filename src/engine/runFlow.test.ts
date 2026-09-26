@@ -7,11 +7,12 @@ import {
   starCat,
   startRun
 } from "./index"
-import { accepted, runWithCouch } from "./testing"
+import { accepted, chooseFirstPage, runWithCouch } from "./testing"
 
 /**
  * Seats the first `count` Cats of the Hand from Seat 0 and Plays them, then
- * leaves any Shop the Play opens without spending.
+ * chooses the first page of any Scrapbook the Play opens and leaves the Shop
+ * without spending.
  */
 function playFromHand(run: Run, count = 1) {
   let next = run
@@ -19,9 +20,13 @@ function playFromHand(run: Run, count = 1) {
     next = accepted(next, { type: "place", cat, seat }).run
   })
   const played = accepted(next, { type: "play" })
-  if (!played.run.shop) return played
-  const left = accepted(played.run, { type: "leaveShop" })
-  return { ...left, events: [...played.events, ...left.events] }
+  if (!played.run.scrapbookPages) return played
+  const chosen = chooseFirstPage(played.run)
+  const left = accepted(chosen.run, { type: "leaveShop" })
+  return {
+    ...left,
+    events: [...played.events, ...chosen.events, ...left.events]
+  }
 }
 
 /** A Run in which every Play, however small, clears its Night. */
@@ -210,7 +215,7 @@ describe("Run statistics", () => {
     const loner = run.roster.find((cat) => cat.personality === "aloof")!
     for (let night = 1; night <= 2; night++) {
       run = accepted(run, { type: "place", cat: loner.id, seat: 2 }).run
-      run = accepted(run, { type: "play" }).run
+      run = chooseFirstPage(accepted(run, { type: "play" }).run).run
       run = accepted(run, { type: "leaveShop" }).run
     }
 

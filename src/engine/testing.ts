@@ -1,6 +1,7 @@
 import { type Action, applyAction } from "./actions"
 import { type Config, defaultConfig } from "./config"
 import type { Coat } from "./content/coats"
+import type { GatheringId } from "./content/gatherings"
 import type { HouseCatId } from "./content/houseCats"
 import type { Personality } from "./content/personalities"
 import { startRun } from "./run"
@@ -40,16 +41,22 @@ export function seatFromHand(run: Run, specs: SeatSpec[]): Run {
 
 /**
  * A fresh Run whose Hand holds Roster Cats matching the specs, seated in order
- * from Seat 0, with the given Shelf. Test-only: stands in for a lucky draw and
- * the Shop visits before it.
+ * from Seat 0, with the given Shelf and Gathering levels. Test-only: stands in
+ * for a lucky draw and the Shop visits and Scrapbook pages before it.
  */
 export function runWithCouch(
   specs: SeatSpec[],
   {
     seed = 1,
     config = {},
-    shelf = []
-  }: { seed?: number; config?: Partial<Config>; shelf?: HouseCatId[] } = {}
+    shelf = [],
+    gatheringLevels = {}
+  }: {
+    seed?: number
+    config?: Partial<Config>
+    shelf?: HouseCatId[]
+    gatheringLevels?: Partial<Record<GatheringId, number>>
+  } = {}
 ): Run {
   const run = startRun(seed, { ...defaultConfig, ...config })
   const chosen: (CatId | null)[] = []
@@ -68,6 +75,7 @@ export function runWithCouch(
   let next: Run = {
     ...run,
     shelf,
+    gatheringLevels: { ...run.gatheringLevels, ...gatheringLevels },
     night: {
       ...run.night,
       hand,
@@ -85,4 +93,16 @@ export function accepted(run: Run, action: Action) {
   const result = applyAction(run, action)
   if (!result.ok) throw new Error(result.reason)
   return result
+}
+
+/**
+ * Chooses the first Scrapbook page offered, opening the Shop, if the Scrapbook
+ * is open; otherwise the Run as it is, with no events.
+ */
+export function chooseFirstPage(run: Run) {
+  if (!run.scrapbookPages) return { run, events: [] }
+  return accepted(run, {
+    type: "choosePage",
+    gathering: run.scrapbookPages[0]
+  })
 }

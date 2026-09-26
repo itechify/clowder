@@ -2,6 +2,7 @@ import { type Config, defaultConfig } from "./config"
 import { catNames } from "./content/catNames"
 import { coats } from "./content/coats"
 import { type DisasterId, disasterById, disasters } from "./content/disasters"
+import { type GatheringId, gatherings } from "./content/gatherings"
 import { personalities } from "./content/personalities"
 import { shuffle } from "./rng"
 import { noStats } from "./stats"
@@ -35,6 +36,10 @@ export function startRun(seed: number, config: Config = defaultConfig): Run {
       disasters: order,
       shop: null,
       discoveredGatherings: [],
+      gatheringLevels: Object.fromEntries(
+        gatherings.map((gathering) => [gathering.id, 1])
+      ) as Record<GatheringId, number>,
+      scrapbookPages: null,
       status: "playing",
       treats: 0,
       stats: noStats

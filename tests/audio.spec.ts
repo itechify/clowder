@@ -88,7 +88,14 @@ test("plays each part of a Run's music", async ({ page }) => {
   const heard = new Set<string>()
 
   while ((await run(page)).status === "playing") {
-    const { night, shop } = await run(page)
+    const { night, shop, scrapbookPages } = await run(page)
+    if (scrapbookPages) {
+      // The Night's music plays on while a Scrapbook page is chosen.
+      await page.evaluate((gathering) => {
+        window.__clowder!.apply({ type: "choosePage", gathering })
+      }, scrapbookPages[0])
+      continue
+    }
     if (shop) {
       await expect.poll(() => theme(page)).toBe("shop")
       heard.add("shop")

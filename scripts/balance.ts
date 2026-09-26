@@ -10,6 +10,8 @@ import {
   type Config,
   type DisasterId,
   disasterById,
+  type GatheringId,
+  gatherings,
   type HouseCatId,
   nightTarget,
   previewPlay,
@@ -26,6 +28,11 @@ type Strategy = {
   rehome: (cat: Cat) => boolean
   /** The most Rerolls per Shop visit spent looking for a wanted House Cat. */
   rerolls: number
+  /**
+   * The Gatherings its build forms, whose Scrapbook pages it chooses over
+   * any others: the one its Plays have formed most, ties to the first listed.
+   */
+  pages: GatheringId[]
 }
 
 const never = () => false
@@ -36,7 +43,8 @@ const strategies: Strategy[] = [
     priority: [],
     adopt: never,
     rehome: never,
-    rerolls: 0
+    rerolls: 0,
+    pages: []
   },
   {
     name: "greedy any House Cat",
@@ -53,28 +61,32 @@ const strategies: Strategy[] = [
     ],
     adopt: never,
     rehome: never,
-    rerolls: 2
+    rerolls: 2,
+    pages: []
   },
   {
     name: "orange + sleepy engine",
     priority: ["bigLoaf", "oneBraincell", "boxGoblin", "copycat", "skadi"],
     adopt: (cat) => cat.coat === "orange" || cat.personality === "sleepy",
     rehome: (cat) => cat.coat !== "orange" && cat.personality !== "sleepy",
-    rerolls: 2
+    rerolls: 2,
+    pages: ["cuddlePuddle", "napClub"]
   },
   {
     name: "antisocial household",
     priority: ["doNotTouch", "freya", "boxGoblin", "copycat"],
     adopt: (cat) => cat.personality === "aloof",
     rehome: (cat) => cat.personality === "clingy",
-    rerolls: 2
+    rerolls: 2,
+    pages: ["personalSpace"]
   },
   {
     name: "growing void",
     priority: ["theVoid", "boxGoblin", "copycat", "freya"],
     adopt: (cat) => cat.coat === "black",
     rehome: (cat) => cat.coat !== "black" && cat.personality === "clingy",
-    rerolls: 2
+    rerolls: 2,
+    pages: []
   }
 ]
 
@@ -85,11 +97,16 @@ const MIN_ROSTER = 16
 /** The Night whose Shelf size the report averages. */
 const SHELF_NIGHT = 6
 
-const act = (run: Run, action: Action): Run => {
+const accepted = (run: Run, action: Action) => {
   const result = applyAction(run, action)
   if (!result.ok) throw new Error(`Rejected ${JSON.stringify(action)}`)
-  return result.run
+  return result
 }
+
+const act = (run: Run, action: Action): Run => accepted(run, action).run
+
+/** How many Plays this Run have formed each Gathering. */
+type TimesFormed = Map<GatheringId, number>
 
 /** The highest-scoring legal Couch from the Hand, trying every arrangement. */
 function bestCouch(run: Run): { score: number; couch: (CatId | null)[] } {
@@ -128,8 +145,11 @@ function bestCouch(run: Run): { score: number; couch: (CatId | null)[] } {
   return best
 }
 
-/** Plays the best Couch each time, Redrawing while it falls short of pace. */
-function playNight(run: Run): Run {
+/**
+ * Plays the best Couch each time, Redrawing while it falls short of pace, and
+ * counts the Gatherings each Play forms.
+ */
+function playNight(run: Run, formed: TimesFormed): Run {
   while (run.night.status === "playing" && run.status === "playing") {
     let best = bestCouch(run)
     const pace = (run.night.target - run.night.score) / run.night.playsLeft
@@ -152,9 +172,27 @@ function playNight(run: Run): Run {
     best.couch.forEach((cat, seat) => {
       if (cat) run = act(run, { type: "place", cat, seat })
     })
-    run = act(run, { type: "play" })
+    const played = accepted(run, { type: "play" })
+    for (const event of played.events)
+      if (event.type === "gatheringActivated")
+        formed.set(event.gathering, (formed.get(event.gathering) ?? 0) + 1)
+    run = played.run
   }
   return run
+}
+
+/**
+ * Chooses the Scrapbook page the strategy wants most: of its build's
+ * Gatherings if any are offered, otherwise of all offered, whichever its
+ * Plays have formed most, ties going to the first listed.
+ */
+function choosePage(run: Run, strategy: Strategy, formed: TimesFormed): Run {
+  const pages = run.scrapbookPages!
+  const wanted = strategy.pages.filter((page) => pages.includes(page))
+  const page = (wanted.length > 0 ? wanted : pages).reduce((best, page) =>
+    (formed.get(page) ?? 0) > (formed.get(best) ?? 0) ? page : best
+  )
+  return act(run, { type: "choosePage", gathering: page })
 }
 
 /** Recruits, Rehomes, Adopts, and Rerolls as the strategy likes, then leaves. */
@@ -234,14 +272,17 @@ function simulateStrategy(
     disasterNights.map((night) => [night, new Map()])
   )
   const shelves: number[] = []
+  const levels = new Map<GatheringId, number>()
   let won = 0
   for (let n = 1; n <= runs; n++) {
     let run = startRun(seedOf(n), config)
+    const formed: TimesFormed = new Map()
     while (run.status === "playing") {
+      if (run.scrapbookPages) run = choosePage(run, strategy, formed)
       if (run.shop) run = visitShop(run, strategy)
       const { number, disaster } = run.night
       if (number === SHELF_NIGHT) shelves.push(run.shelf.length)
-      run = playNight(run)
+      run = playNight(run, formed)
       const tallies = [byNight[number]]
       if (disaster) {
         const tally = byDisaster.get(number)!
@@ -255,6 +296,11 @@ function simulateStrategy(
       }
     }
     if (run.status === "won") won++
+    for (const [gathering, level] of Object.entries(run.gatheringLevels))
+      levels.set(
+        gathering as GatheringId,
+        (levels.get(gathering as GatheringId) ?? 0) + level
+      )
   }
   const perNight = (f: (tally: Tally) => string | number) =>
     byNight
@@ -284,6 +330,10 @@ function simulateStrategy(
     ? (shelves.reduce((a, b) => a + b, 0) / shelves.length).toFixed(1)
     : "-"
   lines.push(`  avg House Cats on Night ${SHELF_NIGHT}: ${average}`)
+  const levelled = gatherings.map(
+    ({ id, name }) => `${name} ${((levels.get(id) ?? 0) / runs).toFixed(1)}`
+  )
+  lines.push(`  avg Gathering levels at Run end: ${levelled.join(", ")}`)
   return lines
 }
 

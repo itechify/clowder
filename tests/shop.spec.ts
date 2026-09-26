@@ -10,7 +10,8 @@ const texts = (page: Page) => page.evaluate(() => window.__clowder!.texts())
 test("opens a House Cat's full ability without Recruiting it", async ({
   page
 }) => {
-  await toShop(page, 1)
+  // This seed's first Shop offers Freya, second of its House Cats.
+  await toShop(page, 14)
   await settled(page)
   const ability = houseCat("freya").ability(defaultConfig.houseCats)
   const before = await page.evaluate(() => window.__clowder!.run())
@@ -36,12 +37,16 @@ test("opens a House Cat's full ability without Recruiting it", async ({
   expect(await texts(page)).not.toContain(ability)
 })
 
-/** Leaves the Shop and clears Nights by the debug hook until the next Shop. */
+/**
+ * Leaves the Shop and clears Nights by the debug hook until the next
+ * Scrapbook, skipping the clearing Play's sequence, then chooses a page for
+ * the next Shop.
+ */
 async function nextShop(page: Page) {
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     apply({ type: "leaveShop" })
-    while (!run().shop) {
+    while (!run().scrapbookPages) {
       run()
         .night.hand.slice(0, 5)
         .forEach((cat, seat) => {
@@ -51,6 +56,10 @@ async function nextShop(page: Page) {
     }
   })
   await tap(page, ...shop.wall)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    apply({ type: "choosePage", gathering: run().scrapbookPages![0] })
+  })
   await expect.poll(() => scenes(page), { timeout: 40_000 }).toEqual(["shop"])
 }
 
