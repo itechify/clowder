@@ -166,12 +166,12 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
   expect(await after("Recruit")).toContain("−5")
   expect(await after("Reroll")).toEqual(["−1"])
   expect(await after("Rehome")).toEqual(["−1"])
-  // Each offer is tagged: a Cat with its Kind, a House Cat with its ability.
+  // Each offer is tagged: a Cat with its Kind, a House Cat with a details link.
   const [cat] = before.shop!.catOffers
   expect(await after(cat.name)).toContain(
     `${cat.coat[0].toUpperCase()}${cat.coat.slice(1)} ${cat.personality[0].toUpperCase()}${cat.personality.slice(1)}`
   )
-  expect(await after("Do Not Touch")).toEqual([houseCat("doNotTouch").ability])
+  expect(await after("Do Not Touch")).toEqual(["View ability"])
 
   await tap(page, ...shop.offer(before.shop!.catOffers.length + spot))
   const recruited = await page.evaluate(() => window.__clowder!.run())

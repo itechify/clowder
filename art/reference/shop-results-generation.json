@@ -74,7 +74,7 @@
     "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A small, rounded cream pill-shaped badge with a bold dark outline. Leave it blank: the game writes a count on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 96×60 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside the object. Compose visible silhouette to the EXACT stated target aspect ratio with small clear margins. Leave maximum broad blank space for game text, keep strings very short and borders thin. No extra objects.",
     "references": ["art/reference/style-sheet.png"],
     "source": "exec-e5287c78-bda6-4b6e-b899-9e4515b12217.png",
-    "status": "delivered"
+    "status": "superseded"
   },
   {
     "key": "room/titleSign",
@@ -123,5 +123,20 @@
     ],
     "source": "exec-32e9b92c-ff26-40f6-9ea0-1c887012f487.png",
     "status": "delivered"
+  },
+  {
+    "key": "room/countBadge",
+    "prompt": "Use case: precise-object-edit. Edit the attached cream count badge for Clowder. Keep the warm cream fill, subtle cel-shaded lower edge, dark-brown outline and small upper-left glint. Make its visible silhouette much TALLER: a rounded capsule whose visible width is exactly 1.6 times its visible height, NOT a thin horizontal pill. It will fill a 96 by 60 pixel game sprite with a tiny 2-pixel transparent margin. Broad blank centre for a bold count. Genuine transparent outside background, preserve clean alpha. One isolated badge only, no words, numbers, symbols or shadow outside. Do not preserve the large empty top and bottom margins: the badge must occupy nearly the full canvas height.",
+    "references": ["art/raw/room/countBadge.png at b45c6cf"],
+    "source": "exec-7a8b8021-405d-46d1-894d-5e7951685aad.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/countBadge",
+    "prompt": "Use case: stylized-concept. Generate ONE SMALL EMPTY CREAM COUNT BADGE for the attached Clowder style. A stubby rounded rectangle, almost square but wider than tall. CRITICAL visible silhouette aspect ratio: width 1.5 times height, approximately 900 pixels wide and 600 pixels tall. NOT a long thin pill. Uniform bold dark brown outline, softly rounded corners, warm ivory cream face and minimal single lower cel-shadow. Broad blank centre, tiny glint upper left. Genuine transparent outside background, no shadow outside silhouette. No text, no digits, no swatches, no sheet, no Cats. Match reference palette and rounded outline style. This is to leave generous vertical padding around a game-drawn count at 32x20 display pixels.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-e30eb246-e5fe-48fc-9b29-65a21a885c4e.png",
+    "status": "rejected",
+    "reason": "The broad outer glow weakened the outline."
   }
 ]

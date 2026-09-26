@@ -71,7 +71,7 @@ export const layout = {
 /** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */
 export const shop = {
   /** The Adopt or Recruit button of the `i`th offer at the door, Cats first. */
-  offer: (i: number): [number, number] => [63.75 + i * 87.5, 480],
+  offer: (i: number): [number, number] => [63.75 + i * 87.5, 492],
   /** A House Cat at the `position`th position on the Shelf. */
   shelf: (position: number): [number, number] => [64 + position * 87.5, 168],
   /** A Kind's pile, at its cell in the household's grid. */

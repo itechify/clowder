@@ -26,8 +26,38 @@ uniformly resized to fit its manifest canvas, and padded with transparent
 pixels without stretching. The original alpha inside the crop is preserved.
 The front door and cat bed align to the bottom, the Disaster note and offer
 tag to the top, and the remaining sprites to the centre. Canvas dimensions
-and anchors remain those of ADR-0005 and the manifest; no renderer or rules
-changes were needed.
+and anchors remain those of ADR-0005 and the manifest. The initial art
+delivery needed no renderer or rules changes.
+
+## Shop legibility correction
+
+Author feedback on the initial delivery identified illegible Freya offer
+text, thin Kind count badges, undersized Nightfall text, and vertically
+misaligned Rehome text. A seed-1 browser probe measured Freya's name at
+6.8 design pixels and her ability at 5.3: the tag layout scaled every line
+to fit a fixed height. Nightfall similarly shrank from 26 to 15.7 pixels.
+
+The author chose to keep four offers and tap a visitor or tag for details.
+Tags now show names at 12 pixels and a Kind or `View ability` at 11 pixels,
+without shrinking. The detail panel shows the full name, title and ability
+(16 pixels). Tapping outside or Close dismisses it without activating a
+Shop control underneath. Adopt and Recruit remain one-tap actions below
+the tags.
+
+The count badge was regenerated taller, fitted uniformly into the same
+96×60 manifest canvas, and displayed at 32×24 design pixels. The final
+visible badge is about 19 pixels high, up from 12. The generation log
+marks the original as superseded and records both revision attempts.
+Secondary button artwork now compensates for its transparent vertical
+padding; its label and price sit together in the centre. Nightfall's label
+renders at 26 pixels, and Rehome's at 20.
+
+`shop-legibility-after.png` shows the corrected Shop, and
+`shop-offer-details.png` shows Freya's full ability. These supersede the
+initial Shop previews for the tag, badge and button layout. The new browser
+regression exercises opening details from both the tag and visitor,
+dismissing by Close and outside tap, and preserving Treats and Run state.
+Seed 4 also verifies that One Braincell wraps at 12 pixels without shrinking.
 
 ## Verification
 
@@ -40,14 +70,13 @@ changes were needed.
   before Nights 2 and 3. `shop-results-won.png` shows seed 3 with a one-Night
   Run and Target 10; `shop-results-lost.png` shows seed 7 played one Cat at
   a time. The final photo plate fits both the Score and Night labels.
-- Typechecking, Biome, all 367 unit tests, and all 61 browser tests pass,
+- Typechecking, Biome, all 367 unit tests, and all 62 browser tests pass,
   including atlas delivery, Shop transitions, Results, and offline loading.
-  An initial browser run was externally terminated after eight passing
-  tests; the restarted full suite passed. The production precache is
-  approximately 4.4 MB of the 15 MB budget, with all 21 precached files below
-  2 MiB.
+  The production precache is approximately 4.4 MB of the 15 MB budget,
+  with all 21 precached files below 2 MiB.
 - Independent standards and spec reviews reported zero findings on each
-  axis against the task's starting commit, `4cbc503`.
+  axis for both the original delivery (against `4cbc503`) and the legibility
+  correction (against `b45c6cf`).
 
 These screenshots record agent visual verification, not a new author
 approval of the batch. The previously approved style reference is unchanged.
