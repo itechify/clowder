@@ -8,11 +8,12 @@ import { boot } from "./scene"
  */
 const codeDrawnForGood = new Set<string>()
 
-/**
- * Keys on their code-drawn fallback until Astra delivers them. None remain
- * after the Shop and Results batch (#56).
- */
-const awaitingDelivery = new Set<string>()
+/** Keys on their code-drawn fallback until Astra delivers them: the Scrapbook (#71). */
+const awaitingDelivery = new Set<string>([
+  "room/scrapbook",
+  "room/scrapbookOpen",
+  "room/scrapbookPage"
+])
 
 test("shows every art key's delivered image, unless it is code-drawn for now or for good", async ({
   page

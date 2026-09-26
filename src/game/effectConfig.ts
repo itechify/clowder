@@ -38,6 +38,23 @@ export type EffectConfig = {
   rattle: { degrees: number; ms: number; repeats: number }
   /** A × House Cat glowing as the room flashes (Freya warming): its brightness per flash, and its fade. */
   glow: { perFlash: number; ms: number }
+  /**
+   * A chosen Scrapbook page flying into the Scrapbook: how long it flies, how
+   * high it arcs, how far it turns and how small it shrinks on the way, while
+   * the rest of the open Scrapbook fades over `fadeMs`; the sparkles bursting
+   * as it lands, the Scrapbook swelling as it takes the page, and how long
+   * the moment holds before the Shop opens.
+   */
+  page: {
+    flyMs: number
+    arc: number
+    spin: number
+    shrinkTo: number
+    fadeMs: number
+    particles: number
+    landing: Swell
+    holdMs: number
+  }
   /** How long a shake and a flash last at 1×, in ms. */
   shakeMs: number
   flashMs: number
@@ -89,6 +106,16 @@ export const effectConfig: EffectConfig = {
   thump: { scale: 1.7, ms: 300 },
   rattle: { degrees: 7, ms: 50, repeats: 3 },
   glow: { perFlash: 2, ms: 600 },
+  page: {
+    flyMs: 650,
+    arc: 90,
+    spin: 360,
+    shrinkTo: 0.15,
+    fadeMs: 200,
+    particles: 14,
+    landing: { scale: 1.25, ms: 320 },
+    holdMs: 550
+  },
   shakeMs: 220,
   flashMs: 260,
   reducedParticles: 0.3

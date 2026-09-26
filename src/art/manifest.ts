@@ -73,6 +73,10 @@ export type RoomPiece =
   | "photoFrame"
   | "catBed"
   | "rosette"
+  // The Scrapbook: closed in the room, open over the rug, and one page.
+  | "scrapbook"
+  | "scrapbookOpen"
+  | "scrapbookPage"
 export type UiPiece = "playButton" | "redrawButton" | "pip" | "purrMeter"
 
 type Size = { width: number; height: number }
@@ -157,7 +161,10 @@ export const art = {
     titleSign: "room/titleSign",
     photoFrame: "room/photoFrame",
     catBed: "room/catBed",
-    rosette: "room/rosette"
+    rosette: "room/rosette",
+    scrapbook: "room/scrapbook",
+    scrapbookOpen: "room/scrapbookOpen",
+    scrapbookPage: "room/scrapbookPage"
   },
   playButton: (ready: boolean) =>
     `ui/playButton/${ready ? "ready" : "disabled"}`,
@@ -312,6 +319,28 @@ function* entries(): Generator<ArtEntry> {
     piece: "rosette",
     key: art.room.rosette,
     ...room(24, 36)
+  }
+  // The Scrapbook lying on the floor by the rug, tapped to open it...
+  yield {
+    kind: "room",
+    piece: "scrapbook",
+    key: art.room.scrapbook,
+    ...room(54, 40)
+  }
+  // ...open over the rug, the game laying its pages or its Gatherings over
+  // the spread...
+  yield {
+    kind: "room",
+    piece: "scrapbookOpen",
+    key: art.room.scrapbookOpen,
+    ...room(376, 250)
+  }
+  // ...and one blank page, a Scrapbook page on offer written on it.
+  yield {
+    kind: "room",
+    piece: "scrapbookPage",
+    key: art.room.scrapbookPage,
+    ...room(112, 186)
   }
 
   // The Shop is the living room by day. The window by day swaps in for the

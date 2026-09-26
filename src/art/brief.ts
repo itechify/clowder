@@ -262,7 +262,13 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   catBed:
     "A round, plush cat bed seen from the front at a gentle angle, as it sits on the floor: a soft, puffy terracotta rim around a cream fleece cushion, big enough for one Cat curled up asleep in it. Empty: the game draws the Cat in it.",
   rosette:
-    "A small prize rosette, like a winner's ribbon at a cat show: a gold pleated circle with a cream centre, and two short orange ribbon tails hanging beneath. Leave the centre blank."
+    "A small prize rosette, like a winner's ribbon at a cat show: a gold pleated circle with a cream centre, and two short orange ribbon tails hanging beneath. Leave the centre blank.",
+  scrapbook:
+    "A closed, chunky handmade scrapbook lying on a wooden floor, seen from the front at a gentle angle: a warm brown cloth cover with a little paw print on it, a few coloured page edges peeking out, and a ribbon bookmark trailing from it. No words on it.",
+  scrapbookOpen:
+    "A big handmade scrapbook lying wide open, seen from straight above: a warm brown cloth cover framing its cream pages, a strip of washi tape at each corner. Keep the pages flat, blank, and plain, with no fold showing down the middle: the game lays pages and writes lines of words right across them.",
+  scrapbookPage:
+    "A single tall cream scrapbook page with softly rounded corners, a strip of pastel washi tape across its top, and a faint paper texture. Leave it blank: the game writes a name and more on it."
 }
 
 /** The pieces of the room seen only in the Shop, by day. */
