@@ -35,61 +35,56 @@ import {
 } from "../presentation/staging"
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
-import { drawCat, drawHouseCat } from "./characters"
+import { drawCat, drawGrowthBadge, drawHouseCat } from "./characters"
 import { choreograph, countedUp, type Step, skippedCues } from "./choreography"
 import { effectConfig } from "./effectConfig"
 import { display, font, numbers, OUTLINE } from "./fonts"
-import { HEIGHT, layOutRow, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
+import {
+  HEIGHT,
+  layOutRow,
+  MOON,
+  RESOLUTION,
+  RUG_ROWS,
+  rugX,
+  SEAT_Y,
+  SEATED_SIZE,
+  SHELF_CAT_SIZE,
+  SHELF_Y,
+  seatX,
+  TREAT_COUNT,
+  TREAT_JAR,
+  WIDTH,
+  WINDOW
+} from "./layout"
 import { presentation } from "./presentation"
+import { drawDisasterPlaque, drawFurniture } from "./room"
 import { INK, PHOTO } from "./roomArt"
 import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
-/** The top of the Shelf's plank, a windowsill above the Couch. */
-const SHELF_Y = 186
-const SHELF_CAT_SIZE = 48
 /**
  * Where the HUD sits in the room: the Night on the wall beside the window with
- * its moon, the Draw pile beneath; the treat jar's base, top right, its Treats
- * beside it; the nail tonight's Disaster sign hangs from, below the jar; and
- * the purr meter's centre, along the top of the Couch's back.
+ * its moon, the Draw pile beneath; and the purr meter's centre, along the top
+ * of the Couch's back.
  */
 const NIGHT_LABEL = { x: 22, y: 26 }
 const DRAW_PILE_LABEL = { x: 22, y: 52 }
-const WINDOW = { x: 112, y: 100 }
-const MOON = { x: 155, y: 90 }
-const TREAT_JAR = { x: 362, y: 60 }
-const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
 /** How far above the jar's base its mouth is, where treats rain in. */
 const JAR_MOUTH = 44
 /** How long the jar bobs as each treat lands in it, at 1×. */
 const JAR_BOB_MS = 120
-/** The Disaster sign's nail, and how wide its words may run inside its border. */
-const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
 const PURR_METER = { x: WIDTH / 2, y: 276 }
-/** Where the Couch's feet and the rug's centre are. */
-const COUCH_FLOOR_Y = 428
-/** The top of each Seat's pad, which its Cat sits on. */
-const SEAT_PAD_Y = 344
 /**
  * A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from
  * the top of its back, beneath the purr meter.
  */
 const FULL_SOFA_Y = 337
 const BUNTING_Y = 286
-const RUG_Y = 636
-const SEAT_Y = 352
-const SEATED_SIZE = 64
 /** Where a seated Cat's Purr shows above it, just below the purr meter. */
 const PURR_Y = 298
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
-/** Each rug row's Cats: their centres' height, and how big they are shown. */
-const RUG_ROWS: Record<RugRow, { y: number; size: number }> = {
-  back: { y: 592, size: 66 },
-  front: { y: 680, size: 76 }
-}
 /**
  * Each rug position's tap and drag area, around its Cat's centre: `w` wide,
  * and `margin` taller than the Cat.
@@ -311,7 +306,9 @@ export class CouchScene extends Phaser.Scene {
       couch,
       couch
     )
-    this.drawRoom()
+    // Every Night is spent indoors, so the window shows the night sky; its
+    // moon is the HUD's.
+    drawFurniture(this, this.seatX)
     this.layer = this.add.container()
     this.seatX.forEach((x, seat) => {
       this.add
@@ -635,19 +632,6 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * The static living room: wall, window, rug, and the Couch itself, a
-   * pad on each Seat. Every Night is spent indoors, so the window above the
-   * Shelf shows the night sky; its moon is the HUD's.
-   */
-  private drawRoom() {
-    addArt(this, art.room.wall)
-    addArt(this, art.room.rug, WIDTH / 2, RUG_Y)
-    addArt(this, art.room.window, WINDOW.x, WINDOW.y)
-    addArt(this, art.room.couch, WIDTH / 2, COUCH_FLOOR_Y)
-    for (const x of this.seatX) addArt(this, art.room.seatPad, x, SEAT_PAD_Y)
-  }
-
-  /**
    * Empties the layer the Run is drawn on, noting where each Cat was so it
    * can move on from there; returns how to add to the layer.
    */
@@ -804,14 +788,8 @@ export class CouchScene extends Phaser.Scene {
    * starry badge, so The Void's work shows wherever the Cat goes.
    */
   private drawGrowth(add: Add, cat: Cat, x: number, y: number) {
-    if (cat.basePurr === session.run.config.basePurr) return
-    const label = this.add
-      .text(x, y, `${cat.basePurr}`, numbers(12, "#f6d743"))
-      .setOrigin(0.5)
-    add(this.add.graphics())
-      .fillStyle(0x141018, 0.92)
-      .fillRoundedRect(x - label.width / 2 - 6, y - 9, label.width + 12, 18, 9)
-    add(label)
+    if (cat.basePurr !== session.run.config.basePurr)
+      drawGrowthBadge(this, add, cat.basePurr, x, y)
   }
 
   /**
@@ -876,20 +854,11 @@ export class CouchScene extends Phaser.Scene {
    * A sign hung on the wall below the treat jar, naming tonight's Disaster
    * and the rule it changes, clear of the Shelf below.
    */
-  private drawDisasterSign({ name, rule }: DisasterSign) {
-    const words = [
-      this.add.text(0, 30, name, display(15, "#fdf6ea")).setStroke(OUTLINE, 3),
-      this.add.text(0, 47, rule, font(11, "#fdf6ea", "800"))
-    ]
-    // Any line too long for the sign shrinks to fit inside its border.
-    for (const line of words)
-      line
-        .setOrigin(0.5)
-        .setScale(Math.min(1, DISASTER_SIGN.textWidth / line.width))
-    return this.add.container(DISASTER_SIGN.x, DISASTER_SIGN.y, [
-      addArt(this, art.room.disasterSign),
-      ...words
-    ])
+  private drawDisasterSign(disaster: DisasterSign) {
+    return drawDisasterPlaque(this, art.room.disasterSign, disaster, {
+      nameY: 30,
+      ruleY: 47
+    })
   }
 
   /** Gives the Disaster sign a shake. */
@@ -1835,9 +1804,10 @@ export class CouchScene extends Phaser.Scene {
       presentation.update({ scoring: false })
       // Overtaken, the next sequence or draw shows what comes after.
       if (ending === "overtaken") return
-      // The Night is cleared: its celebration is over, so off to the Shop.
+      // The Night is cleared: its celebration is over, so the day dawns and
+      // the Shop opens.
       if (session.run.shop) {
-        this.scene.start("shop")
+        this.scene.start("shop", { dawn: true })
         return
       }
       this.draw(ended ? "nodOff" : null)

@@ -10,6 +10,7 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
+import { type ShopStaging, stageShop } from "../presentation/shop"
 import {
   type Results,
   type Staging,
@@ -18,7 +19,12 @@ import {
 } from "../presentation/staging"
 import { artTexture, delivered } from "./art"
 import type { CouchScene } from "./CouchScene"
-import { type PlayedEffect, presentation } from "./presentation"
+import {
+  type CloudMotion,
+  type PlayedEffect,
+  presentation,
+  type Transition
+} from "./presentation"
 import { session } from "./session"
 
 export type DebugHook = {
@@ -40,6 +46,15 @@ export type DebugHook = {
    * it is over, the household asleep.
    */
   staging: () => Staging
+  /**
+   * What the Shop shows, while it is open: the Kinds' piles, the pile fanned
+   * out, the doorway's offers, and the Disaster warning (see its staging).
+   */
+  shop: () => ShopStaging | null
+  /** The Shop's transition between night and day playing out, if any. */
+  transition: () => Transition | null
+  /** How the Shop's storm clouds move, while they show. */
+  clouds: () => CloudMotion | null
   /** The Results the sleeping living room shows, while it shows them. */
   results: () => Results | null
   /** Presses New Household, if the Results show it; returns whether it did. */
@@ -86,6 +101,10 @@ export function installDebugHook(game: Phaser.Game) {
       const bedded = presentation.results(run)?.bed?.cat.id
       return stageAsleep(run, presentation.lastCouch, bedded)
     },
+    shop: () =>
+      session.run.shop ? stageShop(session.run, presentation.shop) : null,
+    transition: () => presentation.transition,
+    clouds: () => presentation.clouds,
     results: () => presentation.results(session.run),
     newHousehold: () =>
       game.scene.isActive("couch") &&

@@ -1,4 +1,5 @@
 import type { CatId, Run } from "../engine"
+import type { ShopView } from "../presentation/shop"
 import { type Results, stageResults } from "../presentation/staging"
 import type { Step } from "./choreography"
 
@@ -13,6 +14,16 @@ export type PlayedEffect = Pick<
 
 /** The scenes that show a Run, by their Phaser keys. */
 export type SceneKey = "couch" | "shop"
+
+/**
+ * The room turning from night to day as the Shop opens, or back as it closes;
+ * a plain crossfade under Reduced motion.
+ */
+export type Transition = { to: TimeOfDay; crossfade: boolean }
+export type TimeOfDay = "day" | "night"
+
+/** How storm clouds move in the window: to and fro, or still under Reduced motion. */
+export type CloudMotion = "drifting" | "still"
 
 /**
  * What the scene is in the middle of showing, for the shell and end-to-end
@@ -31,6 +42,16 @@ class Presentation {
    * shell follows.
    */
   seatingOrder: CatId[] = []
+  /**
+   * What the player has open in the Shop: the pile fanned out, and the
+   * doorway as last shown (see the Shop's staging). Not a change the shell
+   * follows, nor are the two below.
+   */
+  shop: ShopView = {}
+  /** The Shop's transition playing out, if any. */
+  transition: Transition | null = null
+  /** How the storm clouds in the Shop's window move, while they show. */
+  clouds: CloudMotion | null = null
   /**
    * The last Play's Couch, where its Cats doze off once the Run ends. Not a
    * change the shell follows.

@@ -3,16 +3,52 @@ export const WIDTH = 390
 export const HEIGHT = 844
 export const RESOLUTION = 2
 
+/**
+ * Where the living room's furniture stands, the same by night and by day, so
+ * the Couch and the Shop show one room: the window above the Shelf and its
+ * moon or sun; the treat jar's base, top right, its Treats beside it; the top
+ * of the Shelf's plank; where the Couch's feet are and the top of each Seat's
+ * pad; and the rug's centre.
+ */
+export const WINDOW = { x: 112, y: 100 }
+export const MOON = { x: 155, y: 90 }
+export const TREAT_JAR = { x: 362, y: 60 }
+export const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
+export const SHELF_Y = 186
+export const SHELF_CAT_SIZE = 48
+export const COUCH_FLOOR_Y = 428
+export const SEAT_PAD_Y = 344
+export const RUG_Y = 636
+/**
+ * The nail a Disaster's sign or note hangs from, below the treat jar, and how
+ * wide its words may run inside its border.
+ */
+export const DISASTER_PLAQUE = { x: 296, y: 64, textWidth: 140 }
+/** Where a seated Cat's centre sits above its Seat, and how big it is shown. */
+export const SEAT_Y = 352
+export const SEATED_SIZE = 64
+/** Each rug row's Cats: their centres' height, and how big they are shown. */
+export const RUG_ROWS = {
+  back: { y: 592, size: 66 },
+  front: { y: 680, size: 76 }
+} as const
+
 /** Seat centres, spread evenly between the Couch's arms. */
 export const seatX = (seats: number) =>
   Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
-/** Position centres, spread evenly along the Shelf. */
-export const shelfX = (positions: number) =>
+/** `count` centres, spread evenly across the room clear of its sides. */
+const acrossRoom = (count: number) =>
   Array.from(
-    { length: positions },
-    (_, position) => 20 + ((WIDTH - 40) / positions) * (position + 0.5)
+    { length: count },
+    (_, i) => 20 + ((WIDTH - 40) / count) * (i + 0.5)
   )
+
+/** Position centres, spread evenly along the Shelf. */
+export const shelfX = acrossRoom
+
+/** Where the offers stand in the Shop's front door, spread evenly across it. */
+export const doorwayX = acrossRoom
 
 /**
  * Lays labels `width` wide side by side along a row from `left` to `right`,
@@ -96,4 +132,23 @@ export function rugX(positions: number) {
       nth(2 * position + 1)
     )
   }
+}
+
+/**
+ * Where an opened pile's `count` Cats fan out, a `step` apart and centred on
+ * the pile at `centre`, shifted clear of the room's sides between `left` and
+ * `right`; closer together, if they cannot all fit a step apart.
+ */
+export function fanX(
+  count: number,
+  centre: number,
+  { left, right, step }: { left: number; right: number; step: number }
+) {
+  const spacing = Math.min(step, (right - left) / count)
+  const half = (count * spacing) / 2
+  const middle = Math.min(Math.max(centre, left + half), right - half)
+  return Array.from(
+    { length: count },
+    (_, i) => middle - half + spacing * (i + 0.5)
+  )
 }

@@ -5,6 +5,7 @@ import type { Cat } from "../engine"
 import type { CatLook, EyeTint } from "../presentation/staging"
 import { addCharacter, catEyes } from "./art"
 import { BADGE, CAT_BASE } from "./catArt"
+import { numbers } from "./fonts"
 import { HOUSE_CAT_BASE } from "./houseCatArt"
 
 /**
@@ -179,4 +180,25 @@ export function drawHouseCat(
   ])
   idle(scene, rig, {})
   return scene.add.container(0, 0, [rig])
+}
+
+/**
+ * A Cat grown past the base Purr it started with wears its base Purr in a
+ * starry badge centred on (x, y), so The Void's work shows wherever the Cat
+ * goes: on the Couch, on the rug, and fanned out in the Shop.
+ */
+export function drawGrowthBadge(
+  scene: Phaser.Scene,
+  add: <T extends Phaser.GameObjects.GameObject>(object: T) => T,
+  basePurr: number,
+  x: number,
+  y: number
+) {
+  const label = scene.add
+    .text(x, y, `${basePurr}`, numbers(12, "#f6d743"))
+    .setOrigin(0.5)
+  add(scene.add.graphics())
+    .fillStyle(0x141018, 0.92)
+    .fillRoundedRect(x - label.width / 2 - 6, y - 9, label.width + 12, 18, 9)
+  add(label)
 }

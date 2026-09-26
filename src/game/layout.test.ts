@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { layOutRow } from "./layout"
+import { fanX, layOutRow } from "./layout"
 
 const within = { left: 10, right: 380, gap: 6 }
 
@@ -80,5 +80,25 @@ describe("labels in a row", () => {
       within
     )
     expect(row.centres[1]).toBeLessThan(row.centres[0])
+  })
+})
+
+describe("a pile's fan", () => {
+  const across = { left: 20, right: 370, step: 60 }
+
+  it("spreads its Cats evenly, centred on the pile", () => {
+    expect(fanX(3, 195, across)).toEqual([135, 195, 255])
+  })
+
+  it("keeps clear of the room's sides, shifting toward the middle", () => {
+    expect(fanX(3, 40, across)).toEqual([50, 110, 170])
+    expect(fanX(2, 360, across)).toEqual([280, 340])
+  })
+
+  it("closes up when its Cats cannot all fit a step apart", () => {
+    const xs = fanX(8, 195, across)
+    expect(xs[0]).toBeCloseTo(20 + 350 / 16)
+    expect(xs[7]).toBeCloseTo(370 - 350 / 16)
+    expect(xs[1] - xs[0]).toBeCloseTo(350 / 8)
   })
 })
