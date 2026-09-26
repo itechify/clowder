@@ -25,6 +25,7 @@ import {
   atRest,
   type CatLook,
   type Placement,
+  type Results,
   type RugRow,
   rugPositions,
   type StagedCat,
@@ -40,7 +41,7 @@ import { effectConfig } from "./effectConfig"
 import { display, font, numbers, OUTLINE } from "./fonts"
 import { HEIGHT, layOutRow, RESOLUTION, rugX, seatX, WIDTH } from "./layout"
 import { presentation } from "./presentation"
-import { INK } from "./roomArt"
+import { INK, PHOTO } from "./roomArt"
 import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
@@ -142,6 +143,38 @@ const NODDING_SPREAD = 1200
 const NOD_DURATION = 500
 /** How long a "New Gathering!" banner holds the wall at 1×. */
 const BANNER_MS = 2000
+/**
+ * Where the Results sit in the sleeping room: the Nights cleared beneath the
+ * moon in the window; the Best Play's photo on the wall beside it, its Cats
+ * shown this big; the title sign propped before the Couch, its words that far
+ * above and below its centre and no wider than its border; and, along the
+ * front of the room, the Star Cat asleep in its bed, labelled beneath it, and
+ * New Household.
+ */
+const NIGHTS_CLEARED = { x: WINDOW.x, y: 124 }
+const PHOTO_FRAME = { x: 292, y: 88, width: 172, height: 100 }
+/**
+ * The Cats in the photo: how big, and how far above their pads' tops their
+ * centres are; and how far either side of the plate's middle its Score and
+ * Night are written.
+ */
+const PHOTO_CATS = { size: 26, abovePad: 2 }
+const PLATE_GAP = 4
+const TITLE_SIGN = { x: WIDTH / 2, y: 482, title: -16, ending: 12, width: 260 }
+/** The cat bed, its Cat, and its label, no wider than `labelWidth`. */
+const CAT_BED = {
+  x: 80,
+  y: 818,
+  catY: 780,
+  catSize: 56,
+  labelY: 831,
+  labelWidth: 152
+}
+/** The rosette on the Star Cat's flank, from the Cat's centre. */
+const ROSETTE = { dx: 16, dy: 8 }
+const NEW_HOUSEHOLD = { x: 268, y: 790, w: 230, h: 58 }
+/** How long the Results take to appear once the household is asleep. */
+const RESULTS_FADE_MS = 700
 /** From the end of the Run's last scoring sequence until the Cats are all asleep. */
 const SLEEP_MOMENT_MS =
   LIGHTS_OUT_DELAY + FIRST_NOD + NODDING_SPREAD + NOD_DURATION + 300
@@ -219,9 +252,7 @@ export class CouchScene extends Phaser.Scene {
   private held: CatId | null = null
   /** The House Cat picked up from the Shelf, waiting for another position. */
   private heldHouseCat: HouseCatId | null = null
-  /** The last Play's Couch, where its Cats doze off once the Run ends... */
-  private lastCouch: (CatId | null)[] = []
-  /** ...and how each Cat in view looked as it was played. */
+  /** How each Cat in view looked as the last Play was played. */
   private lastLooks = new Map<CatId, CatLook>()
   /** The Cats chosen to Redraw, or null when not choosing. */
   private redrawing: CatId[] | null = null
@@ -239,6 +270,8 @@ export class CouchScene extends Phaser.Scene {
   private scoring: { finish: (ending: Ending) => void } | null = null
   private bedtime: Phaser.Time.TimerEvent | null = null
   private skipArea!: Phaser.GameObjects.Zone
+  /** New Household's tap area, listening only while the Results show. */
+  private newHouseholdArea!: Phaser.GameObjects.Zone
   private layer!: Phaser.GameObjects.Container
   /** The sign naming tonight's Disaster, when there is one. */
   private disasterSign: Phaser.GameObjects.Container | null = null
@@ -259,7 +292,7 @@ export class CouchScene extends Phaser.Scene {
     // Back from the Shop, the scene starts afresh.
     this.held = null
     this.heldHouseCat = null
-    this.lastCouch = []
+    presentation.lastCouch = []
     this.lastLooks.clear()
     this.redrawing = null
     this.press = null
@@ -309,6 +342,11 @@ export class CouchScene extends Phaser.Scene {
       .zone(REDRAW_BUTTON.x, REDRAW_BUTTON.y, REDRAW_BUTTON.w, REDRAW_BUTTON.h)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.tapRedraw())
+    this.newHouseholdArea = this.add
+      .zone(NEW_HOUSEHOLD.x, NEW_HOUSEHOLD.y, NEW_HOUSEHOLD.w, NEW_HOUSEHOLD.h)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => this.tapNewHousehold())
+    this.newHouseholdArea.disableInteractive()
     // Over everything, but listening only while a scoring sequence plays.
     this.skipArea = this.add
       .zone(0, 0, WIDTH, HEIGHT)
@@ -347,7 +385,7 @@ export class CouchScene extends Phaser.Scene {
       if (events.length === 0) {
         this.held = null
         this.heldHouseCat = null
-        this.lastCouch = []
+        presentation.lastCouch = []
         this.lastLooks.clear()
         // A different Run: its Cats were placed in no known order.
         presentation.seatingOrder = seatingOrder([], [], couch)
@@ -368,9 +406,9 @@ export class CouchScene extends Phaser.Scene {
         presentation.update({ scoring: false })
       }
     })
-    this.draw()
     // Arriving once the Run is over, the household is already asleep.
     if (session.run.status !== "playing") presentation.update({ asleep: true })
+    this.draw()
   }
 
   /** Where a Cat is shown for a placement. */
@@ -416,6 +454,7 @@ export class CouchScene extends Phaser.Scene {
   }
 
   private startPress(pointer: Phaser.Input.Pointer, target: PressTarget) {
+    if (session.run.status !== "playing") return
     this.press = { target, at: this.worldPoint(pointer) }
   }
 
@@ -528,6 +567,7 @@ export class CouchScene extends Phaser.Scene {
 
   /** Plays, or while choosing Cats to Redraw, stops choosing. */
   private tapPlay() {
+    if (session.run.status !== "playing") return
     sound.cue({ name: "uiTap" })
     this.held = null
     this.heldHouseCat = null
@@ -541,6 +581,7 @@ export class CouchScene extends Phaser.Scene {
 
   /** Starts choosing Cats to Redraw, then swaps the chosen Cats. */
   private tapRedraw() {
+    if (session.run.status !== "playing") return
     sound.cue({ name: "uiTap" })
     this.held = null
     this.heldHouseCat = null
@@ -551,6 +592,22 @@ export class CouchScene extends Phaser.Scene {
     } else {
       session.apply({ type: "redraw", cats: this.redrawing })
     }
+  }
+
+  /** Starts a fresh Run, from the Results. */
+  private tapNewHousehold() {
+    sound.cue({ name: "uiTap" })
+    session.newHousehold()
+  }
+
+  /**
+   * Presses New Household as a tap would, if the Results show it; for
+   * end-to-end tests. Returns whether it was pressed.
+   */
+  pressNewHousehold() {
+    if (!this.newHouseholdArea.input?.enabled) return false
+    this.newHouseholdArea.emit("pointerdown")
+    return true
   }
 
   /** Toggles a Cat in or out of the Redraw, as far as the engine allows. */
@@ -849,17 +906,28 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * Redraws everything that follows the Run: HUD, seated Cats, preview, Hand;
-   * or, once the Run is over, the household asleep (`fallingAsleep` animates it).
+   * or, once the Run is over, the household asleep, then its Results. The
+   * `moment` the household nods off, or the Results appear, is animated.
    */
-  private draw(fallingAsleep = false) {
+  private draw(moment: "nodOff" | "resultsAppear" | null = null) {
     const add = this.clearLayer()
     const { run } = session
     const catById = new Map(run.roster.map((cat) => [cat.id, cat]))
-    this.drawHud(run, add)
+    const results = presentation.results(run)
+    if (results) this.newHouseholdArea.setInteractive()
+    else this.newHouseholdArea.disableInteractive()
+    // The Results show the Nights cleared by the moon instead of the HUD.
+    if (results) add(addArt(this, moonArt(results.nights.moon), MOON.x, MOON.y))
+    else this.drawHud(run, add)
 
     if (run.status !== "playing") {
       drawShelf(this, add, { run, y: SHELF_Y, size: SHELF_CAT_SIZE })
-      this.drawAsleep(add, catById, fallingAsleep)
+      this.drawAsleep(add, catById, {
+        animate: moment === "nodOff",
+        bedded: results?.bed?.cat.id,
+        toBed: moment === "resultsAppear"
+      })
+      if (results) this.drawResults(add, results, moment === "resultsAppear")
       return
     }
 
@@ -1020,13 +1088,39 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * The Run is over: the lights go down and every Cat dozes off where it is,
-   * the last Play's Cats on the Couch and the rest of the Hand on the rug.
+   * the last Play's Cats on the Couch and the rest of the Hand on the rug;
+   * all but the Star Cat once it is `bedded` down in the Results, which fades
+   * from where it slept as it goes `toBed`.
    */
-  private drawAsleep(add: Add, catById: Map<CatId, Cat>, animate: boolean) {
+  private drawAsleep(
+    add: Add,
+    catById: Map<CatId, Cat>,
+    {
+      animate,
+      bedded,
+      toBed = false
+    }: { animate: boolean; bedded?: CatId; toBed?: boolean }
+  ) {
     const { run } = session
-    const sleepers = this.byDepth(stageAsleep(run, this.lastCouch).cats).map(
-      (look) => ({ cat: catById.get(look.cat)!, look, ...look.spot })
-    )
+    const sleepers = this.byDepth(
+      stageAsleep(run, presentation.lastCouch, bedded).cats
+    ).map((look) => ({ cat: catById.get(look.cat)!, look, ...look.spot }))
+    const leaving =
+      toBed &&
+      stageAsleep(run, presentation.lastCouch).cats.find(
+        (staged) => staged.cat === bedded
+      )
+    if (leaving) {
+      const { x, y, size } = this.spot(leaving.placement)
+      const star = catById.get(leaving.cat)!
+      const sprite = add(drawCat(this, star, leaving, size, { asleep: true }))
+      this.tweens.add({
+        targets: sprite.setPosition(x, y),
+        alpha: 0,
+        duration: RESULTS_FADE_MS,
+        onComplete: () => sprite.destroy()
+      })
+    }
 
     const dusk = add(
       this.add.rectangle(0, 0, WIDTH, HEIGHT, 0x1b1633).setOrigin(0)
@@ -1064,20 +1158,144 @@ export class CouchScene extends Phaser.Scene {
           duration: NOD_DURATION
         })
       }
-      const z = add(
-        this.add
-          .text(x + size * 0.3, y - size * 0.45, "z", display(16, "#dfe3ff"))
-          .setAlpha(0)
-      )
-      this.tweens.add({
-        targets: z,
-        alpha: { from: 1, to: 0 },
-        y: z.y - 28,
-        x: z.x + 10,
-        delay: (animate ? nodOff : 0) + (i % 3) * 400,
-        duration: 1600,
-        repeat: -1
+      this.snore(add, { x, y, size }, (animate ? nodOff : 0) + (i % 3) * 400)
+    })
+  }
+
+  /** A "z" drifting up from a sleeping Cat, over and over, from `delay`. */
+  private snore(add: Add, { x, y, size }: Spot, delay: number) {
+    const z = add(
+      this.add
+        .text(x + size * 0.3, y - size * 0.45, "z", display(16, "#dfe3ff"))
+        .setAlpha(0)
+    )
+    this.tweens.add({
+      targets: z,
+      alpha: { from: 1, to: 0 },
+      y: z.y - 28,
+      x: z.x + 10,
+      delay,
+      duration: 1600,
+      repeat: -1
+    })
+  }
+
+  /**
+   * How the household did, drawn into the sleeping room over the dusk: the
+   * Nights cleared beneath the moon, the Best Play's photo on the wall, the
+   * title sign before the Couch, the Star Cat asleep in its bed wearing its
+   * rosette, and New Household. `reveal`ed, they fade in.
+   */
+  private drawResults(add: Add, results: Results, reveal: boolean) {
+    const shown: Phaser.GameObjects.GameObject[] = []
+    const show: Add = (object) => {
+      shown.push(add(object))
+      return object
+    }
+    const { nights, photo, bed, title, ending } = results
+
+    show(
+      this.add
+        .text(NIGHTS_CLEARED.x, NIGHTS_CLEARED.y, nights.label, numbers(14))
+        .setOrigin(0.5)
+    )
+
+    if (photo) {
+      const { x, y, width, height } = PHOTO_FRAME
+      const left = x - width / 2
+      const top = y - height / 2
+      show(addArt(this, art.room.photoFrame, x, y))
+      photo.seats.forEach((seat, i) => {
+        if (!seat) return
+        show(
+          drawCat(this, seat.cat, seat, PHOTO_CATS.size, { still: true })
+        ).setPosition(
+          left + PHOTO.seatsX[i],
+          top + PHOTO.padTop - PHOTO_CATS.abovePad
+        )
       })
+      const plate = { x: left + PHOTO.plate.x, y: top + PHOTO.plate.y }
+      show(
+        this.add
+          .text(
+            plate.x - PLATE_GAP,
+            plate.y,
+            photo.scoreLabel,
+            display(13, POP.purr)
+          )
+          .setOrigin(1, 0.5)
+          .setStroke(OUTLINE, 3)
+      )
+      show(
+        this.add
+          .text(
+            plate.x + PLATE_GAP,
+            plate.y,
+            photo.nightLabel,
+            font(11, "#4a3426", "800")
+          )
+          .setOrigin(0, 0.5)
+      )
+    }
+
+    const sign = { x: TITLE_SIGN.x, y: TITLE_SIGN.y }
+    show(addArt(this, art.room.titleSign, sign.x, sign.y))
+    for (const line of [
+      this.add
+        .text(sign.x, sign.y + TITLE_SIGN.title, title, display(28, "#fdf6ea"))
+        .setStroke(OUTLINE, 5),
+      this.add.text(
+        sign.x,
+        sign.y + TITLE_SIGN.ending,
+        ending,
+        font(13, "#fdf6ea", "800")
+      )
+    ])
+      show(
+        line.setOrigin(0.5).setScale(Math.min(1, TITLE_SIGN.width / line.width))
+      )
+
+    if (bed) {
+      const { x, y, catY, catSize, labelY, labelWidth } = CAT_BED
+      show(addArt(this, art.room.catBed, x, y))
+      show(drawCat(this, bed.cat, bed, catSize, { asleep: true })).setPosition(
+        x,
+        catY
+      )
+      show(addArt(this, art.room.rosette, x + ROSETTE.dx, catY + ROSETTE.dy))
+      const label = show(
+        this.add
+          .text(x, labelY, bed.label, font(11, "#fdf6ea", "800"))
+          .setOrigin(0.5)
+          .setStroke(OUTLINE, 3)
+      )
+      // Wholly within the front of the room, clear of New Household.
+      label.setScale(Math.min(1, labelWidth / label.width))
+      this.snore(
+        add,
+        { x, y: catY, size: catSize },
+        reveal ? RESULTS_FADE_MS : 0
+      )
+    }
+
+    show(addArt(this, art.playButton(true), NEW_HOUSEHOLD.x, NEW_HOUSEHOLD.y))
+    show(
+      this.add
+        .text(
+          NEW_HOUSEHOLD.x,
+          NEW_HOUSEHOLD.y - BUTTON_FACE.labelAbove / 2,
+          "New Household",
+          display(24, "#fdf6ea")
+        )
+        .setOrigin(0.5)
+        .setStroke(OUTLINE, 4)
+    )
+
+    if (!reveal) return
+    this.tweens.add({
+      targets: shown,
+      alpha: { from: 0, to: 1 },
+      duration: RESULTS_FADE_MS
     })
   }
 
@@ -1198,7 +1416,7 @@ export class CouchScene extends Phaser.Scene {
     const add = this.clearLayer()
     const room = this.drawHud(before, add)
     const catById = new Map(before.roster.map((cat) => [cat.id, cat]))
-    this.lastCouch = before.night.couch
+    presentation.lastCouch = before.night.couch
 
     // The committed Couch, and the rest of the Hand waiting on the rug,
     // where it settles from once the sequence is over.
@@ -1622,11 +1840,12 @@ export class CouchScene extends Phaser.Scene {
         this.scene.start("shop")
         return
       }
-      this.draw(ended)
+      this.draw(ended ? "nodOff" : null)
       if (ended)
-        this.bedtime = this.time.delayedCall(SLEEP_MOMENT_MS, () =>
+        this.bedtime = this.time.delayedCall(SLEEP_MOMENT_MS, () => {
           presentation.update({ asleep: true })
-        )
+          this.draw("resultsAppear")
+        })
     }
     const sequence = { finish }
     this.scoring = sequence

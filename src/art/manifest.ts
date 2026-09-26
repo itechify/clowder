@@ -60,6 +60,10 @@ export type RoomPiece =
   | "shelf"
   | "treatJar"
   | "disasterSign"
+  | "titleSign"
+  | "photoFrame"
+  | "catBed"
+  | "rosette"
 export type UiPiece = "playButton" | "redrawButton" | "pip" | "purrMeter"
 
 type Size = { width: number; height: number }
@@ -132,7 +136,11 @@ export const art = {
     rug: "room/rug",
     shelf: "room/shelf",
     treatJar: "room/treatJar",
-    disasterSign: "room/disasterSign"
+    disasterSign: "room/disasterSign",
+    titleSign: "room/titleSign",
+    photoFrame: "room/photoFrame",
+    catBed: "room/catBed",
+    rosette: "room/rosette"
   },
   playButton: (ready: boolean) =>
     `ui/playButton/${ready ? "ready" : "disabled"}`,
@@ -258,6 +266,35 @@ function* entries(): Generator<ArtEntry> {
     piece: "disasterSign",
     key: art.room.disasterSign,
     ...room(164, 62, topCentre)
+  }
+  // The Results, once the household is asleep: a sign propped before the
+  // Couch, the game writing the title and how the Run ended on it...
+  yield {
+    kind: "room",
+    piece: "titleSign",
+    key: art.room.titleSign,
+    ...room(300, 84)
+  }
+  // ...the Best Play's photo on the wall, the game drawing its Cats on the
+  // sofa in the photo and writing its Score and Night on the frame's plate...
+  yield {
+    kind: "room",
+    piece: "photoFrame",
+    key: art.room.photoFrame,
+    ...room(172, 100)
+  }
+  // ...and the Star Cat asleep in a cat bed, wearing its rosette.
+  yield {
+    kind: "room",
+    piece: "catBed",
+    key: art.room.catBed,
+    ...room(124, 52, bottomCentre)
+  }
+  yield {
+    kind: "room",
+    piece: "rosette",
+    key: art.room.rosette,
+    ...room(24, 36)
   }
 
   for (const ready of [true, false]) {

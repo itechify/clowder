@@ -2,6 +2,8 @@ import {
   type Action,
   type ActionResult,
   applyAction,
+  type Config,
+  defaultConfig,
   type Run,
   type RunEvent,
   restoreRun,
@@ -51,8 +53,8 @@ export class Session {
     this.save()
   }
 
-  start(seed: number) {
-    this.run = startRun(seed)
+  start(seed: number, config: Config = defaultConfig) {
+    this.run = startRun(seed, config)
     this.save()
     this.emit([])
   }

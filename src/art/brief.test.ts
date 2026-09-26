@@ -130,6 +130,14 @@ describe("the art brief", () => {
       expect(prompt("houseCat/freya/warming3")).toMatch(/affectionate/i)
     })
 
+    it("leaves the Results' sign and photo frame blank for the game to fill", () => {
+      expect(prompt("room/titleSign")).toMatch(/blank/i)
+      expect(prompt("room/photoFrame")).toMatch(/sofa/i)
+      expect(prompt("room/photoFrame")).toMatch(/game draws the Cats/i)
+      expect(prompt("room/catBed")).toMatch(/cat bed/i)
+      expect(prompt("room/rosette")).toMatch(/rosette/i)
+    })
+
     it("draws Skadi and Freya from their photos", () => {
       for (const entry of entries)
         if (entry.key?.match(/^houseCat\/(skadi|freya)\//))

@@ -10,7 +10,8 @@ import {
   copying,
   type HouseCatId,
   houseCat,
-  type Run
+  type Run,
+  starCat
 } from "../engine"
 
 /**
@@ -175,25 +176,99 @@ export function stage(run: Run, order: readonly CatId[] = []): Staging {
   }
 }
 
+/** A Cat curled up asleep, in its Coat's sleeping pose. */
+const sleeping = (run: Run, cat: Cat): CatLook => ({
+  pose: catArt(cat.coat, "sleepy", "content"),
+  facing: "right",
+  eyeTint: eyeTint(run, cat.id)
+})
+
 /**
  * Stages the Run once it is over, the household asleep: the last Play's
  * `couch` back on their Seats, the rest of the Hand on the rug, every Cat
- * curled up in its Coat's sleeping pose.
+ * curled up in its Coat's sleeping pose; all but the Cat `bedded`, once the
+ * Results have carried it off to the cat bed.
  */
 export function stageAsleep(
   run: Run,
-  couch: readonly (CatId | null)[]
+  couch: readonly (CatId | null)[],
+  bedded?: CatId
 ): Staging {
   const byId = new Map(run.roster.map((cat) => [cat.id, cat]))
   return {
-    cats: placed(run, couch).map(({ cat, placement }) => ({
-      cat,
-      placement,
-      pose: catArt(byId.get(cat)!.coat, "sleepy", "content"),
-      facing: "right",
-      eyeTint: eyeTint(run, cat)
-    })),
+    cats: placed(run, couch)
+      .filter(({ cat }) => cat !== bedded)
+      .map(({ cat, placement }) => ({
+        cat,
+        placement,
+        ...sleeping(run, byId.get(cat)!)
+      })),
     houseCats: stageShelf(run)
+  }
+}
+
+/** A Cat in the Best Play's photo, content, as it was when it scored. */
+export type PhotoSeat = CatLook & { cat: Cat }
+
+/** How the household did, as the sleeping living room shows it. */
+export type Results = {
+  /** Written on the title sign, over how the Run ended. */
+  title: string
+  ending: string
+  /** The Nights cleared, and the moon in the window showing them. */
+  nights: { cleared: number; of: number; moon: number; label: string }
+  /** The Best Play's photo on the wall, its Score and Night on the frame. */
+  photo: {
+    /** One per Seat; an empty Seat is empty in the photo too. */
+    seats: (PhotoSeat | null)[]
+    score: number
+    night: number
+    scoreLabel: string
+    nightLabel: string
+  } | null
+  /** The Star Cat asleep in the cat bed, wearing its rosette, and its label. */
+  bed: (CatLook & { cat: Cat; purr: number; label: string }) | null
+  /** The House Cats asleep on the Shelf, by name, in Shelf order. */
+  houseCats: string[]
+}
+
+/** A count as the Results write it, with thousands separators. */
+const counted = (count: number) => count.toLocaleString("en-US")
+
+/** The Results of a Run once it is over; none while it is still playing. */
+export function stageResults(run: Run): Results | null {
+  if (run.status === "playing") return null
+  const won = run.status === "won"
+  const { nightsCleared, bestPlay } = run.stats
+  const { nights } = run.config
+  const star = starCat(run)
+  return {
+    title: won ? "Sweet dreams!" : "Lights out",
+    ending: won
+      ? `Your household made it through all ${nights} Nights.`
+      : `Your household fell asleep on Night ${run.night.number}.`,
+    nights: {
+      cleared: nightsCleared,
+      of: nights,
+      moon: Math.max(1, nightsCleared),
+      label: `Nights cleared ${nightsCleared}/${nights}`
+    },
+    photo: bestPlay && {
+      seats: bestPlay.couch.map((cat) => cat && { cat, ...atRest(run, cat) }),
+      score: bestPlay.score,
+      night: bestPlay.night,
+      scoreLabel: counted(bestPlay.score),
+      nightLabel: `Night ${bestPlay.night}`
+    },
+    bed: star
+      ? {
+          cat: star.cat,
+          purr: star.purr,
+          ...sleeping(run, star.cat),
+          label: `Star Cat: ${star.cat.name}, ${counted(star.purr)} Purr`
+        }
+      : null,
+    houseCats: run.shelf.map((id) => houseCat(id).name)
   }
 }
 

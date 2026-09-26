@@ -8,6 +8,7 @@ import {
   type Run,
   restoreRun,
   serialiseRun,
+  starCat,
   startRun
 } from "../engine"
 import { accepted, runWithCouch } from "../engine/testing"
@@ -18,7 +19,8 @@ import {
   type Staging,
   seatingOrder,
   stage,
-  stageAsleep
+  stageAsleep,
+  stageResults
 } from "./staging"
 
 /** Where each Cat is staged, in staging order. */
@@ -508,5 +510,131 @@ describe("staging's art", () => {
         for (const { pose } of [...staging.cats, ...staging.houseCats])
           expect(keys).toContain(pose)
     }
+  })
+})
+
+describe("the Results", () => {
+  /** A Run lost on its first Night, after a single Play. */
+  function lost() {
+    const run = runWithCouch(["clingy", "clingy", null, "aloof"], {
+      config: { playsPerNight: 1 }
+    })
+    return { before: run, after: accepted(run, { type: "play" }).run }
+  }
+  /** A one-Night Run won with a single Play. */
+  function won() {
+    const run = runWithCouch(["sleepy", "sleepy", "sleepy"], {
+      config: { nights: 1, firstTarget: 10 }
+    })
+    return accepted(run, { type: "play" }).run
+  }
+
+  it("shows nothing while the Run is still playing", () => {
+    expect(stageResults(startRun(1))).toBeNull()
+  })
+
+  it("titles a won Run's Results sweet dreams, and a lost one's lights out", () => {
+    expect(stageResults(won())).toMatchObject({
+      title: "Sweet dreams!",
+      ending: "Your household made it through all 1 Nights."
+    })
+    expect(stageResults(lost().after)).toMatchObject({
+      title: "Lights out",
+      ending: "Your household fell asleep on Night 1."
+    })
+  })
+
+  it("shows the Nights cleared by the moon", () => {
+    const run = won()
+    expect(run.stats.nightsCleared).toBe(1)
+    expect(stageResults(run)!.nights).toEqual({
+      cleared: 1,
+      of: 1,
+      moon: 1,
+      label: "Nights cleared 1/1"
+    })
+    const { after } = lost()
+    expect(stageResults(after)!.nights).toMatchObject({
+      cleared: after.stats.nightsCleared,
+      of: after.config.nights,
+      label: `Nights cleared 0/${after.config.nights}`
+    })
+  })
+
+  it("frames the Best Play's Couch as it was, each Cat content, with its Score and Night", () => {
+    const { before, after } = lost()
+    const { bestPlay } = after.stats
+    const photo = stageResults(after)!.photo!
+    expect(photo.score).toBe(bestPlay!.score)
+    expect(photo.night).toBe(1)
+    expect(photo.scoreLabel).toBe(`${bestPlay!.score}`)
+    expect(photo.nightLabel).toBe("Night 1")
+    expect(photo.seats.map((seat) => seat?.cat.id ?? null)).toEqual(
+      before.night.couch
+    )
+    expect(photo.seats).toEqual(
+      bestPlay!.couch.map(
+        (cat) =>
+          cat && {
+            cat,
+            pose: catArt(cat.coat, cat.personality, "content"),
+            facing: "right",
+            eyeTint: eyeTint(after, cat.id)
+          }
+      )
+    )
+  })
+
+  it("beds the Star Cat down asleep, named with the Purr it contributed", () => {
+    const { after } = lost()
+    const star = starCat(after)!
+    expect(stageResults(after)!.bed).toEqual({
+      cat: star.cat,
+      purr: star.purr,
+      pose: catArt(star.cat.coat, "sleepy", "content"),
+      facing: "right",
+      eyeTint: eyeTint(after, star.cat.id),
+      label: `Star Cat: ${star.cat.name}, ${star.purr} Purr`
+    })
+  })
+
+  it("writes big numbers with thousands separators", () => {
+    const { after } = lost()
+    const star = starCat(after)!
+    const big: Run = {
+      ...after,
+      stats: {
+        ...after.stats,
+        bestPlay: { ...after.stats.bestPlay!, score: 12_345 },
+        purrByCat: { [star.cat.id]: 1240 }
+      }
+    }
+    const results = stageResults(big)!
+    expect(results.photo!.scoreLabel).toBe("12,345")
+    expect(results.bed!.label).toBe(`Star Cat: ${star.cat.name}, 1,240 Purr`)
+  })
+
+  it("has no photo without a Best Play, and no cat bed without a Star Cat", () => {
+    const run: Run = { ...startRun(1), status: "lost" }
+    const results = stageResults(run)!
+    expect(results.photo).toBeNull()
+    expect(results.bed).toBeNull()
+  })
+
+  it("names the House Cats asleep on the Shelf", () => {
+    const { after } = lost()
+    expect(stageResults(after)!.houseCats).toEqual([])
+    expect(
+      stageResults({ ...after, shelf: ["boxGoblin", "doNotTouch"] })!.houseCats
+    ).toEqual(["Box Goblin", "Do Not Touch"])
+  })
+
+  it("carries the Star Cat off to its bed, every other Cat asleep where it was", () => {
+    const { before, after } = lost()
+    const star = starCat(after)!.cat.id
+    const everyone = stageAsleep(after, before.night.couch).cats
+    const bedded = stageAsleep(after, before.night.couch, star).cats
+    expect(everyone.map((staged) => staged.cat)).toContain(star)
+    expect(bedded).toEqual(everyone.filter((staged) => staged.cat !== star))
   })
 })
