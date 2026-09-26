@@ -1,4 +1,5 @@
-import type { CatId } from "../engine"
+import type { CatId, Run } from "../engine"
+import { type Results, stageResults } from "../presentation/staging"
 import type { Step } from "./choreography"
 
 /** How many recent effects the log keeps, for end-to-end tests. */
@@ -31,6 +32,11 @@ class Presentation {
    */
   seatingOrder: CatId[] = []
   /**
+   * The last Play's Couch, where its Cats doze off once the Run ends. Not a
+   * change the shell follows.
+   */
+  lastCouch: (CatId | null)[] = []
+  /**
    * The effects of the scoring steps played lately, in order; not a change
    * the shell follows.
    */
@@ -43,6 +49,11 @@ class Presentation {
     Object.assign(this, change)
     this.revision++
     for (const listener of this.listeners) listener()
+  }
+
+  /** The Run's Results, while the sleeping living room shows them. */
+  results(run: Run): Results | null {
+    return this.asleep ? stageResults(run) : null
   }
 
   /** Notes a scoring step's effects as the scene plays it. */

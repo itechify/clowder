@@ -39,6 +39,20 @@ function bracketsX(width: number) {
   return brackets
 }
 
+/**
+ * Inside the Best Play's photo frame, from its top left: the centres of the
+ * Seats on the Couch in the photo, the top of their pads, which its Cats sit
+ * on, and the middle of the plate its Score and Night are written on.
+ */
+export const PHOTO = {
+  seatsX: Array.from(
+    { length: defaultConfig.seats },
+    (_, seat) => 10 + (152 / defaultConfig.seats) * (seat + 0.5)
+  ),
+  padTop: 56,
+  plate: { x: 86, y: 86.5 }
+}
+
 /** Waxing across the Run: the moon's shadow slides off until it is full. */
 function moon(g: Graphics, phase: number) {
   g.fillStyle(0xf6ecc9, 1).fillCircle(16, 16, 12)
@@ -170,6 +184,54 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.lineStyle(2, 0xf0b28c, 1).strokeRoundedRect(8, 21, 148, 34, 8)
     g.lineStyle(3, INK, 1).strokeRoundedRect(3, 16, 158, 44, 12)
     g.fillStyle(0x5e3a25, 1).fillCircle(82, 5, 3.5)
+  },
+  titleSign: (g) => {
+    // A board on two stubby legs, a little moon and stars in its corner.
+    g.fillStyle(wood.dark, 1)
+      .fillRoundedRect(54, 66, 12, 18, 3)
+      .fillRoundedRect(234, 66, 12, 18, 3)
+    g.fillStyle(0xc8915e, 1).fillRoundedRect(3, 3, 294, 70, 16)
+    g.lineStyle(3, 0xf3dfc1, 1).strokeRoundedRect(11, 11, 278, 54, 10)
+    g.lineStyle(3, INK, 1).strokeRoundedRect(3, 3, 294, 70, 16)
+    g.fillStyle(0xf6ecc9, 1).fillCircle(276, 22, 5)
+    g.fillStyle(0xc8915e, 1).fillCircle(279, 20, 4)
+    g.fillStyle(0xf6ecc9, 1).fillCircle(264, 16, 1.5).fillCircle(268, 28, 1.2)
+  },
+  photoFrame: (g) => {
+    const { deep, cloth, pad, outline } = upholstery
+    g.fillStyle(wood.front, 1).fillRoundedRect(2, 2, 168, 96, 8)
+    g.fillStyle(0xf3dfc1, 1).fillRect(10, 10, 152, 64)
+    // The Couch in the photo, its five Seats' pads across it.
+    g.fillStyle(cloth, 1).fillRoundedRect(14, 34, 144, 28, 8)
+    g.fillStyle(deep, 1).fillRect(12, 62, 148, 8)
+    g.fillStyle(pad, 1)
+    for (const x of PHOTO.seatsX) g.fillRoundedRect(x - 13, 56, 26, 10, 4)
+    g.lineStyle(1.5, outline, 1).strokeRoundedRect(14, 34, 144, 28, 8)
+    g.lineStyle(3, INK, 1).strokeRect(10, 10, 152, 64)
+    // The plate the Score and Night are written on.
+    g.fillStyle(0xfaf3e6, 1).fillRoundedRect(26, 78, 120, 17, 4)
+    g.lineStyle(1.5, INK, 1).strokeRoundedRect(26, 78, 120, 17, 4)
+    g.lineStyle(3, INK, 1).strokeRoundedRect(2, 2, 168, 96, 8)
+  },
+  catBed: (g) => {
+    g.fillStyle(0xd46a4f, 1).fillEllipse(62, 30, 118, 40)
+    g.fillStyle(0xf3e3c8, 1).fillEllipse(62, 26, 90, 20)
+    g.fillStyle(0xc45a40, 1).fillRoundedRect(4, 30, 116, 20, 10)
+    g.lineStyle(3, INK, 1)
+      .strokeEllipse(62, 30, 118, 40)
+      .strokeRoundedRect(4, 30, 116, 20, 10)
+  },
+  rosette: (g) => {
+    g.fillStyle(0xe8893a, 1)
+      .fillTriangle(6, 16, 14, 20, 4, 35)
+      .fillTriangle(18, 16, 10, 20, 20, 35)
+    g.lineStyle(2, INK, 1)
+      .strokeTriangle(6, 16, 14, 20, 4, 35)
+      .strokeTriangle(18, 16, 10, 20, 20, 35)
+    g.fillStyle(0xf6c453, 1).fillCircle(12, 12, 11)
+    g.lineStyle(2, INK, 1).strokeCircle(12, 12, 11)
+    g.fillStyle(0xfaf3e6, 1).fillCircle(12, 12, 5.5)
+    g.lineStyle(1.5, INK, 1).strokeCircle(12, 12, 5.5)
   }
 }
 

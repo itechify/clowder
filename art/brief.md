@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**91 of 91 images delivered; 0 still on fallback.**
+**91 of 95 images delivered; 4 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 38 of 38 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 38 of 42 |
 
 ## How to generate and deliver
 
@@ -797,6 +797,10 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [x] `art/raw/room/shelf.png`
 - [x] `art/raw/room/treatJar.png`
 - [x] `art/raw/room/disasterSign.png`
+- [ ] `art/raw/room/titleSign.png`
+- [ ] `art/raw/room/photoFrame.png`
+- [ ] `art/raw/room/catBed.png`
+- [ ] `art/raw/room/rosette.png`
 - [x] `art/raw/ui/playButton/ready.png`
 - [x] `art/raw/ui/redrawButton/ready.png`
 - [x] `art/raw/ui/pip/full.png`
@@ -1098,6 +1102,58 @@ A glass jar full of fish-shaped orange cat treats, with a red lid and no label: 
 
 ```text
 A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Title sign: `art/raw/room/titleSign.png`
+
+**On fallback.**
+
+- Key: `room/titleSign`
+- Size: 900×252
+- Anchor: (450, 126): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A wide, rounded wooden signboard propped up on two short stubby legs, as if set down on the floor in front of a sofa at bedtime: warm honey wood with a cream-painted border and a tiny painted moon and stars in one corner. Leave the board blank: the game writes the title and a line beneath it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×252 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Photo frame: `art/raw/room/photoFrame.png`
+
+**On fallback.**
+
+- Key: `room/photoFrame`
+- Size: 516×300
+- Anchor: (258, 150): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A framed photo hung on a living-room wall: a chunky wooden picture frame with a small cream name plate set into the middle of its bottom edge. The photo inside shows a small sage-green sofa seen straight on, with five seat cushions evenly spaced across its whole width, filling the lower two thirds of the photo against a warm cream wall. The sofa is empty: the game draws the Cats on it. Leave the name plate blank: the game writes the Score and the Night on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 516×300 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Cat bed: `art/raw/room/catBed.png`
+
+**On fallback.**
+
+- Key: `room/catBed`
+- Size: 372×156
+- Anchor: (186, 156): bottom centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A round, plush cat bed seen from the front at a gentle angle, as it sits on the floor: a soft, puffy terracotta rim around a cream fleece cushion, big enough for one Cat curled up asleep in it. Empty: the game draws the Cat in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 372×156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Rosette: `art/raw/room/rosette.png`
+
+**On fallback.**
+
+- Key: `room/rosette`
+- Size: 72×108
+- Anchor: (36, 54): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A small prize rosette, like a winner's ribbon at a cat show: a gold pleated circle with a cream centre, and two short orange ribbon tails hanging beneath. Leave the centre blank. Transparent background. Front-on, with no perspective. It will be resized to exactly 72×108 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Play button, ready: `art/raw/ui/playButton/ready.png`
