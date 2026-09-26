@@ -53,7 +53,7 @@
     "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is nearly three times as wide as it is tall, standing against the back wall in place of the sofa. Keep the middle of the doorway uncluttered: four visitors will stand in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1116×390 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside the object. Compose visible silhouette to the EXACT stated target aspect ratio with small clear margins. Leave maximum broad blank space for game text, keep strings very short and borders thin. No extra objects.",
     "references": ["art/reference/style-sheet.png"],
     "source": "exec-7a7bf493-ff22-4efe-b87a-6e185aa198f8.png",
-    "status": "delivered"
+    "status": "superseded"
   },
   {
     "key": "room/disasterNote",
@@ -138,5 +138,12 @@
     "source": "exec-e30eb246-e5fe-48fc-9b29-65a21a885c4e.png",
     "status": "rejected",
     "reason": "The broad outer glow weakened the outline."
+  },
+  {
+    "key": "room/frontDoor",
+    "prompt": "Use case: precise-object-edit. Edit this Clowder doorway game sprite to fit four Cats side by side inside the actual opening. Preserve the warm wood, thick dark brown outline, blue sky, grass, sandy path and small mat. CRITICAL: make the EMPTY CENTRAL OPENING about 90 percent of the full visible width. Both open wooden door leaves must be very THIN strips confined to the extreme left and right edges, each at most 5 percent of total width; viewed nearly edge-on, with tiny gold handles. Do NOT use large broad door leaves. The overall visible silhouette must be about 3.3 times as wide as tall: an extra-wide low doorway. Flat front-on, little perspective. Keep the opening clear across its full width: four visitors will occupy centres at about 15, 38, 62 and 85 percent of its width. No Cats, text or labels. Genuine alpha transparency outside the doorway. One sprite only, no shadows outside.",
+    "references": ["art/raw/room/frontDoor.png at 35f56f6"],
+    "source": "exec-9200d62f-c270-4e4c-b337-dd6d7f3dbbb6.png",
+    "status": "delivered"
   }
 ]

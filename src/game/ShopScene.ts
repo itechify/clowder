@@ -6,7 +6,6 @@ import {
   applyAction,
   type CatId,
   type HouseCatId,
-  houseCat,
   notEnoughTreats,
   rehomeRefund
 } from "../engine"
@@ -57,9 +56,9 @@ import { drawTreat } from "./treatArt"
  * pile's Cat this big.
  */
 const HOUSEHOLD = {
-  headingY: 522,
+  headingY: 548,
   columnsX: [64, 130.5, 197, 263.5, 330],
-  rowsY: [580, 640, 700],
+  rowsY: [596, 654, 712],
   size: 48
 }
 /** A pile's count, on a badge at its Cat's feet. */
@@ -70,6 +69,8 @@ const SUN = { x: 162, y: 88 }
 const RISE = 26
 /** The storm clouds in the window, and how far and slowly they drift. */
 const CLOUDS = { x: WINDOW.x, y: 88, drift: 6, ms: 2600 }
+/** The clear panes, inset from the window frame and its central mullion. */
+const WINDOW_PANES = { xs: [44, 118], y: 77, width: 64, height: 45 }
 /** How warm the lights are by day, over the room as it is by night. */
 const WARM = { colour: 0xffc46b, alpha: 0.1 }
 const DUSK = { colour: NIGHT_SKY, alpha: 0.3 }
@@ -82,14 +83,14 @@ const SHELF_PROMPT_Y = 240
  * beside it; the bottom of the open doorway; the floor each offer stands on
  * in it, how big it is shown, and its tag and button beneath.
  */
-const DOOR_HEADING_Y = 262
-const DOOR_Y = 410
+const DOOR_HEADING_Y = 278
+const DOOR_Y = 416
 const OFFER = {
-  baseY: 402,
+  baseY: 408,
   catSize: 56,
   houseCatSize: 50,
-  tagY: 397,
-  button: { y: 492, width: 84, height: 40 }
+  tagY: 403,
+  button: { y: 498, width: 84, height: 40 }
 }
 /** Tags name visitors; long abilities live in a readable detail panel. */
 const TAG = { width: 86, height: 70, textWidth: 72 }
@@ -194,6 +195,7 @@ export class ShopScene extends Phaser.Scene {
   private shelf!: Phaser.GameObjects.Container
   private layer!: Phaser.GameObjects.Container
   private treatCount!: Phaser.GameObjects.Text
+  private skyMask!: Phaser.GameObjects.Graphics
   /** The offers' Cats and House Cats standing in the doorway, by spot. */
   private visitors: (Phaser.GameObjects.Container | null)[] = []
   /** A visitor whose full name, title and ability the player is reading. */
@@ -278,8 +280,13 @@ export class ShopScene extends Phaser.Scene {
    * window and a note on the wall.
    */
   private drawDay() {
+    const panes = this.make.graphics(undefined, false).fillStyle(0xffffff)
+    for (const x of WINDOW_PANES.xs)
+      panes.fillRect(x, WINDOW_PANES.y, WINDOW_PANES.width, WINDOW_PANES.height)
+    this.skyMask = panes
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => panes.destroy())
     const window = addArt(this, art.room.dayWindow, WINDOW.x, WINDOW.y)
-    const sun = addArt(this, art.room.sun, SUN.x, SUN.y)
+    const sun = this.inWindow(addArt(this, art.room.sun, SUN.x, SUN.y))
     const warmth = this.add
       .rectangle(0, 0, WIDTH, HEIGHT, WARM.colour, WARM.alpha)
       .setOrigin(0)
@@ -290,7 +297,9 @@ export class ShopScene extends Phaser.Scene {
     const { disaster } = stageShop(session.run)
     presentation.clouds = null
     if (disaster) {
-      const clouds = addArt(this, art.room.stormClouds, CLOUDS.x, CLOUDS.y)
+      const clouds = this.inWindow(
+        addArt(this, art.room.stormClouds, CLOUDS.x, CLOUDS.y)
+      )
       this.drift(clouds)
       // Still again as soon as motion is reduced, and drifting once it isn't.
       const off = settings.on(() => this.drift(clouds))
@@ -298,6 +307,18 @@ export class ShopScene extends Phaser.Scene {
       fixtures.push(clouds, this.drawDisasterNote(disaster))
     }
     return { window, sun, warmth, fixtures }
+  }
+
+  /** Weather stays behind the frame, including while rising or drifting. */
+  private inWindow(image: Phaser.GameObjects.Image) {
+    if (this.game.renderer.type === Phaser.WEBGL) {
+      image.enableFilters().filters!.external.addMask(this.skyMask)
+    } else {
+      const mask = this.skyMask.createGeometryMask()
+      image.setMask(mask)
+      image.once(Phaser.GameObjects.Events.DESTROY, () => mask.destroy())
+    }
+    return image
   }
 
   /** Sets storm clouds drifting to and fro, or still under Reduced motion. */
@@ -446,8 +467,7 @@ export class ShopScene extends Phaser.Scene {
   private shelfPrompt() {
     const { run } = session
     const picked = this.pickedHouseCat()
-    if (picked)
-      return `Rehome ${houseCat(picked).name} for ${rehomeRefund(run.config, picked)} Treats back, or tap elsewhere on the Shelf to move it.`
+    if (picked) return "Tap a Shelf spot to move, or Rehome below."
     return run.shelf.length > 0
       ? "Tap a House Cat to move or Rehome it."
       : "Recruit a House Cat for the Shelf."
@@ -598,11 +618,11 @@ export class ShopScene extends Phaser.Scene {
     const y = at.y - FAN_ABOVE
     const xs = fanX(fan.cats.length, at.x, FAN)
     // The panel is wide enough for its words, however few its Cats.
-    const width = Math.max(FAN.minWidth, xs.at(-1)! - xs[0] + FAN.step)
-    const middle = Math.min(
-      Math.max((xs[0] + xs.at(-1)!) / 2, FAN.left + width / 2),
-      FAN.right - width / 2
+    const width = Math.min(
+      FAN.right - FAN.left,
+      Math.max(FAN.minWidth, fan.cats.length * FAN.step)
     )
+    const middle = (xs[0] + xs.at(-1)!) / 2
     const [left, right] = [middle - width / 2, middle + width / 2]
     // The rest of the room dims, and a tap on it closes the fan.
     add(
@@ -884,7 +904,9 @@ export class ShopScene extends Phaser.Scene {
    */
   private dawn() {
     const { run } = session
-    const moon = addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    const moon = this.inWindow(
+      addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    )
     // Dawn breaks behind the Shelf and the Shop, over the room by night.
     const night: Phaser.GameObjects.GameObject[] = [moon]
     const rugXs = rugX(Math.ceil(run.config.handSize / 2))
@@ -1000,7 +1022,9 @@ export class ShopScene extends Phaser.Scene {
   private nightfall() {
     this.closing = true
     const { run } = session
-    const moon = addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    const moon = this.inWindow(
+      addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    )
     const dusk = this.add
       .rectangle(0, 0, WIDTH, HEIGHT, DUSK.colour, 0)
       .setOrigin(0)

@@ -95,6 +95,12 @@ describe("a pile's fan", () => {
     expect(fanX(2, 360, across)).toEqual([280, 340])
   })
 
+  it("centres Cats inside a minimum-width panel at either room edge", () => {
+    const panel = { ...across, minWidth: 190 }
+    expect(fanX(2, 40, panel)).toEqual([85, 145])
+    expect(fanX(2, 360, panel)).toEqual([245, 305])
+  })
+
   it("closes up when its Cats cannot all fit a step apart", () => {
     const xs = fanX(8, 195, across)
     expect(xs[0]).toBeCloseTo(20 + 350 / 16)

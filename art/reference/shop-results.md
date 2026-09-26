@@ -59,6 +59,38 @@ regression exercises opening details from both the tag and visitor,
 dismissing by Close and outside tap, and preserving Treats and Run state.
 Seed 4 also verifies that One Braincell wraps at 12 pixels without shrinking.
 
+## Shop spacing and window correction
+
+Further author feedback identified door leaves behind the outer visitors,
+off-centre Orange and Calico pile panels, weather in front of the window
+frame, and crowded spacing around Reroll and the household heading.
+
+The doorway was edited with the built-in image tool so the open leaves sit
+at its outer edges. Its visible artwork was uniformly fitted inside
+1116×336 pixels and bottom-centred on the unchanged 1116×390 canvas. All
+four visitors now stand inside the opening. The generation log records the
+exact edit prompt and supersedes the original doorway.
+
+The pile fan and its panel now share a centre, including the panel's
+minimum width when clamping it to the screen. A browser probe reproduced
+33-pixel offsets on both edge piles before the fix, and zero afterward;
+the public layout test covers both edges. Reroll moved down 16 pixels,
+offers down 6 pixels, and the household heading down 26 pixels, with the
+pile rows adjusted to fit below it. The selected Shelf hint stays on one
+line to keep the space above Reroll clear.
+
+Weather is masked to the two panes, behind both the outer frame and central
+mullion. Phaser 4's external Mask filter handles WebGL; the GeometryMask
+path handles Canvas. This also applies to the moon during Shop transitions.
+A rendered-pixel probe compared visible and hidden weather: the settled
+sun changed 907 pixels inside the panes, storm weather changed 2,542, and
+neither changed any pixels outside. Disabling the filter reproduces 138 changed pixels outside the panes.
+The Canvas fallback also passed the visible/hidden weather comparison. The masks are released with their objects and Scene.
+
+`shop-layout-day.png` and `shop-layout-storm.png` show the final room;
+`shop-layout-orange.png` and `shop-layout-calico.png` show the centred edge
+pile panels. These supersede the earlier Shop room layout previews.
+
 ## Verification
 
 - All twelve keys report `delivered` through `window.__clowder.art(key)`.
@@ -70,13 +102,17 @@ Seed 4 also verifies that One Braincell wraps at 12 pixels without shrinking.
   before Nights 2 and 3. `shop-results-won.png` shows seed 3 with a one-Night
   Run and Target 10; `shop-results-lost.png` shows seed 7 played one Cat at
   a time. The final photo plate fits both the Score and Night labels.
-- Typechecking, Biome, all 367 unit tests, and all 62 browser tests pass,
+- Typechecking, Biome, all 368 unit tests, and all 62 browser tests pass,
   including atlas delivery, Shop transitions, Results, and offline loading.
-  The production precache is approximately 4.4 MB of the 15 MB budget,
+  The production precache is approximately 4.5 MB of the 15 MB budget,
   with all 21 precached files below 2 MiB.
 - Independent standards and spec reviews reported zero findings on each
   axis for both the original delivery (against `4cbc503`) and the legibility
-  correction (against `b45c6cf`).
+  correction (against `b45c6cf`). The final layout review (against
+  `35f56f6`) found no standards violations and no spec findings; it noted
+  one non-blocking maintenance concern about the panel width calculation
+  also used by Cat placement. The existing `fanX` interface is retained,
+  covered by the edge-centering regression test.
 
 These screenshots record agent visual verification, not a new author
 approval of the batch. The previously approved style reference is unchanged.
