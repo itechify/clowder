@@ -18,13 +18,14 @@ import {
   type Pile,
   type PileSpot,
   type ShopStaging,
+  sameKind,
   stageShop
 } from "../presentation/shop"
 import { stage } from "../presentation/staging"
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
 import { CAT_BASE } from "./catArt"
-import { drawCat, drawHouseCat } from "./characters"
+import { drawCat, drawGrowthBadge, drawHouseCat } from "./characters"
 import { display, font, numbers, OUTLINE } from "./fonts"
 import {
   doorwayX,
@@ -44,8 +45,9 @@ import {
   WIDTH,
   WINDOW
 } from "./layout"
-import { presentation } from "./presentation"
-import { drawFurniture } from "./room"
+import { type CloudMotion, presentation, type TimeOfDay } from "./presentation"
+import { drawDisasterPlaque, drawFurniture } from "./room"
+import { INK, NIGHT_SKY } from "./roomArt"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 import { drawTreat } from "./treatArt"
@@ -71,11 +73,9 @@ const SUN = { x: 162, y: 88 }
 const RISE = 26
 /** The storm clouds in the window, and how far and slowly they drift. */
 const CLOUDS = { x: WINDOW.x, y: 88, drift: 6, ms: 2600 }
-/** The note on the wall naming the next Disaster, as the Couch's sign hangs. */
-const DISASTER_NOTE = { x: 296, y: 64, textWidth: 140 }
 /** How warm the lights are by day, over the room as it is by night. */
 const WARM = { colour: 0xffc46b, alpha: 0.1 }
-const DUSK = { colour: 0x2d3561, alpha: 0.3 }
+const DUSK = { colour: NIGHT_SKY, alpha: 0.3 }
 /** The sunbeam from the front door, lying across the rug. */
 const SUNBEAM = { x: WIDTH / 2, y: 598 }
 /**
@@ -148,9 +148,6 @@ const priceColour = (state: ButtonState, treats: number) =>
       : treats < 0
         ? "#ffd7a8"
         : "#bfe8a0"
-
-const sameKind = (a: Kind | null | undefined, b: Kind) =>
-  !!a && a.coat === b.coat && a.personality === b.personality
 
 /**
  * The Shop between Nights, in the living room by day: the Roster lounging as
@@ -269,37 +266,39 @@ export class ShopScene extends Phaser.Scene {
     presentation.clouds = null
     if (disaster) {
       const clouds = addArt(this, art.room.stormClouds, CLOUDS.x, CLOUDS.y)
-      // Drifting to and fro, unless motion is reduced.
-      presentation.clouds = settings.reducedMotion ? "still" : "drifting"
-      if (!settings.reducedMotion)
-        this.tweens.add({
-          targets: clouds,
-          x: CLOUDS.x + CLOUDS.drift,
-          duration: CLOUDS.ms,
-          yoyo: true,
-          repeat: -1,
-          ease: "Sine.easeInOut"
-        })
+      this.drift(clouds)
+      // Still again as soon as motion is reduced, and drifting once it isn't.
+      const off = settings.on(() => this.drift(clouds))
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, off)
       fixtures.push(clouds, this.drawDisasterNote(disaster))
     }
     return { window, sun, warmth, fixtures }
   }
 
+  /** Sets storm clouds drifting to and fro, or still under Reduced motion. */
+  private drift(clouds: Phaser.GameObjects.Image) {
+    const motion: CloudMotion = settings.reducedMotion ? "still" : "drifting"
+    if (presentation.clouds === motion) return
+    presentation.clouds = motion
+    this.tweens.killTweensOf(clouds)
+    clouds.setX(CLOUDS.x)
+    if (motion === "drifting")
+      this.tweens.add({
+        targets: clouds,
+        x: CLOUDS.x + CLOUDS.drift,
+        duration: CLOUDS.ms,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut"
+      })
+  }
+
   /** A red note pinned beside the window, naming the next Disaster and its rule. */
-  private drawDisasterNote({ name, rule }: DisasterSign) {
-    const words = [
-      this.add.text(0, 26, name, display(15, "#fdf6ea")).setStroke(OUTLINE, 3),
-      this.add.text(0, 44, rule, font(11, "#fdf6ea", "800"))
-    ]
-    // Any line too long for the note shrinks to fit inside its border.
-    for (const line of words)
-      line
-        .setOrigin(0.5)
-        .setScale(Math.min(1, DISASTER_NOTE.textWidth / line.width))
-    return this.add.container(DISASTER_NOTE.x, DISASTER_NOTE.y, [
-      addArt(this, art.room.disasterNote),
-      ...words
-    ])
+  private drawDisasterNote(disaster: DisasterSign) {
+    return drawDisasterPlaque(this, art.room.disasterNote, disaster, {
+      nameY: 26,
+      ruleY: 44
+    })
   }
 
   /** Where a pile's Cat is shown: its centre, and how big it is. */
@@ -500,7 +499,7 @@ export class ShopScene extends Phaser.Scene {
     panel
       .fillStyle(0xfdf6ea, 0.97)
       .fillRoundedRect(left, y - FAN.height / 2, right - left, FAN.height, 16)
-      .lineStyle(3, 0x3b2a22, 1)
+      .lineStyle(3, INK, 1)
       .strokeRoundedRect(left, y - FAN.height / 2, right - left, FAN.height, 16)
     // The panel catches taps between its Cats, so they don't close it.
     add(
@@ -522,7 +521,7 @@ export class ShopScene extends Phaser.Scene {
         .setOrigin(0.5)
     )
     const cats = new Map(run.roster.map((cat) => [cat.id, cat]))
-    fan.cats.forEach(({ cat: id, name, look, grown }, i) => {
+    fan.cats.forEach(({ cat: id, name, look, grownTo }, i) => {
       const x = xs[i]
       const catY = y + 2
       if (id === picked)
@@ -535,22 +534,8 @@ export class ShopScene extends Phaser.Scene {
           .text(x, y + FAN.height / 2 - 16, name, font(11, "#4a3426", "800"))
           .setOrigin(0.5)
       )
-      if (grown !== null) {
-        // The same starry badge a grown Cat wears in the living room.
-        const label = this.add
-          .text(x - 16, catY - 24, `${grown}`, numbers(12, "#f6d743"))
-          .setOrigin(0.5)
-        add(this.add.graphics())
-          .fillStyle(0x141018, 0.92)
-          .fillRoundedRect(
-            label.x - label.width / 2 - 6,
-            label.y - 9,
-            label.width + 12,
-            18,
-            9
-          )
-        add(label)
-      }
+      if (grownTo !== null)
+        drawGrowthBadge(this, add, grownTo, x - 16, catY - 24)
       add(this.add.zone(x, catY + 8, FAN.step - 4, FAN.size + 30))
         .setInteractive({ useHandCursor: true })
         .on("pointerdown", () => this.tapFannedCat(id))
@@ -693,7 +678,7 @@ export class ShopScene extends Phaser.Scene {
 
   /** Fans a pile's Cats out, or closes it; either puts back any pick. */
   private tapPile(kind: Kind) {
-    this.opened = sameKind(this.opened, kind) ? null : kind
+    this.opened = this.opened && sameKind(this.opened, kind) ? null : kind
     this.picked = null
     this.draw()
   }
@@ -759,7 +744,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   /**
-   * Morning, from a cleared Night: the moon sets, the sun rises in the
+   * Dawn, after a cleared Night: the moon sets, the sun rises in the
    * window, the lights warm, and the Hand's Cats wander off before the Shop
    * shows. A tap skips it; under Reduced motion it is a plain crossfade.
    */
@@ -926,7 +911,7 @@ export class ShopScene extends Phaser.Scene {
    * Plays a transition's moves, with a tap anywhere skipping to their end,
    * then `done`.
    */
-  private transit(to: "day" | "night", moves: Move[], done: () => void) {
+  private transit(to: TimeOfDay, moves: Move[], done: () => void) {
     presentation.transition = { to, crossfade: settings.reducedMotion }
     const blocker = this.add
       .zone(0, 0, WIDTH, HEIGHT)

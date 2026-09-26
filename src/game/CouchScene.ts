@@ -34,7 +34,7 @@ import {
 } from "../presentation/staging"
 import { settings } from "../shell/settings"
 import { addArt } from "./art"
-import { drawCat, drawHouseCat } from "./characters"
+import { drawCat, drawGrowthBadge, drawHouseCat } from "./characters"
 import { choreograph, countedUp, type Step, skippedCues } from "./choreography"
 import { effectConfig } from "./effectConfig"
 import { display, font, numbers, OUTLINE } from "./fonts"
@@ -55,7 +55,7 @@ import {
   WIDTH
 } from "./layout"
 import { presentation } from "./presentation"
-import { drawFurniture } from "./room"
+import { drawDisasterPlaque, drawFurniture } from "./room"
 import { INK } from "./roomArt"
 import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
 import { session } from "./session"
@@ -63,9 +63,8 @@ import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
 /**
  * Where the HUD sits in the room: the Night on the wall beside the window with
- * its moon, the Draw pile beneath; the nail tonight's Disaster sign hangs
- * from, below the treat jar; and the purr meter's centre, along the top of
- * the Couch's back.
+ * its moon, the Draw pile beneath; and the purr meter's centre, along the top
+ * of the Couch's back.
  */
 const NIGHT_LABEL = { x: 22, y: 26 }
 const DRAW_PILE_LABEL = { x: 22, y: 52 }
@@ -73,8 +72,6 @@ const DRAW_PILE_LABEL = { x: 22, y: 52 }
 const JAR_MOUTH = 44
 /** How long the jar bobs as each treat lands in it, at 1×. */
 const JAR_BOB_MS = 120
-/** The Disaster sign's nail, and how wide its words may run inside its border. */
-const DISASTER_SIGN = { x: 296, y: 64, textWidth: 140 }
 const PURR_METER = { x: WIDTH / 2, y: 276 }
 /**
  * A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from
@@ -733,14 +730,8 @@ export class CouchScene extends Phaser.Scene {
    * starry badge, so The Void's work shows wherever the Cat goes.
    */
   private drawGrowth(add: Add, cat: Cat, x: number, y: number) {
-    if (cat.basePurr === session.run.config.basePurr) return
-    const label = this.add
-      .text(x, y, `${cat.basePurr}`, numbers(12, "#f6d743"))
-      .setOrigin(0.5)
-    add(this.add.graphics())
-      .fillStyle(0x141018, 0.92)
-      .fillRoundedRect(x - label.width / 2 - 6, y - 9, label.width + 12, 18, 9)
-    add(label)
+    if (cat.basePurr !== session.run.config.basePurr)
+      drawGrowthBadge(this, add, cat.basePurr, x, y)
   }
 
   /**
@@ -805,20 +796,11 @@ export class CouchScene extends Phaser.Scene {
    * A sign hung on the wall below the treat jar, naming tonight's Disaster
    * and the rule it changes, clear of the Shelf below.
    */
-  private drawDisasterSign({ name, rule }: DisasterSign) {
-    const words = [
-      this.add.text(0, 30, name, display(15, "#fdf6ea")).setStroke(OUTLINE, 3),
-      this.add.text(0, 47, rule, font(11, "#fdf6ea", "800"))
-    ]
-    // Any line too long for the sign shrinks to fit inside its border.
-    for (const line of words)
-      line
-        .setOrigin(0.5)
-        .setScale(Math.min(1, DISASTER_SIGN.textWidth / line.width))
-    return this.add.container(DISASTER_SIGN.x, DISASTER_SIGN.y, [
-      addArt(this, art.room.disasterSign),
-      ...words
-    ])
+  private drawDisasterSign(disaster: DisasterSign) {
+    return drawDisasterPlaque(this, art.room.disasterSign, disaster, {
+      nameY: 30,
+      ruleY: 47
+    })
   }
 
   /** Gives the Disaster sign a shake. */

@@ -60,8 +60,8 @@ export type FannedCat = {
   cat: CatId
   name: string
   look: CatLook
-  /** Its base Purr, once The Void has grown it; the same badge as on the rug. */
-  grown: number | null
+  /** The base Purr The Void has grown it to, if it has; the same badge as on the rug. */
+  grownTo: number | null
 }
 
 /** An opened pile's Cats, fanned out: they have names, so none is "one of the pile". */
@@ -76,13 +76,13 @@ export type OfferId = { cat: CatId } | { houseCat: HouseCatId }
  */
 export type OfferTag = { name: string; title: string | null; about: string }
 
-/** What buying an offer takes: the action, and its Treat price. */
-type Purchase = { tag: OfferTag; action: Action; price: number }
+/** An offer's tag, and what Adopting or Recruiting it takes: the action, and its Treat price. */
+type Terms = { tag: OfferTag; action: Action; price: number }
 
 /** An offer waiting in the doorway, to Adopt or Recruit. */
 export type Offer =
-  | ({ cat: Cat; look: CatLook } & Purchase)
-  | ({ houseCat: HouseCatId; pose: string } & Purchase)
+  | ({ cat: Cat; look: CatLook } & Terms)
+  | ({ houseCat: HouseCatId; pose: string } & Terms)
 
 /**
  * A spot in the doorway, and whom it holds: the offer waiting there, or
@@ -103,8 +103,9 @@ export type ShopStaging = {
   nightfall: string
 }
 
-const isKind = (cat: Cat, kind: Kind) =>
-  cat.coat === kind.coat && cat.personality === kind.personality
+/** Whether two Kinds, or a Cat's and a Kind, are the same. */
+export const sameKind = (a: Kind, b: Kind) =>
+  a.coat === b.coat && a.personality === b.personality
 
 /** What the player has open in the Shop. */
 export type ShopView = {
@@ -182,7 +183,7 @@ export function stageShop(
   { opened = null, doorway = [] }: ShopView = {}
 ): ShopStaging {
   const piles = kinds.flatMap((kind, i): Pile[] => {
-    const cats = run.roster.filter((cat) => isKind(cat, kind))
+    const cats = run.roster.filter((cat) => sameKind(cat, kind))
     if (cats.length === 0) return []
     const [cat] = cats
     return [
@@ -197,7 +198,7 @@ export function stageShop(
   })
   const nextDisaster = run.shop?.nextDisaster
   const next = nextDisaster ? disasterById(nextDisaster) : null
-  const fanned = opened ? run.roster.filter((cat) => isKind(cat, opened)) : []
+  const fanned = opened ? run.roster.filter((cat) => sameKind(cat, opened)) : []
   return {
     piles,
     fan:
@@ -208,7 +209,8 @@ export function stageShop(
               cat: cat.id,
               name: cat.name,
               look: atRest(run, cat),
-              grown: cat.basePurr === run.config.basePurr ? null : cat.basePurr
+              grownTo:
+                cat.basePurr === run.config.basePurr ? null : cat.basePurr
             }))
           }
         : null,

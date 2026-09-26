@@ -14,7 +14,7 @@ type Graphics = Phaser.GameObjects.Graphics
 type Paint = (g: Graphics, ctx: CanvasRenderingContext2D) => void
 
 /** The night sky through the window, which the moon's shadow matches. */
-const NIGHT_SKY = 0x2d3561
+export const NIGHT_SKY = 0x2d3561
 /** The sky by day, through the window and the open front door. */
 const DAY_SKY = 0x9fd3f0
 /** The bold dark-brown outline round everything drawn in the game's style. */

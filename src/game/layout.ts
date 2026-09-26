@@ -19,6 +19,11 @@ export const SHELF_CAT_SIZE = 48
 export const COUCH_FLOOR_Y = 428
 export const SEAT_PAD_Y = 344
 export const RUG_Y = 636
+/**
+ * The nail a Disaster's sign or note hangs from, below the treat jar, and how
+ * wide its words may run inside its border.
+ */
+export const DISASTER_PLAQUE = { x: 296, y: 64, textWidth: 140 }
 /** Where a seated Cat's centre sits above its Seat, and how big it is shown. */
 export const SEAT_Y = 352
 export const SEATED_SIZE = 64
@@ -32,19 +37,18 @@ export const RUG_ROWS = {
 export const seatX = (seats: number) =>
   Array.from({ length: seats }, (_, seat) => 20 + (350 / seats) * (seat + 0.5))
 
-/** Position centres, spread evenly along the Shelf. */
-export const shelfX = (positions: number) =>
+/** `count` centres, spread evenly across the room clear of its sides. */
+const acrossRoom = (count: number) =>
   Array.from(
-    { length: positions },
-    (_, position) => 20 + ((WIDTH - 40) / positions) * (position + 0.5)
+    { length: count },
+    (_, i) => 20 + ((WIDTH - 40) / count) * (i + 0.5)
   )
 
+/** Position centres, spread evenly along the Shelf. */
+export const shelfX = acrossRoom
+
 /** Where the offers stand in the Shop's front door, spread evenly across it. */
-export const doorwayX = (spots: number) =>
-  Array.from(
-    { length: spots },
-    (_, spot) => 20 + ((WIDTH - 40) / spots) * (spot + 0.5)
-  )
+export const doorwayX = acrossRoom
 
 /**
  * Lays labels `width` wide side by side along a row from `left` to `right`,

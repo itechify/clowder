@@ -174,8 +174,10 @@ describe("an opened pile", () => {
       opened: { coat: "black", personality: "clingy" }
     })
 
-    expect(fan?.cats.find(({ cat }) => cat === grown.id)?.grown).toBe(1_000_004)
-    expect(fan?.cats.find(({ cat }) => cat === plain.id)?.grown).toBeNull()
+    expect(fan?.cats.find(({ cat }) => cat === grown.id)?.grownTo).toBe(
+      1_000_004
+    )
+    expect(fan?.cats.find(({ cat }) => cat === plain.id)?.grownTo).toBeNull()
   })
 })
 

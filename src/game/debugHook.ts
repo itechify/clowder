@@ -12,6 +12,7 @@ import { type ShopStaging, stageShop } from "../presentation/shop"
 import { type Staging, stage } from "../presentation/staging"
 import { artTexture, delivered } from "./art"
 import {
+  type CloudMotion,
   type PlayedEffect,
   presentation,
   type Transition
@@ -41,7 +42,7 @@ export type DebugHook = {
   /** The Shop's transition between night and day playing out, if any. */
   transition: () => Transition | null
   /** How the Shop's storm clouds move, while they show. */
-  clouds: () => "drifting" | "still" | null
+  clouds: () => CloudMotion | null
   /** Every sound cue the game has asked for, in order. */
   cues: () => Cue[]
   /** The effects of every scoring step the scene has played, in order. */

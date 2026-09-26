@@ -18,7 +18,11 @@ export type SceneKey = "couch" | "shop"
  * The room turning from night to day as the Shop opens, or back as it closes;
  * a plain crossfade under Reduced motion.
  */
-export type Transition = { to: "day" | "night"; crossfade: boolean }
+export type Transition = { to: TimeOfDay; crossfade: boolean }
+export type TimeOfDay = "day" | "night"
+
+/** How storm clouds move in the window: to and fro, or still under Reduced motion. */
+export type CloudMotion = "drifting" | "still"
 
 /**
  * What the scene is in the middle of showing, for the shell and end-to-end
@@ -46,7 +50,7 @@ class Presentation {
   /** The Shop's transition playing out, if any. */
   transition: Transition | null = null
   /** How the storm clouds in the Shop's window move, while they show. */
-  clouds: "drifting" | "still" | null = null
+  clouds: CloudMotion | null = null
   /**
    * The effects of the scoring steps played lately, in order; not a change
    * the shell follows.
