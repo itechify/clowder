@@ -12,7 +12,12 @@ export {
   type DisasterId,
   disasterById
 } from "./content/disasters"
-export type { GatheringId } from "./content/gatherings"
+export {
+  type Gathering,
+  type GatheringId,
+  gatheringById,
+  gatherings
+} from "./content/gatherings"
 export {
   clearTreats,
   copying,
@@ -30,7 +35,9 @@ export { nightTarget, startRun } from "./run"
 export { restoreRun, serialiseRun } from "./save"
 export {
   type ActiveGathering,
+  type GatheringBonus,
   type Growth,
+  gatheringBonus,
   previewPlay,
   type ScoreBreakdown,
   type ScoringEvent,

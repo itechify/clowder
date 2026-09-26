@@ -59,13 +59,13 @@ test("scores at the chosen speed, and keeps it", async ({ page }) => {
   await expect(settings.getByRole("radio", { name: "4×" })).toBeChecked()
 })
 
-test("opens the Shop once a cleared Night's sequence is skipped", async ({
+test("opens the Scrapbook once a cleared Night's sequence is skipped", async ({
   page
 }) => {
   await boot(page, 1)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
-    while (!run().shop) {
+    while (!run().scrapbookPages) {
       run()
         .night.hand.slice(0, 5)
         .forEach((cat, seat) => {
@@ -75,13 +75,15 @@ test("opens the Shop once a cleared Night's sequence is skipped", async ({
     }
   })
   const scenes = () => page.evaluate(() => window.__clowder!.scenes())
+  const texts = () => page.evaluate(() => window.__clowder!.texts())
 
   // The clearing Play scores on the Couch first.
   expect(await scoring(page)).toBe(true)
-  expect(await scenes()).toEqual(["couch"])
+  expect(await texts()).not.toContain("Choose a Scrapbook page")
   await tap(page, ...layout.wall)
 
-  await expect.poll(scenes).toEqual(["shop"])
+  await expect.poll(texts).toContain("Choose a Scrapbook page")
+  expect(await scenes()).toEqual(["couch"])
 })
 
 test("drags Cats onto Seats, between them, and off the Couch", async ({

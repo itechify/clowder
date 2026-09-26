@@ -8,7 +8,7 @@ import {
   serialiseRun,
   startRun
 } from "./index"
-import { accepted } from "./testing"
+import { accepted, chooseFirstPage } from "./testing"
 
 /** An action to take next, chosen from the Run as it stands. */
 type Step = (run: Run) => Action
@@ -21,15 +21,23 @@ const play: Step = () => ({ type: "play" })
 /** Seats five Cats from the Hand and Plays them. */
 const playFive: Step[] = [0, 1, 2, 3, 4].map((i) => seatFromHand(i, i))
 
-/** Plays full Couches until the Shop opens. */
-function runInShop(seed: number) {
+/** Plays full Couches until the Scrapbook opens. */
+function runInScrapbook(seed: number) {
   let run = startRun(seed)
-  while (!run.shop) {
+  while (!run.scrapbookPages) {
     for (const step of [...playFive, play]) run = accepted(run, step(run)).run
     if (run.status !== "playing") throw new Error("The Run ended first")
   }
   return run
 }
+
+/** Plays full Couches until the Scrapbook opens, then chooses a page for the Shop. */
+const runInShop = (seed: number) => chooseFirstPage(runInScrapbook(seed)).run
+
+const choosePage: Step = (run) => ({
+  type: "choosePage",
+  gathering: run.scrapbookPages![0]
+})
 
 /**
  * Saves and restores the Run, then takes the same steps in both: the saved
@@ -107,15 +115,30 @@ describe("saving and resuming a Run", () => {
     expect(end.night.playsLeft).toBe(2)
   })
 
+  it("resumes mid-choice exactly as it would have gone on", () => {
+    const run = runInScrapbook(1)
+
+    const end = expectResumesIdentically(run, [
+      choosePage,
+      () => ({ type: "leaveShop" }),
+      ...playFive,
+      play
+    ])
+
+    expect(end.night.number).toBe(2)
+    expect(Object.values(end.gatheringLevels)).toContain(2)
+  })
+
   it("resumes a Disaster Night exactly as it would have gone on", () => {
     // Every Play clears its Night, so full Couches reach Night 3 at once.
     let run = startRun(1, { ...defaultConfig, basePurr: 1_000_000 })
     while (run.night.disaster === null) {
       for (const step of [...playFive, play]) run = accepted(run, step(run)).run
+      run = chooseFirstPage(run).run
       run = accepted(run, { type: "leaveShop" }).run
     }
 
-    const end = expectResumesIdentically(run, [...playFive, play])
+    const end = expectResumesIdentically(run, [...playFive, play, choosePage])
 
     expect(end.shop).not.toBeNull()
   })
@@ -174,7 +197,7 @@ function damaged(saved: string, path: (string | number)[]) {
 }
 
 describe("a damaged save", () => {
-  it("is refused wherever it is damaged, mid-Night or mid-Shop", () => {
+  it("is refused wherever it is damaged, mid-Night, mid-choice, or mid-Shop", () => {
     const midNight = accepted(startRun(3), {
       type: "place",
       cat: startRun(3).night.hand[0],
@@ -185,7 +208,7 @@ describe("a damaged save", () => {
       type: "recruit",
       houseCat: inShop.shop!.houseCatOffers[0]
     }).run
-    for (const run of [midNight, runInShop(1), withShelf]) {
+    for (const run of [midNight, runInScrapbook(1), runInShop(1), withShelf]) {
       const saved = serialiseRun(run)
       const refusedAt = paths(JSON.parse(saved).run)
         .map((path) => ["run", ...path])
@@ -206,6 +229,16 @@ describe("a damaged save", () => {
 
     expect(restoreRun(serialiseRun(twice))).toBeUndefined()
     expect(restoreRun(serialiseRun(tooMany))).toBeUndefined()
+  })
+
+  it("is refused when the Scrapbook offers a Gathering twice, or with the Shop open", () => {
+    const run = runInScrapbook(1)
+    const [page] = run.scrapbookPages!
+    const twice: Run = { ...run, scrapbookPages: [page, page, page] }
+    const withShop: Run = { ...runInShop(1), scrapbookPages: [page] }
+
+    expect(restoreRun(serialiseRun(twice))).toBeUndefined()
+    expect(restoreRun(serialiseRun(withShop))).toBeUndefined()
   })
 
   it("is refused when the Night holds a Cat that is not in the Roster", () => {

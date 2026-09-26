@@ -7,7 +7,7 @@ import {
   type Run,
   startRun
 } from "./index"
-import { accepted } from "./testing"
+import { accepted, chooseFirstPage } from "./testing"
 
 /** A Run in which every Play, however small, clears its Night. */
 const easyRun = (seed = 1, config: Partial<Config> = {}) =>
@@ -21,9 +21,12 @@ function playOne(run: Run) {
   })
 }
 
-/** Clears the Night with one lone Cat, then leaves the Shop for the next. */
+/**
+ * Clears the Night with one lone Cat, then chooses a Scrapbook page and leaves
+ * the Shop for the next.
+ */
 function playOnToNextNight(run: Run) {
-  const cleared = playOne(run).run
+  const cleared = chooseFirstPage(playOne(run).run).run
   return cleared.shop ? accepted(cleared, { type: "leaveShop" }).run : cleared
 }
 
@@ -194,9 +197,8 @@ describe("clearing a Disaster Night", () => {
       const { run: cleared, events } = playOne(run)
       if (disaster)
         paid[disaster] = events.find((event) => event.type === "treatsAwarded")
-      run = cleared.shop
-        ? accepted(cleared, { type: "leaveShop" }).run
-        : cleared
+      const chosen = chooseFirstPage(cleared).run
+      run = chosen.shop ? accepted(chosen, { type: "leaveShop" }).run : chosen
     }
 
     // Each is cleared on its first Play; The Human Wakes Up has one to spare.
@@ -220,7 +222,7 @@ describe("the Shop", () => {
     let run = easyRun()
     const revealed: (DisasterId | null)[] = []
     while (run.status === "playing") {
-      run = playOne(run).run
+      run = chooseFirstPage(playOne(run).run).run
       if (!run.shop) break
       revealed.push(run.shop.nextDisaster)
       run = accepted(run, { type: "leaveShop" }).run

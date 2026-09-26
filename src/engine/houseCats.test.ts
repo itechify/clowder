@@ -8,7 +8,12 @@ import {
   type Run,
   startRun
 } from "./index"
-import { accepted, runWithCouch, seatFromHand } from "./testing"
+import {
+  accepted,
+  chooseFirstPage,
+  runWithCouch,
+  seatFromHand
+} from "./testing"
 
 /** A Run in Night 1 with the given Shelf, as if Recruited on earlier visits. */
 const withShelf = (shelf: HouseCatId[], run: Run = startRun(1)): Run => ({
@@ -130,7 +135,7 @@ describe("reordering the Shelf", () => {
     const easy = startRun(1, { ...defaultConfig, basePurr: 1_000_000 })
     let run = withShelf(["boxGoblin", "doNotTouch"], easy)
     run = accepted(run, { type: "place", cat: run.night.hand[0], seat: 0 }).run
-    run = accepted(run, { type: "play" }).run
+    run = chooseFirstPage(accepted(run, { type: "play" }).run).run
     expect(run.shop).not.toBeNull()
 
     run = accepted(run, {
@@ -373,6 +378,7 @@ describe("Freya (Slow to Warm Up)", () => {
     // Any Play clears the first two Nights.
     let run = withFreya({ firstTarget: 1 })
     run = accepted(seatFromHand(run, ["aloof"]), { type: "play" }).run
+    run = chooseFirstPage(run).run
     run = accepted(run, { type: "leaveShop" }).run
 
     expect(freya(seatFromHand(run, ["clingy"]))).toBe(1)
@@ -443,7 +449,7 @@ describe("The Void", () => {
     // Personal Space, with two Black Cats apart.
     let run = seatFromHand(withVoid(), ["black aloof", null, "black aloof"])
     const [black] = run.night.couch
-    run = accepted(run, { type: "play" }).run
+    run = chooseFirstPage(accepted(run, { type: "play" }).run).run
     run = accepted(run, { type: "leaveShop" }).run
 
     run = accepted(run, { type: "place", cat: black!, seat: 0 }).run
@@ -456,7 +462,7 @@ describe("The Void", () => {
       basePurr: 12,
       purr: 27
     })
-    run = accepted(run, { type: "play" }).run
+    run = chooseFirstPage(accepted(run, { type: "play" }).run).run
     run = accepted(run, { type: "leaveShop" }).run
 
     expect(basePurr(run, black!)).toBe(14)

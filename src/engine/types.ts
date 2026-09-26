@@ -74,8 +74,18 @@ export type Run = {
   disasters: DisasterId[]
   /** Open between a cleared Night and the next; null during a Night. */
   shop: Shop | null
-  /** Gatherings activated by any Play so far this Run, in discovery order. */
+  /**
+   * Gatherings activated by any Play, or revealed by a Scrapbook page, so far
+   * this Run, in discovery order.
+   */
   discoveredGatherings: GatheringId[]
+  /** Every Gathering's Gathering level, each starting at 1. */
+  gatheringLevels: Record<GatheringId, number>
+  /**
+   * The Gatherings of the Scrapbook pages offered after a cleared Night,
+   * until one is chosen and the Shop opens; null otherwise.
+   */
+  scrapbookPages: GatheringId[] | null
   status: RunStatus
   treats: number
   stats: RunStats

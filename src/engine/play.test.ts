@@ -126,7 +126,7 @@ describe("Play", () => {
     ])
   })
 
-  it("scripts a Night-clearing Play phase by phase, then its Treats and the Shop", () => {
+  it("scripts a Night-clearing Play phase by phase, then its Treats and the Scrapbook", () => {
     const run = runWithCouch([
       "orange sleepy",
       "orange sleepy",
@@ -147,13 +147,15 @@ describe("Play", () => {
       multFrom: []
     })
 
-    const { events } = accepted(run, { type: "play" })
+    const { run: after, events } = accepted(run, { type: "play" })
 
     expect(events).toEqual([
       {
         type: "gatheringActivated",
         gathering: "napClub",
         name: "Nap Club",
+        level: 1,
+        purr: 0,
         mult: 3,
         seats: [0, 1, 2],
         firstTime: true,
@@ -178,7 +180,7 @@ describe("Play", () => {
         forHouseCats: [],
         treats: 5
       },
-      { type: "shopOpened" }
+      { type: "scrapbookOpened", pages: after.scrapbookPages }
     ])
   })
 

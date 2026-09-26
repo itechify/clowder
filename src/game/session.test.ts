@@ -16,8 +16,13 @@ function memoryStorage(initial: Record<string, string> = {}) {
   }
 }
 
-/** Seats the first Hand Cats on a full Couch and Plays them, leaving any Shop first. */
+/**
+ * Seats the first Hand Cats on a full Couch and Plays them, first choosing a
+ * page from any open Scrapbook and leaving any Shop.
+ */
 function playFive(session: Session) {
+  const pages = session.run.scrapbookPages
+  if (pages) session.apply({ type: "choosePage", gathering: pages[0] })
   if (session.run.shop) session.apply({ type: "leaveShop" })
   session.run.night.hand.slice(0, 5).forEach((cat, seat) => {
     session.apply({ type: "place", cat, seat })
@@ -46,10 +51,22 @@ describe("resuming the Run", () => {
     expect(new Session(storage).run).toStrictEqual(first.run)
   })
 
+  it("picks up a Run left mid-choice, with the same Scrapbook pages", () => {
+    const storage = memoryStorage()
+    const first = new Session(storage, "?seed=1")
+    while (!first.run.scrapbookPages) playFive(first)
+
+    expect(new Session(storage).run.scrapbookPages).toEqual(
+      first.run.scrapbookPages
+    )
+  })
+
   it("picks up a Run left in the Shop", () => {
     const storage = memoryStorage()
     const first = new Session(storage, "?seed=1")
-    while (!first.run.shop) playFive(first)
+    while (!first.run.scrapbookPages) playFive(first)
+    const [gathering] = first.run.scrapbookPages
+    first.apply({ type: "choosePage", gathering })
 
     expect(new Session(storage).run.shop).toStrictEqual(first.run.shop)
   })

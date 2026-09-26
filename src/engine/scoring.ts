@@ -1,15 +1,44 @@
-import { type GatheringId, gatherings } from "./content/gatherings"
+import type { Config } from "./config"
+import {
+  type GatheringId,
+  gatheringById,
+  gatherings
+} from "./content/gatherings"
 import { actingShelf, type HouseCatId } from "./content/houseCats"
 import { personalityBonus } from "./content/personalities"
 import type { Cat, CatId, Run } from "./types"
 
-/** A Gathering formed on the Couch, adding its Mult once to the Play. */
+/**
+ * A Gathering formed on the Couch, adding its Purr and Mult, at its Gathering
+ * level, once to the Play.
+ */
 export type ActiveGathering = {
   gathering: GatheringId
   name: string
+  level: number
+  purr: number
   mult: number
   /** The Seats forming it, left to right. */
   seats: number[]
+}
+
+/** What a Gathering adds to a Play at a Gathering level. */
+export type GatheringBonus = { purr: number; mult: number }
+
+/**
+ * What a Gathering adds at `level`: its own Mult, and for each level above 1
+ * the configured Purr and Mult more.
+ */
+export function gatheringBonus(
+  config: Config,
+  gathering: GatheringId,
+  level: number
+): GatheringBonus {
+  const perLevel = config.gatheringLevelBonus[gathering]
+  return {
+    purr: (level - 1) * perLevel.purr,
+    mult: gatheringById(gathering).mult + (level - 1) * perLevel.mult
+  }
 }
 
 /** Mult a House Cat adds. */
@@ -70,7 +99,7 @@ export type TimesEffect = {
 
 /** A Play's Score, phase by phase (ADR-0001). */
 export type ScoreBreakdown = {
-  /** Phase 1: Gatherings, each adding Mult to the starting 1... */
+  /** Phase 1: Gatherings, each adding Purr, and Mult to the starting 1... */
   gatherings: ActiveGathering[]
   /** ...and whole-Play House Cat effects, in Shelf order. */
   wholePlayEffects: WholePlayEffect[]
@@ -98,15 +127,17 @@ export function previewPlay(run: Run): ScoreBreakdown {
   )
   const catAt = (seat: number): Cat | undefined => couch[seat] ?? undefined
 
-  // Phase 1: Gatherings and whole-Play effects add Mult.
+  // Phase 1: Gatherings add Purr and Mult, and whole-Play effects Mult.
   const active: ActiveGathering[] = []
-  for (const gathering of gatherings) {
-    const seats = gathering.seats(couch)
+  for (const { id, name, seats: forming } of gatherings) {
+    const seats = forming(couch)
+    const level = run.gatheringLevels[id]
     if (seats.length > 0)
       active.push({
-        gathering: gathering.id,
-        name: gathering.name,
-        mult: gathering.mult,
+        gathering: id,
+        name,
+        level,
+        ...gatheringBonus(run.config, id, level),
         seats
       })
   }
@@ -155,7 +186,10 @@ export function previewPlay(run: Run): ScoreBreakdown {
         scoringEvents.push(scores(id))
     }
   })
-  const purr = scoringEvents.reduce((sum, event) => sum + event.purr, 0)
+  const purr = scoringEvents.reduce(
+    (sum, event) => sum + event.purr,
+    active.reduce((sum, gathering) => sum + gathering.purr, 0)
+  )
 
   // Phase 3: × effects multiply Mult, some warmed up by this Play.
   const warmUps: WarmUp[] = []

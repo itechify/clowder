@@ -15,6 +15,8 @@ describe("Cuddle Puddle", () => {
       {
         gathering: "cuddlePuddle",
         name: "Cuddle Puddle",
+        level: 1,
+        purr: 0,
         mult: 3,
         seats: [0, 1, 2]
       }
@@ -32,7 +34,14 @@ describe("Nap Club", () => {
     )
 
     expect(breakdown.gatherings).toEqual([
-      { gathering: "napClub", name: "Nap Club", mult: 3, seats: [0, 1, 2] }
+      {
+        gathering: "napClub",
+        name: "Nap Club",
+        level: 1,
+        purr: 0,
+        mult: 3,
+        seats: [0, 1, 2]
+      }
     ])
     expect(breakdown.mult).toBe(4)
   })
@@ -57,6 +66,8 @@ describe("Personal Space", () => {
       {
         gathering: "personalSpace",
         name: "Personal Space",
+        level: 1,
+        purr: 0,
         mult: 2,
         seats: [0, 2, 4]
       }
@@ -92,6 +103,8 @@ describe("Variety Pack", () => {
       {
         gathering: "varietyPack",
         name: "Variety Pack",
+        level: 1,
+        purr: 0,
         mult: 3,
         seats: [0, 1, 2, 3]
       }
@@ -129,6 +142,8 @@ describe("Full Sofa", () => {
       {
         gathering: "fullSofa",
         name: "Full Sofa",
+        level: 1,
+        purr: 0,
         mult: 1,
         seats: [0, 1, 2, 3, 4]
       }
@@ -199,6 +214,8 @@ describe("Gatherings together", () => {
       {
         gathering: "cuddlePuddle",
         name: "Cuddle Puddle",
+        level: 1,
+        purr: 0,
         mult: 3,
         seats: [0, 1, 2, 4, 5, 6]
       }
@@ -230,6 +247,8 @@ describe("Gatherings in a Play", () => {
       type: "gatheringActivated",
       gathering: "napClub",
       name: "Nap Club",
+      level: 1,
+      purr: 0,
       mult: 3,
       seats: [0, 1, 2],
       firstTime: true,

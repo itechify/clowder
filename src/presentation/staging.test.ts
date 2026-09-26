@@ -11,7 +11,7 @@ import {
   starCat,
   startRun
 } from "../engine"
-import { accepted, runWithCouch } from "../engine/testing"
+import { accepted, chooseFirstPage, runWithCouch } from "../engine/testing"
 import {
   eyeTint,
   eyeTints,
@@ -416,7 +416,9 @@ describe("staging the Shelf", () => {
       expect(stage(cleared).houseCats[0].pose).toBe(
         houseCatArt("freya", "warming1")
       )
-      const next = accepted(cleared, { type: "leaveShop" }).run
+      const next = accepted(chooseFirstPage(cleared).run, {
+        type: "leaveShop"
+      }).run
       expect(next.night.number).toBe(2)
       expect(stage(next).houseCats[0].pose).toBe(houseCatArt("freya", "idle"))
     })

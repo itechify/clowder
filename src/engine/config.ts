@@ -1,3 +1,4 @@
+import type { GatheringId } from "./content/gatherings"
 import type { HouseCatId } from "./content/houseCats"
 
 /** Tuning numbers for a Run. Playtesting changes belong here, not in rules. */
@@ -18,6 +19,13 @@ export type Config = {
   redrawsPerNight: number
   /** The most Cats one Redraw may swap. */
   catsPerRedraw: number
+  /**
+   * What each Gathering level above 1 adds to a Gathering, whenever it is
+   * active: Purr, and Mult on top of its own.
+   */
+  gatheringLevelBonus: Record<GatheringId, { purr: number; mult: number }>
+  /** Scrapbook pages offered after each cleared Night but the last. */
+  scrapbookPages: number
   /** Clearing the last Night wins the Run. */
   nights: number
   firstTarget: number
@@ -68,6 +76,14 @@ export const defaultConfig: Config = {
   playsPerNight: 3,
   redrawsPerNight: 2,
   catsPerRedraw: 3,
+  gatheringLevelBonus: {
+    cuddlePuddle: { purr: 10, mult: 2 },
+    napClub: { purr: 10, mult: 2 },
+    personalSpace: { purr: 10, mult: 2 },
+    varietyPack: { purr: 10, mult: 2 },
+    fullSofa: { purr: 5, mult: 1 }
+  },
+  scrapbookPages: 3,
   nights: 9,
   firstTarget: 300,
   targetGrowth: 1.6,

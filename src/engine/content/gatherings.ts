@@ -10,6 +10,9 @@ export type GatheringId =
 export type Gathering = {
   id: GatheringId
   name: string
+  /** What the Couch needs to form it, as the Scrapbook describes it. */
+  requirement: string
+  /** The Mult it adds at level 1. */
   mult: number
   /** The Seats forming this Gathering on the Couch; empty when it is absent. */
   seats: (couch: Couch) => number[]
@@ -44,23 +47,29 @@ const occupied = (couch: Couch) =>
 
 const sleepy = (cat: Cat) => cat.personality === "sleepy"
 
-/** Every Gathering, each adding its Mult once to any Play that forms it. */
+/**
+ * Every Gathering, each adding its Mult, and more with each Gathering level,
+ * once to any Play that forms it.
+ */
 export const gatherings: readonly Gathering[] = [
   {
     id: "cuddlePuddle",
     name: "Cuddle Puddle",
+    requirement: "Three Cats of one Coat side by side",
     mult: 3,
     seats: (couch) => stretches(couch, 3, (a, b) => a.coat === b.coat)
   },
   {
     id: "napClub",
     name: "Nap Club",
+    requirement: "Three Sleepy Cats side by side",
     mult: 3,
     seats: (couch) => stretches(couch, 3, (a, b) => sleepy(a) && sleepy(b))
   },
   {
     id: "personalSpace",
     name: "Personal Space",
+    requirement: "Two or more Cats, none with a Neighbor",
     mult: 2,
     seats: (couch) => {
       const seats = occupied(couch)
@@ -71,6 +80,7 @@ export const gatherings: readonly Gathering[] = [
   {
     id: "varietyPack",
     name: "Variety Pack",
+    requirement: "Cats of four different Coats",
     mult: 3,
     seats: (couch) => {
       const coats = new Set(couch.map((cat) => cat?.coat).filter(Boolean))
@@ -80,6 +90,7 @@ export const gatherings: readonly Gathering[] = [
   {
     id: "fullSofa",
     name: "Full Sofa",
+    requirement: "A Cat on every Seat",
     mult: 1,
     seats: (couch) => {
       const seats = occupied(couch)
@@ -87,3 +98,6 @@ export const gatherings: readonly Gathering[] = [
     }
   }
 ]
+
+export const gatheringById = (id: GatheringId): Gathering =>
+  gatherings.find((gathering) => gathering.id === id)!
