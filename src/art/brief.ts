@@ -233,7 +233,7 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
     "A single plump, square-ish sage-green sofa seat cushion seen straight on from slightly above, its top face lit and its front face softly piped. Five of these sit side by side on the sofa, a Cat sitting on each.",
   rug: "A cozy, woven terracotta rug with a cream border, seen from above at a gentle angle as it lies on the floor, big enough for eight Cats lounging in two rows.",
   shelf:
-    "A long, narrow wooden wall shelf seen straight on: a single plank with small brackets beneath.",
+    "A long, narrow wooden wall shelf seen straight on: a single plank with two small brackets beneath, each about a quarter of the way in from its end, since names are written under the plank's ends and middle.",
   treatJar:
     "A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it.",
   disasterSign:
