@@ -97,8 +97,19 @@ _Avoid_: Multiplier bonus, xMult
 The result of one Play: total Purr × Mult.
 
 **Gathering**:
-A named Couch arrangement (e.g. Cuddle Puddle, Nap Club) that adds Mult once per Play when present.
+A named Couch arrangement (e.g. Cuddle Puddle, Nap Club) that adds Purr and Mult, according to its Gathering level, once per Play when present.
 _Avoid_: Hand, combo, set
+
+**Gathering level**:
+How strong a Gathering is for the rest of the Run; every Gathering starts at level 1 and has no maximum.
+_Avoid_: Rank, tier
+
+**Scrapbook page**:
+A permanent +1 Gathering level for one Gathering, chosen from three offered after clearing a Night.
+_Avoid_: Planet, upgrade card
+
+**Scrapbook**:
+The record of every Gathering's level and requirement in the current Run, with undiscovered Gatherings hidden.
 
 **Scoring event**:
 One Cat adding its base Purr plus its Personality bonus, and triggering every "when a Cat scores" effect.
