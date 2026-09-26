@@ -12,6 +12,9 @@ const LOG_LENGTH = 1000
 /** How quickly a volume change settles, in seconds; quick, but without a click. */
 const LEVEL_SMOOTHING = 0.03
 
+/** Safari's Audio Session API, not yet in TypeScript's DOM types. */
+type AudioSessionNavigator = Navigator & { audioSession?: { type: string } }
+
 /**
  * The game's sound (ADR-0004): named cues and themes, synthesized with Web
  * Audio. Silent until the player's first interaction, as browsers require;
@@ -80,6 +83,10 @@ export class Sound {
 
   private async unlock() {
     if (!this.context) {
+      // On iPhone, Web Audio otherwise obeys the silent switch like a
+      // ringtone; as playback, the game is heard as media is.
+      const { audioSession } = navigator as AudioSessionNavigator
+      if (audioSession) audioSession.type = "playback"
       try {
         this.context = new AudioContext()
       } catch {
