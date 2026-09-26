@@ -1,6 +1,15 @@
 import { expect, test } from "@playwright/test"
 import { houseCat } from "../src/engine"
-import { boot, layout, ready, settled, shop, tap, toShop } from "./scene"
+import {
+  boot,
+  firstShop,
+  layout,
+  ready,
+  settled,
+  shop,
+  tap,
+  toShop
+} from "./scene"
 
 test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
   await boot(page, 7)
@@ -8,7 +17,7 @@ test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
   const run = await page.evaluate(() => window.__clowder!.run())
   expect(run.roster).toHaveLength(30)
   expect(run.night.hand).toHaveLength(8)
-  expect(run.night.target).toBe(300)
+  expect(run.night.target).toBe(480)
 
   await boot(page, 7)
   const again = await page.evaluate(() => window.__clowder!.run())
@@ -96,7 +105,7 @@ test("redraws Cats chosen by tapping in the scene", async ({ page }) => {
 
 test("shops between Nights by tapping in the scene", async ({ page }) => {
   test.setTimeout(60_000)
-  await toShop(page, 1)
+  await toShop(page, 1, firstShop)
   await settled(page)
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.treats).toBe(5)
@@ -152,7 +161,7 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
 }) => {
   test.setTimeout(60_000)
   // This seed's first Shop offers Do Not Touch, for all 5 Treats.
-  await toShop(page, 1)
+  await toShop(page, 1, firstShop)
   await settled(page)
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.treats).toBe(5)
@@ -192,7 +201,7 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
 
 test("rearranges the Shelf by tapping in the Shop", async ({ page }) => {
   test.setTimeout(60_000)
-  await boot(page, 14)
+  await boot(page, 14, firstShop)
   // Recruits whatever it can afford, one at a time, until the Shelf holds two
   // House Cats.
   const shelf = await page.evaluate(() => {

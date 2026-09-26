@@ -66,11 +66,11 @@ describe("the start of a Night", () => {
     expect(b.night.hand).not.toEqual(a.night.hand)
   })
 
-  it("starts Night 1 with a Target of 300 and three Plays", () => {
+  it("starts Night 1 with a Target of 480 and three Plays", () => {
     const run = startRun(1)
 
     expect(run.night.number).toBe(1)
-    expect(run.night.target).toBe(300)
+    expect(run.night.target).toBe(480)
     expect(run.night.playsLeft).toBe(3)
     expect(run.night.score).toBe(0)
     expect(run.night.status).toBe("playing")

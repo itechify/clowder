@@ -21,15 +21,15 @@ async function play(page: Page, cats: number) {
 }
 
 /**
- * On seed 1, the first five Hand Cats score 400 against the first Night's
+ * On seed 1, the first five Hand Cats score 400 against a first Night's
  * Target of 300 in a single Play, setting the purr meter on fire.
  */
-const FIERY = { seed: 1, cats: 5 }
+const FIERY = { seed: 1, config: { firstTarget: 300 }, cats: 5 }
 
 test("shakes, flashes, and sets the purr meter on fire as a big Score lands", async ({
   page
 }) => {
-  await boot(page, FIERY.seed)
+  await boot(page, FIERY.seed, FIERY.config)
 
   await play(page, FIERY.cats)
 
@@ -45,7 +45,7 @@ test("shakes, flashes, and sets the purr meter on fire as a big Score lands", as
 test("honours Reduced motion: no shake, flash, or fire, every cue kept", async ({
   page
 }) => {
-  await boot(page, FIERY.seed)
+  await boot(page, FIERY.seed, FIERY.config)
   const settings = await openSettings(page)
   await settings.getByText("Reduced motion").click()
   await settings.getByRole("button", { name: "Done" }).click()

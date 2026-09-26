@@ -37,9 +37,18 @@ const playOne = (run: Run) => {
   return { run: chosen.run, events: [...played.events, ...chosen.events] }
 }
 
-/** A Run in which every Play, however small, clears its Night. */
+/**
+ * A Run in which every Play, however small, clears its Night. Clearing Night 1
+ * pays 5 Treats to shop with, whatever the tuned rewards are: 3, and 1 for
+ * each of 2 unused Plays.
+ */
 const easyRun = (seed = 1, config: Partial<Config> = {}) =>
-  startRun(seed, { ...defaultConfig, basePurr: 1_000_000, ...config })
+  startRun(seed, {
+    ...defaultConfig,
+    basePurr: 1_000_000,
+    clearReward: { ...defaultConfig.clearReward, early: 3, perUnusedPlay: 1 },
+    ...config
+  })
 
 describe("the Shop", () => {
   it("opens once a Night is cleared, before the next Night starts", () => {

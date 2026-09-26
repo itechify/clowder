@@ -35,8 +35,8 @@ describe("the Scrapbook choice", () => {
           name: "Nap Club",
           requirement: "Three Sleepy Cats side by side",
           level: { from: 2, to: 3 },
-          change: { purr: 10, mult: 2 },
-          label: { levels: "Lv 2 → 3", adds: "+2 Mult +10 Purr" },
+          change: { purr: 10, mult: 1 },
+          label: { levels: "Lv 2 → 3", adds: "+1 Mult +10 Purr" },
           action: { type: "choosePage", gathering: "napClub" }
         },
         {
@@ -53,8 +53,8 @@ describe("the Scrapbook choice", () => {
           name: "Personal Space",
           requirement: "Two or more Cats, none with a Neighbor",
           level: { from: 4, to: 5 },
-          change: { purr: 10, mult: 2 },
-          label: { levels: "Lv 4 → 5", adds: "+2 Mult +10 Purr" },
+          change: { purr: 5, mult: 1 },
+          label: { levels: "Lv 4 → 5", adds: "+1 Mult +5 Purr" },
           action: { type: "choosePage", gathering: "personalSpace" }
         }
       ]
@@ -122,7 +122,7 @@ describe("the Scrapbook", () => {
           name: "Nap Club",
           requirement: "Three Sleepy Cats side by side",
           level: 3,
-          label: { level: "Lv 3", adds: "+7 Mult +20 Purr" }
+          label: { level: "Lv 3", adds: "+5 Mult +20 Purr" }
         },
         { discovered: false, name: "???", requirement: "???" },
         { discovered: false, name: "???", requirement: "???" },

@@ -44,7 +44,7 @@ function lostOnNight3() {
 }
 
 describe("a Run's nine Nights", () => {
-  it("raise the Target from 300 by ×1.6 each Night", () => {
+  it("raise the Target from 480 by ×1.5 each Night", () => {
     // Disaster Nights raise it further (see disasters.test.ts).
     let run = easyRun(1, { disasterNights: [] })
     const targets = [run.night.target]
@@ -54,7 +54,7 @@ describe("a Run's nine Nights", () => {
     }
 
     expect(targets).toEqual([
-      300, 480, 768, 1229, 1966, 3146, 5033, 8053, 12885
+      480, 720, 1080, 1620, 2430, 3645, 5468, 8201, 12302
     ])
   })
 })
@@ -64,7 +64,7 @@ describe("Treats", () => {
     expect(startRun(1).treats).toBe(0)
   })
 
-  it("pay 3 for clearing Nights 1–2 and 4 later, +1 per unused Play", () => {
+  it("pay 2 for clearing Nights 1–5 and 5 later, +1 per unused Play", () => {
     // Disaster Nights pay differently (see disasters.test.ts).
     let run = easyRun(1, { disasterNights: [] })
     const payouts: number[] = []
@@ -75,8 +75,8 @@ describe("Treats", () => {
     }
 
     // Each Night is cleared on its first Play, leaving two unused.
-    expect(payouts).toEqual([5, 5, 6, 6, 6, 6, 6, 6, 6])
-    expect(run.treats).toBe(52)
+    expect(payouts).toEqual([4, 4, 4, 4, 4, 7, 7, 7, 7])
+    expect(run.treats).toBe(48)
   })
 
   it("pay nothing extra when the Night is cleared on its last Play", () => {
@@ -89,13 +89,13 @@ describe("Treats", () => {
     const { run: after, events } = playFromHand(run)
 
     expect(after.night.number).toBe(2)
-    expect(after.treats).toBe(3)
+    expect(after.treats).toBe(2)
     expect(events).toContainEqual({
       type: "treatsAwarded",
-      forNight: 3,
+      forNight: 2,
       forUnusedPlays: 0,
       forHouseCats: [],
-      treats: 3
+      treats: 2
     })
   })
 
