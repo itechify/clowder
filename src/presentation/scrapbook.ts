@@ -55,16 +55,27 @@ export type ScrapbookEntry =
 /** The Scrapbook opened from the living room: every Gathering, in order. */
 export type ScrapbookView = { title: string; entries: ScrapbookEntry[] }
 
+/** Purr and Mult as added, such as "+7 Mult" and "+20 Purr"; no Purr if none. */
+export const addedParts = ({ purr, mult }: GatheringBonus) => ({
+  mult: `+${mult} Mult`,
+  purr: purr ? `+${purr} Purr` : null
+})
+
 /** Purr and Mult as added, Mult first; Purr only when there is some. */
-const added = ({ purr, mult }: GatheringBonus) =>
-  [`+${mult} Mult`, ...(purr ? [`+${purr} Purr`] : [])].join(" ")
+const added = (bonus: GatheringBonus) => {
+  const { mult, purr } = addedParts(bonus)
+  return purr ? `${mult} ${purr}` : mult
+}
+
+/** A Gathering level, as the Scrapbook and the Couch write it: "Lv 3". */
+export const levelLabel = (level: number) => `Lv ${level}`
 
 /**
  * A Gathering on the Couch and in the preview: its name, its level, and all
  * it adds to the Play, such as "Nap Club Lv 3 · +7 Mult +20 Purr".
  */
 export const gatheringLabel = ({ name, level, purr, mult }: ActiveGathering) =>
-  `${name} Lv ${level} · ${added({ purr, mult })}`
+  `${name} ${levelLabel(level)} · ${added({ purr, mult })}`
 
 /** The Scrapbook pages offered, while the Scrapbook is open. */
 export function scrapbookChoice(run: Run): ScrapbookChoice | null {
@@ -107,7 +118,7 @@ export function scrapbookView(run: Run): ScrapbookView {
         requirement,
         level,
         label: {
-          level: `Lv ${level}`,
+          level: levelLabel(level),
           adds: added(gatheringBonus(run.config, id, level))
         }
       }

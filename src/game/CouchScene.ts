@@ -316,16 +316,16 @@ export class CouchScene extends Phaser.Scene {
   /** Over everything, listening only while the Scrapbook is open to close it. */
   private closeArea!: Phaser.GameObjects.Zone
   /** The Scrapbook opened from the room, showing every Gathering. */
-  private scrapbookOpen = false
+  private viewingScrapbook = false
   /** The Scrapbook object as last drawn, which chosen pages fly into. */
   private scrapbookObject: Phaser.GameObjects.Image | null = null
   /**
    * The Scrapbook's choice as last drawn: each page by its Gathering, and the
-   * rest of the open Scrapbook around them.
+   * open Scrapbook around them.
    */
   private choiceShown: {
     pages: Map<GatheringId, Phaser.GameObjects.Container>
-    rest: Phaser.GameObjects.GameObject[]
+    around: Phaser.GameObjects.GameObject[]
   } | null = null
   /** A chosen page's moment, until the Shop opens after it. */
   private pageMoment: Phaser.Time.TimerEvent | null = null
@@ -358,7 +358,7 @@ export class CouchScene extends Phaser.Scene {
     this.movedFrom.clear()
     this.scoring = null
     this.bedtime = null
-    this.scrapbookOpen = false
+    this.viewingScrapbook = false
     this.scrapbookObject = null
     this.choiceShown = null
     this.pageMoment = null
@@ -426,14 +426,14 @@ export class CouchScene extends Phaser.Scene {
         SCRAPBOOK_AREA.h
       )
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.tapScrapbook())
+      .on("pointerdown", () => this.toggleScrapbook())
       .disableInteractive()
     // Over everything, but listening only while the Scrapbook is open...
     this.closeArea = this.add
       .zone(0, 0, WIDTH, HEIGHT)
       .setOrigin(0)
       .setInteractive()
-      .on("pointerdown", () => this.tapScrapbook())
+      .on("pointerdown", () => this.toggleScrapbook())
     this.closeArea.disableInteractive()
     // ...or while a scoring sequence plays.
     this.skipArea = this.add
@@ -456,7 +456,7 @@ export class CouchScene extends Phaser.Scene {
       this.bedtime?.remove()
       this.pageMoment?.remove()
       this.pageMoment = null
-      this.scrapbookOpen = false
+      this.viewingScrapbook = false
       // A chosen Scrapbook page flies into the Scrapbook, then the Shop opens
       // as the day dawns; opened any other way, the Shop takes over at once.
       if (session.run.shop) {
@@ -551,7 +551,7 @@ export class CouchScene extends Phaser.Scene {
     if (
       session.run.status !== "playing" ||
       session.run.scrapbookPages ||
-      this.scrapbookOpen
+      this.viewingScrapbook
     )
       return
     this.press = { target, at: this.worldPoint(pointer) }
@@ -702,16 +702,16 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * Opens the Scrapbook from the room, or closes it again; never while a
-   * scoring sequence plays or a page is being chosen.
+   * Opens the Scrapbook from the room, or closes it again; it never opens
+   * while a scoring sequence plays or a page is being chosen.
    */
-  private tapScrapbook() {
-    if (!this.scrapbookOpen && !this.canOpenScrapbook()) return
+  private toggleScrapbook() {
+    if (!this.viewingScrapbook && !this.canOpenScrapbook()) return
     sound.cue({ name: "uiTap" })
     this.held = null
     this.heldHouseCat = null
     this.redrawing = null
-    this.scrapbookOpen = !this.scrapbookOpen
+    this.viewingScrapbook = !this.viewingScrapbook
     this.draw()
   }
 
@@ -1023,7 +1023,7 @@ export class CouchScene extends Phaser.Scene {
     // Open, the Scrapbook closes at a tap anywhere.
     if (this.canOpenScrapbook()) this.scrapbookArea.setInteractive()
     else this.scrapbookArea.disableInteractive()
-    if (this.scrapbookOpen) this.closeArea.setInteractive()
+    if (this.viewingScrapbook) this.closeArea.setInteractive()
     else this.closeArea.disableInteractive()
     this.scrapbookObject = null
     this.choiceShown = null
@@ -1093,7 +1093,7 @@ export class CouchScene extends Phaser.Scene {
 
     // Live preview: Purr × Mult = Score, and where it would leave the Night;
     // the Scrapbook, open, lies over it.
-    const open = choice !== null || this.scrapbookOpen
+    const open = choice !== null || this.viewingScrapbook
     if (!open)
       add(
         this.add
@@ -1170,8 +1170,9 @@ export class CouchScene extends Phaser.Scene {
     // A Cat being dragged is carried over everything else.
     const carried = this.dragging && this.shown.get(this.dragging)
     if (carried) this.layer.bringToTop(carried.sprite)
-    if (choice) this.drawScrapbook(add, choice)
-    else if (this.scrapbookOpen) this.drawScrapbookView(add, scrapbookView(run))
+    if (choice) this.drawScrapbookChoice(add, choice)
+    else if (this.viewingScrapbook)
+      this.drawScrapbookView(add, scrapbookView(run))
   }
 
   /** The Scrapbook lying closed on the floor by the rug. */
@@ -1243,8 +1244,8 @@ export class CouchScene extends Phaser.Scene {
    * side, each naming its Gathering, what forms it, and exactly what its next
    * level adds; tapping one chooses it, and it flies into the Scrapbook.
    */
-  private drawScrapbook(add: Add, { title, pages }: ScrapbookChoice) {
-    const rest = this.drawOpenScrapbook(add, title)
+  private drawScrapbookChoice(add: Add, { title, pages }: ScrapbookChoice) {
+    const around = this.drawOpenScrapbook(add, title)
     const xs = pageX(pages.length)
     const wrapped = { wordWrap: { width: PAGE.w - 14 }, align: "center" }
     const shown = new Map<GatheringId, Phaser.GameObjects.Container>()
@@ -1272,7 +1273,7 @@ export class CouchScene extends Phaser.Scene {
         )
       )
     })
-    this.choiceShown = { pages: shown, rest }
+    this.choiceShown = { pages: shown, around }
   }
 
   /**
@@ -1877,10 +1878,12 @@ export class CouchScene extends Phaser.Scene {
             // its Mult slams in, and any Purr flies into the Purr total.
             const x =
               (this.seatX[event.seats[0]] + this.seatX[event.seats.at(-1)!]) / 2
-            for (const { label, tone } of step.pops ?? [])
-              if (tone === "purr")
-                flyPurr(x, label, () => showPurr(event.tally.purr))
-              else pop(x, GATHERING_POP_Y, label, 16, POP.mult)
+            const { adds } = step
+            if (adds) {
+              pop(x, GATHERING_POP_Y, adds.mult, 16, POP.mult)
+              if (adds.purr)
+                flyPurr(x, adds.purr, () => showPurr(event.tally.purr))
+            }
             slamMult(event.tally.mult, step)
           }
         }
@@ -2119,11 +2122,11 @@ export class CouchScene extends Phaser.Scene {
     const page = shown?.pages.get(event.gathering)
     const others = shown
       ? [
-          ...shown.rest,
+          ...shown.around,
           ...[...shown.pages.values()].filter((other) => other !== page)
         ]
       : []
-    this.tweens.add({ targets: others, alpha: 0, duration: 200 })
+    this.tweens.add({ targets: others, alpha: 0, duration: moment.fadeMs })
     if (page) {
       this.layer.bringToTop(page)
       const { flight } = moment
@@ -2146,7 +2149,7 @@ export class CouchScene extends Phaser.Scene {
                 (target.y - from.y) * t -
                 flight.arc * Math.sin(Math.PI * t)
             )
-            .setScale(1 - 0.85 * t)
+            .setScale(1 - (1 - flight.shrinkTo) * t)
             .setAngle(flight.spin * t)
         },
         onComplete: () => page.setVisible(false)
@@ -2160,12 +2163,13 @@ export class CouchScene extends Phaser.Scene {
         stroke: OUTLINE,
         strokeThickness: 4
       })
-      if (book && moment.flight)
+      const { landing } = moment
+      if (book && landing)
         this.tweens.add({
           targets: book,
-          scaleX: { from: book.scaleX * 1.25, to: book.scaleX },
-          scaleY: { from: book.scaleY * 0.8, to: book.scaleY },
-          duration: 320,
+          scaleX: { from: book.scaleX * landing.scale, to: book.scaleX },
+          scaleY: { from: book.scaleY / landing.scale, to: book.scaleY },
+          duration: landing.ms,
           ease: "Back.easeOut"
         })
     })

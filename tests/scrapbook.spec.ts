@@ -93,7 +93,9 @@ test("opens the Scrapbook from the room, showing Gathering levels, and closes it
   expect(await texts(page)).not.toContain("Scrapbook")
 })
 
-test("keeps the Scrapbook shut while a Play scores", async ({ page }) => {
+test("a tap on the Scrapbook while a Play scores skips the Play, leaving it shut", async ({
+  page
+}) => {
   await boot(page, 7)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
