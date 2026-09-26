@@ -90,7 +90,7 @@ describe("the Scrapbook choice", () => {
 })
 
 describe("a Gathering's label", () => {
-  it("names it with its level and all it adds to the Play", () => {
+  it("names it with its level, leaving what it adds to the Scrapbook", () => {
     const run = runWithCouch(
       ["orange sleepy", "black sleepy", "white sleepy"],
       {
@@ -100,15 +100,7 @@ describe("a Gathering's label", () => {
 
     const [napClub] = previewPlay(run).gatherings
 
-    expect(gatheringLabel(napClub)).toBe("Nap Club Lv 3 · +7 Mult +20 Purr")
-  })
-
-  it("adds only Mult at level 1", () => {
-    const run = runWithCouch(["orange sleepy", "black sleepy", "white sleepy"])
-
-    const [napClub] = previewPlay(run).gatherings
-
-    expect(gatheringLabel(napClub)).toBe("Nap Club Lv 1 · +3 Mult")
+    expect(gatheringLabel(napClub)).toBe("Nap Club Lv 3")
   })
 })
 

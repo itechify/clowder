@@ -10,6 +10,7 @@ import {
   rehomeRefund
 } from "../engine"
 import type { DisasterSign } from "../presentation/hud"
+import { scrapbookView } from "../presentation/scrapbook"
 import {
   type DoorwaySpot,
   type Kind,
@@ -46,6 +47,7 @@ import {
 import { type CloudMotion, presentation, type TimeOfDay } from "./presentation"
 import { drawDisasterPlaque, drawFurniture } from "./room"
 import { INK, NIGHT_SKY } from "./roomArt"
+import { drawClosedScrapbook, drawScrapbookView } from "./scrapbookView"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
 import { drawTreat } from "./treatArt"
@@ -61,6 +63,8 @@ const HOUSEHOLD = {
   rowsY: [596, 654, 712],
   size: 48
 }
+/** The Scrapbook, at the end of the household's heading. */
+const SCRAPBOOK = { x: 363, y: HOUSEHOLD.headingY }
 /** A pile's count, on a badge at its Cat's feet. */
 const COUNT_BADGE = { dx: 0.44, dy: 0.34 }
 /** The sun's place in the window, where the moon is by night. */
@@ -171,9 +175,10 @@ const priceColour = (state: ButtonState, treats: number) =>
  * on the rug, your household, one pile per Kind. The Shelf stays where it
  * lives, and the next Disaster brews in the window. Adopt or Recruit an
  * offer, Rehome a Cat from its pile or a House Cat from the Shelf, rearrange
- * the Shelf, Reroll the offers, or leave as night falls. It draws what the
- * Shop's staging shows and sends taps to the Session as actions; the engine
- * decides every price and whether each action is allowed.
+ * the Shelf, Reroll the offers, open the Scrapbook, or leave as night
+ * falls. It draws what the Shop's staging shows and sends taps to the
+ * Session as actions; the engine decides every price and whether each
+ * action is allowed.
  */
 export class ShopScene extends Phaser.Scene {
   /** What is picked out to Rehome, awaiting confirmation. */
@@ -204,6 +209,8 @@ export class ShopScene extends Phaser.Scene {
   private transition: { skip: () => void } | null = null
   /** Night is falling, and the Shop has closed. */
   private closing = false
+  /** The Scrapbook, opened to show every Gathering. */
+  private viewingScrapbook = false
 
   constructor() {
     super("shop")
@@ -223,6 +230,7 @@ export class ShopScene extends Phaser.Scene {
     this.inspected = null
     this.transition = null
     this.closing = false
+    this.viewingScrapbook = false
     presentation.shop = {}
 
     // Taps on nothing in particular close the fan and put back any pick.
@@ -245,6 +253,7 @@ export class ShopScene extends Phaser.Scene {
     const off = session.on((events) => {
       if (this.closing) return
       this.inspected = null
+      this.viewingScrapbook = false
       // Whatever happens, a dawn still breaking has broken.
       this.transition?.skip()
       if (!session.run.shop) {
@@ -453,6 +462,7 @@ export class ShopScene extends Phaser.Scene {
         .setOrigin(0, 0.5)
         .setStroke(OUTLINE, 3)
     )
+    drawClosedScrapbook(this, add, SCRAPBOOK, () => this.toggleScrapbook())
     for (const pile of staged.piles) this.drawPile(add, pile)
     const xs = doorwayX(staged.doorway.length)
     this.visitors = staged.doorway.map((spot, i) =>
@@ -461,6 +471,28 @@ export class ShopScene extends Phaser.Scene {
     if (staged.fan) this.drawFan(add, staged)
     this.drawButtons(add, staged)
     if (this.inspected) this.drawOfferDetails(add, this.inspected)
+    // Open, the Scrapbook lies over everything, closing at a tap anywhere.
+    if (this.viewingScrapbook) {
+      add(this.add.zone(0, 0, WIDTH, HEIGHT))
+        .setOrigin(0)
+        .setInteractive()
+        .on("pointerdown", () => this.toggleScrapbook())
+      drawScrapbookView(this, add, scrapbookView(run))
+    }
+  }
+
+  /**
+   * Opens the Scrapbook, putting back any pick and closing the fan and any
+   * visitor's details, or closes it again; not once night is falling.
+   */
+  private toggleScrapbook() {
+    if (this.closing) return
+    sound.cue({ name: "uiTap" })
+    this.picked = null
+    this.opened = null
+    this.inspected = null
+    this.viewingScrapbook = !this.viewingScrapbook
+    this.draw()
   }
 
   /** What may be done with the Shelf, beneath it. */

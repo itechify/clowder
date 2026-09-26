@@ -1,6 +1,15 @@
 import { expect, type Page, test } from "@playwright/test"
 import { scrapbookChoice } from "../src/presentation/scrapbook"
-import { boot, layout, ready, tap, toScrapbook } from "./scene"
+import {
+  boot,
+  layout,
+  ready,
+  settled,
+  shop,
+  tap,
+  toScrapbook,
+  toShop
+} from "./scene"
 
 const run = (page: Page) => page.evaluate(() => window.__clowder!.run())
 const scenes = (page: Page) => page.evaluate(() => window.__clowder!.scenes())
@@ -113,4 +122,24 @@ test("a tap on the Scrapbook while a Play scores skips the Play, leaving it shut
     .poll(() => page.evaluate(() => window.__clowder!.scoring()))
     .toBe(false)
   expect(await texts(page)).not.toContain("Scrapbook")
+})
+
+test("opens the Scrapbook in the Shop too, and closes it", async ({ page }) => {
+  test.setTimeout(60_000)
+  await toShop(page, 1)
+  await settled(page)
+  const { gatheringLevels } = await run(page)
+  const levelled = Object.values(gatheringLevels).filter((level) => level > 1)
+  expect(levelled).toEqual([2])
+
+  await tap(page, ...shop.scrapbook)
+
+  const shown = await texts(page)
+  expect(shown).toContain("Scrapbook")
+  expect(shown).toContain("Lv 2")
+
+  await tap(page, ...shop.scrapbook)
+
+  expect(await texts(page)).not.toContain("Scrapbook")
+  expect(await scenes(page)).toEqual(["shop"])
 })

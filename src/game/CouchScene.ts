@@ -25,7 +25,6 @@ import {
 import {
   gatheringLabel,
   type ScrapbookChoice,
-  type ScrapbookView,
   scrapbookChoice,
   scrapbookView
 } from "../presentation/scrapbook"
@@ -74,6 +73,11 @@ import { presentation } from "./presentation"
 import { drawDisasterPlaque, drawFurniture } from "./room"
 import { INK, PHOTO } from "./roomArt"
 import { fire, flash, pulse, rain, SPARKS, sparks } from "./scoringEffects"
+import {
+  drawClosedScrapbook,
+  drawOpenScrapbook,
+  drawScrapbookView
+} from "./scrapbookView"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
 
@@ -185,25 +189,15 @@ const CAT_BED = {
 const ROSETTE = { dx: 16, dy: 8 }
 const NEW_HOUSEHOLD = { x: 268, y: 790, w: 230, h: 58 }
 /**
- * The Scrapbook, open in the room once a Night is cleared or when tapped:
- * its centre, where the preview was and over the rug, its title across the
- * top, and its pages side by side beneath, each `step` apart.
+ * The Scrapbook's pages on offer once a Night is cleared, side by side over
+ * the open Scrapbook, each `step` apart.
  */
-const SCRAPBOOK = { y: 574, titleY: 472 }
 const PAGE = { y: 590, w: 112, h: 186, step: 121 }
 /**
  * The Scrapbook lying on the floor by the rug's corner, where a chosen page
- * flies into it and a tap opens it; its tap area around it.
+ * flies into it and a tap opens it.
  */
 const SCRAPBOOK_OBJECT = { x: 346, y: 522 }
-const SCRAPBOOK_AREA = { w: 64, h: 48 }
-/**
- * The Scrapbook opened from the room: a row for each Gathering, the first at
- * `top`, each `step` below the last; its name and requirement from the left,
- * its level and what it adds from the right; and how to close it beneath.
- */
-const SCRAPBOOK_ROWS = { top: 504, step: 36, left: 30, right: 360 }
-const SCRAPBOOK_HINT_Y = 678
 /** The Scrapbook's page centres, side by side. */
 const pageX = (count: number) =>
   Array.from(
@@ -311,8 +305,6 @@ export class CouchScene extends Phaser.Scene {
   private newHouseholdArea!: Phaser.GameObjects.Zone
   /** Each Scrapbook page's tap area, listening only while the Scrapbook is open. */
   private pageAreas: Phaser.GameObjects.Zone[] = []
-  /** The Scrapbook object's tap area, listening while it can be opened. */
-  private scrapbookArea!: Phaser.GameObjects.Zone
   /** Over everything, listening only while the Scrapbook is open to close it. */
   private closeArea!: Phaser.GameObjects.Zone
   /** The Scrapbook opened from the room, showing every Gathering. */
@@ -418,16 +410,6 @@ export class CouchScene extends Phaser.Scene {
         .on("pointerdown", () => this.tapPage(page))
         .disableInteractive()
     )
-    this.scrapbookArea = this.add
-      .zone(
-        SCRAPBOOK_OBJECT.x,
-        SCRAPBOOK_OBJECT.y,
-        SCRAPBOOK_AREA.w,
-        SCRAPBOOK_AREA.h
-      )
-      .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.toggleScrapbook())
-      .disableInteractive()
     // Over everything, but listening only while the Scrapbook is open...
     this.closeArea = this.add
       .zone(0, 0, WIDTH, HEIGHT)
@@ -1021,8 +1003,6 @@ export class CouchScene extends Phaser.Scene {
     if (results) this.newHouseholdArea.setInteractive()
     else this.newHouseholdArea.disableInteractive()
     // Open, the Scrapbook closes at a tap anywhere.
-    if (this.canOpenScrapbook()) this.scrapbookArea.setInteractive()
-    else this.scrapbookArea.disableInteractive()
     if (this.viewingScrapbook) this.closeArea.setInteractive()
     else this.closeArea.disableInteractive()
     this.scrapbookObject = null
@@ -1172,71 +1152,17 @@ export class CouchScene extends Phaser.Scene {
     if (carried) this.layer.bringToTop(carried.sprite)
     if (choice) this.drawScrapbookChoice(add, choice)
     else if (this.viewingScrapbook)
-      this.drawScrapbookView(add, scrapbookView(run))
+      drawScrapbookView(this, add, scrapbookView(run))
   }
 
   /** The Scrapbook lying closed on the floor by the rug. */
   private drawScrapbookObject(add: Add) {
-    this.scrapbookObject = add(
-      addArt(this, art.room.scrapbook, SCRAPBOOK_OBJECT.x, SCRAPBOOK_OBJECT.y)
-    )
-  }
-
-  /** The Scrapbook, open over the rug: the title across its top. */
-  private drawOpenScrapbook(add: Add, title: string) {
-    return [
-      add(addArt(this, art.room.scrapbookOpen, WIDTH / 2, SCRAPBOOK.y)),
-      add(
-        this.add
-          .text(WIDTH / 2, SCRAPBOOK.titleY, title, display(22, "#fdf6ea"))
-          .setOrigin(0.5)
-          .setStroke(OUTLINE, 5)
-      )
-    ]
-  }
-
-  /**
-   * The Scrapbook opened from the room: a row for every Gathering, its name
-   * and what forms it, its level and all it adds at that level; one not yet
-   * discovered this Run shows only "???". A tap anywhere closes it.
-   */
-  private drawScrapbookView(add: Add, { title, entries }: ScrapbookView) {
-    this.drawOpenScrapbook(add, title)
-    const { top, step, left, right } = SCRAPBOOK_ROWS
-    entries.forEach((entry, row) => {
-      const y = top + row * step
-      add(
-        this.add
-          .text(left, y - 8, entry.name, display(16, "#4a3426"))
-          .setOrigin(0, 0.5)
-      )
-      add(
-        this.add
-          .text(left, y + 9, entry.requirement, font(11, "#7a5a3c", "700"))
-          .setOrigin(0, 0.5)
-      )
-      if (!entry.discovered) return
-      add(
-        this.add
-          .text(right, y - 8, entry.label.level, font(16, "#4a3426", "800"))
-          .setOrigin(1, 0.5)
-      )
-      add(
-        this.add
-          .text(right, y + 9, entry.label.adds, font(12, "#b4561f", "800"))
-          .setOrigin(1, 0.5)
-      )
-    })
-    add(
-      this.add
-        .text(
-          WIDTH / 2,
-          SCRAPBOOK_HINT_Y,
-          "Tap to close",
-          font(12, "#7a5a3c", "800")
-        )
-        .setOrigin(0.5)
-    )
+    this.scrapbookObject = drawClosedScrapbook(
+      this,
+      add,
+      SCRAPBOOK_OBJECT,
+      () => this.toggleScrapbook()
+    ).book
   }
 
   /**
@@ -1245,7 +1171,7 @@ export class CouchScene extends Phaser.Scene {
    * level adds; tapping one chooses it, and it flies into the Scrapbook.
    */
   private drawScrapbookChoice(add: Add, { title, pages }: ScrapbookChoice) {
-    const around = this.drawOpenScrapbook(add, title)
+    const around = drawOpenScrapbook(this, add, title)
     const xs = pageX(pages.length)
     const wrapped = { wordWrap: { width: PAGE.w - 14 }, align: "center" }
     const shown = new Map<GatheringId, Phaser.GameObjects.Container>()
@@ -2112,7 +2038,6 @@ export class CouchScene extends Phaser.Scene {
     const moment = choreographPage(event, settings)
     for (const cue of moment.cues) sound.cue(cue)
     for (const area of this.pageAreas) area.disableInteractive()
-    this.scrapbookArea.disableInteractive()
     const target = SCRAPBOOK_OBJECT
     const add: Add = (object) => {
       this.layer.add(object)

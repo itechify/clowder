@@ -71,11 +71,11 @@ const added = (bonus: GatheringBonus) => {
 export const levelLabel = (level: number) => `Lv ${level}`
 
 /**
- * A Gathering on the Couch and in the preview: its name, its level, and all
- * it adds to the Play, such as "Nap Club Lv 3 · +7 Mult +20 Purr".
+ * A Gathering on the Couch and in the preview: its name and its level, such
+ * as "Nap Club Lv 3". What it adds is in the Scrapbook.
  */
-export const gatheringLabel = ({ name, level, purr, mult }: ActiveGathering) =>
-  `${name} ${levelLabel(level)} · ${added({ purr, mult })}`
+export const gatheringLabel = ({ name, level }: ActiveGathering) =>
+  `${name} ${levelLabel(level)}`
 
 /** The Scrapbook pages offered, while the Scrapbook is open. */
 export function scrapbookChoice(run: Run): ScrapbookChoice | null {

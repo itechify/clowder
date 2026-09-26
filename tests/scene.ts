@@ -95,7 +95,9 @@ export const shop = {
   rehome: [70, 800] as [number, number],
   nightfall: [262, 800] as [number, number],
   /** Open wall beside the window, clear of anything that answers a tap. */
-  wall: [300, 110] as [number, number]
+  wall: [300, 110] as [number, number],
+  /** The Scrapbook, at the end of the household's heading. */
+  scrapbook: [363, 548] as [number, number]
 }
 
 /**
