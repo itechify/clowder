@@ -2,15 +2,15 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**91 of 103 images delivered; 12 still on fallback.**
+**103 of 103 images delivered; 0 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 38 of 42 |
-| 5. The Shop, the living room by day | 0 of 8 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 42 of 42 |
+| 5. The Shop, the living room by day | 8 of 8 |
 
 ## How to generate and deliver
 
@@ -798,10 +798,10 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [x] `art/raw/room/shelf.png`
 - [x] `art/raw/room/treatJar.png`
 - [x] `art/raw/room/disasterSign.png`
-- [ ] `art/raw/room/titleSign.png`
-- [ ] `art/raw/room/photoFrame.png`
-- [ ] `art/raw/room/catBed.png`
-- [ ] `art/raw/room/rosette.png`
+- [x] `art/raw/room/titleSign.png`
+- [x] `art/raw/room/photoFrame.png`
+- [x] `art/raw/room/catBed.png`
+- [x] `art/raw/room/rosette.png`
 - [x] `art/raw/ui/playButton/ready.png`
 - [x] `art/raw/ui/redrawButton/ready.png`
 - [x] `art/raw/ui/pip/full.png`
@@ -1107,7 +1107,7 @@ A warning sign hung from a single nail by a string: a wide, rounded wooden plaqu
 
 ### Title sign: `art/raw/room/titleSign.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/titleSign`
 - Size: 900×252
@@ -1120,7 +1120,7 @@ A wide, rounded wooden signboard propped up on two short stubby legs, as if set 
 
 ### Photo frame: `art/raw/room/photoFrame.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/photoFrame`
 - Size: 516×300
@@ -1133,7 +1133,7 @@ A framed photo hung on a living-room wall: a chunky wooden picture frame with a 
 
 ### Cat bed: `art/raw/room/catBed.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/catBed`
 - Size: 372×156
@@ -1146,7 +1146,7 @@ A round, plush cat bed seen from the front at a gentle angle, as it sits on the 
 
 ### Rosette: `art/raw/room/rosette.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/rosette`
 - Size: 72×108
@@ -1367,18 +1367,18 @@ A warm golden glow tracing the outline of a whole sofa, as a rounded rectangle o
 
 ## 5. The Shop, the living room by day
 
-- [ ] `art/raw/room/dayWindow.png`
-- [ ] `art/raw/room/sun.png`
-- [ ] `art/raw/room/sunbeam.png`
-- [ ] `art/raw/room/stormClouds.png`
-- [ ] `art/raw/room/frontDoor.png`
-- [ ] `art/raw/room/disasterNote.png`
-- [ ] `art/raw/room/offerTag.png`
-- [ ] `art/raw/room/countBadge.png`
+- [x] `art/raw/room/dayWindow.png`
+- [x] `art/raw/room/sun.png`
+- [x] `art/raw/room/sunbeam.png`
+- [x] `art/raw/room/stormClouds.png`
+- [x] `art/raw/room/frontDoor.png`
+- [x] `art/raw/room/disasterNote.png`
+- [x] `art/raw/room/offerTag.png`
+- [x] `art/raw/room/countBadge.png`
 
 ### Day window: `art/raw/room/dayWindow.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/dayWindow`
 - Size: 516×240
@@ -1391,7 +1391,7 @@ The living room's window, the same as by night: its cream-painted frame and sing
 
 ### Sun: `art/raw/room/sun.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/sun`
 - Size: 108×108
@@ -1404,7 +1404,7 @@ A small, round, friendly sun glowing warm golden yellow, with a soft pale halo a
 
 ### Sunbeam: `art/raw/room/sunbeam.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/sunbeam`
 - Size: 900×360
@@ -1417,7 +1417,7 @@ A soft, slanting beam of warm golden daylight lying across a wooden floor from a
 
 ### Storm clouds: `art/raw/room/stormClouds.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/stormClouds`
 - Size: 450×132
@@ -1430,7 +1430,7 @@ A small bank of dark, puffy slate-gray storm clouds with a little yellow zigzag 
 
 ### Front door: `art/raw/room/frontDoor.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/frontDoor`
 - Size: 1116×390
@@ -1443,7 +1443,7 @@ A wide front doorway seen straight on from inside, with its two wooden doors swu
 
 ### Disaster note: `art/raw/room/disasterNote.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/disasterNote`
 - Size: 492×186
@@ -1456,7 +1456,7 @@ A brick-red paper note pinned to a wall with one gold drawing pin at its top cen
 
 ### Offer tag: `art/raw/room/offerTag.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/offerTag`
 - Size: 258×156
@@ -1469,7 +1469,7 @@ A cream card luggage tag hanging from a short string at its top centre, with a s
 
 ### Count badge: `art/raw/room/countBadge.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/countBadge`
 - Size: 96×60

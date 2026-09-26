@@ -137,16 +137,24 @@ export function rugX(positions: number) {
 /**
  * Where an opened pile's `count` Cats fan out, a `step` apart and centred on
  * the pile at `centre`, shifted clear of the room's sides between `left` and
- * `right`; closer together, if they cannot all fit a step apart.
+ * `right`; closer together, if they cannot all fit a step apart. Reserve
+ * `minWidth` for the surrounding panel so both share the same centre.
  */
 export function fanX(
   count: number,
   centre: number,
-  { left, right, step }: { left: number; right: number; step: number }
+  {
+    left,
+    right,
+    step,
+    minWidth = 0
+  }: { left: number; right: number; step: number; minWidth?: number }
 ) {
   const spacing = Math.min(step, (right - left) / count)
   const half = (count * spacing) / 2
-  const middle = Math.min(Math.max(centre, left + half), right - half)
+  const panelHalf =
+    Math.min(right - left, Math.max(count * spacing, minWidth)) / 2
+  const middle = Math.min(Math.max(centre, left + panelHalf), right - panelHalf)
   return Array.from(
     { length: count },
     (_, i) => middle - half + spacing * (i + 0.5)

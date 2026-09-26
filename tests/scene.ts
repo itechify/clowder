@@ -71,20 +71,23 @@ export const layout = {
 /** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */
 export const shop = {
   /** The Adopt or Recruit button of the `i`th offer at the door, Cats first. */
-  offer: (i: number): [number, number] => [63.75 + i * 87.5, 480],
+  offer: (i: number): [number, number] => [63.75 + i * 87.5, 498],
   /** A House Cat at the `position`th position on the Shelf. */
   shelf: (position: number): [number, number] => [64 + position * 87.5, 168],
   /** A Kind's pile, at its cell in the household's grid. */
   pile: ({ column, row }: PileSpot): [number, number] => [
     64 + column * 66.5,
-    580 + row * 60
+    596 + row * 58
   ],
   /** The `i`th of `count` Cats fanned out from the pile at `spot`. */
   fanned: (spot: PileSpot, count: number, i: number): [number, number] => {
     const [x, y] = shop.pile(spot)
-    return [fanX(count, x, { left: 16, right: 374, step: 62 })[i], y - 94]
+    return [
+      fanX(count, x, { left: 16, right: 374, step: 62, minWidth: 190 })[i],
+      y - 94
+    ]
   },
-  reroll: [318, 262] as [number, number],
+  reroll: [318, 278] as [number, number],
   rehome: [70, 800] as [number, number],
   nightfall: [262, 800] as [number, number],
   /** Open wall beside the window, clear of anything that answers a tap. */

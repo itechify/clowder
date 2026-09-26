@@ -6,7 +6,6 @@ import {
   applyAction,
   type CatId,
   type HouseCatId,
-  houseCat,
   notEnoughTreats,
   rehomeRefund
 } from "../engine"
@@ -57,9 +56,9 @@ import { drawTreat } from "./treatArt"
  * pile's Cat this big.
  */
 const HOUSEHOLD = {
-  headingY: 522,
+  headingY: 548,
   columnsX: [64, 130.5, 197, 263.5, 330],
-  rowsY: [580, 640, 700],
+  rowsY: [596, 654, 712],
   size: 48
 }
 /** A pile's count, on a badge at its Cat's feet. */
@@ -70,6 +69,8 @@ const SUN = { x: 162, y: 88 }
 const RISE = 26
 /** The storm clouds in the window, and how far and slowly they drift. */
 const CLOUDS = { x: WINDOW.x, y: 88, drift: 6, ms: 2600 }
+/** The clear panes, inset from the window frame and its central mullion. */
+const WINDOW_PANES = { xs: [44, 118], y: 77, width: 64, height: 45 }
 /** How warm the lights are by day, over the room as it is by night. */
 const WARM = { colour: 0xffc46b, alpha: 0.1 }
 const DUSK = { colour: NIGHT_SKY, alpha: 0.3 }
@@ -82,17 +83,18 @@ const SHELF_PROMPT_Y = 240
  * beside it; the bottom of the open doorway; the floor each offer stands on
  * in it, how big it is shown, and its tag and button beneath.
  */
-const DOOR_HEADING_Y = 262
-const DOOR_Y = 410
+const DOOR_HEADING_Y = 278
+const DOOR_Y = 416
 const OFFER = {
-  baseY: 402,
+  baseY: 408,
   catSize: 56,
   houseCatSize: 50,
-  tagY: 408,
-  button: { y: 480, width: 84, height: 48 }
+  tagY: 403,
+  button: { y: 498, width: 84, height: 40 }
 }
-/** How wide a tag's words may run, and how tall, inside its border. */
-const TAG_TEXT = { width: 78, height: 34 }
+/** Tags name visitors; long abilities live in a readable detail panel. */
+const TAG = { width: 86, height: 70, textWidth: 72 }
+const OFFER_DETAILS = { x: WIDTH / 2, top: 316, width: 320, height: 244 }
 /** A section's heading, on a pill: its height and padding. */
 const HEADING = { height: 24, padding: 10, left: 16 }
 /** An opened pile's fan: its Cats' size, spacing, and panel. */
@@ -118,9 +120,9 @@ const REHOME = { x: 70, y: 800, width: 108, height: 58 }
 const NIGHTFALL = { x: 262, y: 800, width: 230, height: 58 }
 /**
  * Where a button's words fit on its face, above its lip: as fractions of
- * its width and height, and how far above its centre.
+ * its width and height, centred on the visible artwork.
  */
-const BUTTON_FACE = { width: 0.72, height: 0.5, above: 0.07 }
+const BUTTON_FACE = { width: 0.84, height: 0.72, primaryHeight: 0.82 }
 /** How long each transition between night and day takes. */
 const TRANSITION_MS = 1200
 
@@ -193,8 +195,11 @@ export class ShopScene extends Phaser.Scene {
   private shelf!: Phaser.GameObjects.Container
   private layer!: Phaser.GameObjects.Container
   private treatCount!: Phaser.GameObjects.Text
+  private skyMask!: Phaser.GameObjects.Graphics
   /** The offers' Cats and House Cats standing in the doorway, by spot. */
   private visitors: (Phaser.GameObjects.Container | null)[] = []
+  /** A visitor whose full name, title and ability the player is reading. */
+  private inspected: Offer | null = null
   /** A transition playing out, until it ends or is skipped. */
   private transition: { skip: () => void } | null = null
   /** Night is falling, and the Shop has closed. */
@@ -215,6 +220,7 @@ export class ShopScene extends Phaser.Scene {
     this.picked = null
     this.opened = null
     this.staged = null
+    this.inspected = null
     this.transition = null
     this.closing = false
     presentation.shop = {}
@@ -238,6 +244,7 @@ export class ShopScene extends Phaser.Scene {
 
     const off = session.on((events) => {
       if (this.closing) return
+      this.inspected = null
       // Whatever happens, a dawn still breaking has broken.
       this.transition?.skip()
       if (!session.run.shop) {
@@ -273,8 +280,13 @@ export class ShopScene extends Phaser.Scene {
    * window and a note on the wall.
    */
   private drawDay() {
+    const panes = this.make.graphics(undefined, false).fillStyle(0xffffff)
+    for (const x of WINDOW_PANES.xs)
+      panes.fillRect(x, WINDOW_PANES.y, WINDOW_PANES.width, WINDOW_PANES.height)
+    this.skyMask = panes
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => panes.destroy())
     const window = addArt(this, art.room.dayWindow, WINDOW.x, WINDOW.y)
-    const sun = addArt(this, art.room.sun, SUN.x, SUN.y)
+    const sun = this.inWindow(addArt(this, art.room.sun, SUN.x, SUN.y))
     const warmth = this.add
       .rectangle(0, 0, WIDTH, HEIGHT, WARM.colour, WARM.alpha)
       .setOrigin(0)
@@ -285,7 +297,9 @@ export class ShopScene extends Phaser.Scene {
     const { disaster } = stageShop(session.run)
     presentation.clouds = null
     if (disaster) {
-      const clouds = addArt(this, art.room.stormClouds, CLOUDS.x, CLOUDS.y)
+      const clouds = this.inWindow(
+        addArt(this, art.room.stormClouds, CLOUDS.x, CLOUDS.y)
+      )
       this.drift(clouds)
       // Still again as soon as motion is reduced, and drifting once it isn't.
       const off = settings.on(() => this.drift(clouds))
@@ -293,6 +307,18 @@ export class ShopScene extends Phaser.Scene {
       fixtures.push(clouds, this.drawDisasterNote(disaster))
     }
     return { window, sun, warmth, fixtures }
+  }
+
+  /** Weather stays behind the frame, including while rising or drifting. */
+  private inWindow(image: Phaser.GameObjects.Image) {
+    if (this.game.renderer.type === Phaser.WEBGL) {
+      image.enableFilters().filters!.external.addMask(this.skyMask)
+    } else {
+      const mask = this.skyMask.createGeometryMask()
+      image.setMask(mask)
+      image.once(Phaser.GameObjects.Events.DESTROY, () => mask.destroy())
+    }
+    return image
   }
 
   /** Sets storm clouds drifting to and fro, or still under Reduced motion. */
@@ -434,14 +460,14 @@ export class ShopScene extends Phaser.Scene {
     )
     if (staged.fan) this.drawFan(add, staged)
     this.drawButtons(add, staged)
+    if (this.inspected) this.drawOfferDetails(add, this.inspected)
   }
 
   /** What may be done with the Shelf, beneath it. */
   private shelfPrompt() {
     const { run } = session
     const picked = this.pickedHouseCat()
-    if (picked)
-      return `Rehome ${houseCat(picked).name} for ${rehomeRefund(run.config, picked)} Treats back, or tap elsewhere on the Shelf to move it.`
+    if (picked) return "Tap a Shelf spot to move, or Rehome below."
     return run.shelf.length > 0
       ? "Tap a House Cat to move or Rehome it."
       : "Recruit a House Cat for the Shelf."
@@ -455,7 +481,10 @@ export class ShopScene extends Phaser.Scene {
       x: x + size * COUNT_BADGE.dx,
       y: y + size * COUNT_BADGE.dy
     }
-    add(addArt(this, art.room.countBadge, badge.x, badge.y))
+    add(addArt(this, art.room.countBadge, badge.x, badge.y)).setDisplaySize(
+      32,
+      24
+    )
     add(
       this.add
         .text(badge.x, badge.y, `×${pile.count}`, display(13, "#4a3426"))
@@ -486,28 +515,40 @@ export class ShopScene extends Phaser.Scene {
       return null
     }
     const visitor = add(this.drawVisitor(offer)).setPosition(x, visitorY(offer))
-    add(addArt(this, art.room.offerTag, x, OFFER.tagY))
-    const { name, title, about } = offer.tag
+    add(addArt(this, art.room.offerTag, x, OFFER.tagY)).setDisplaySize(
+      TAG.width,
+      TAG.height
+    )
+    const { name, about } = offer.tag
     const lines = [
-      this.add.text(0, 0, name, font(11, "#4a3426", "900")),
-      ...(title
-        ? [this.add.text(0, 0, title, font(8, "#7a5a3c", "italic 800"))]
-        : []),
-      this.add.text(0, 0, about, {
-        ...font(8.5, "#4a3426", "700"),
+      this.add.text(0, 0, name, {
+        ...font(12, "#4a3426", "900"),
         align: "center",
-        wordWrap: { width: TAG_TEXT.width }
+        wordWrap: { width: TAG.textWidth, useAdvancedWrap: true }
+      }),
+      this.add.text(0, 0, "cat" in offer ? about : "View ability", {
+        ...font(11, "#4a3426", "700"),
+        align: "center",
+        wordWrap: { width: TAG.textWidth }
       })
     ]
-    for (const line of lines) line.setOrigin(0.5, 0).setLineSpacing(-3)
+    for (const line of lines) line.setOrigin(0.5, 0)
     const height = lines.reduce((sum, line) => sum + line.height, 0)
-    // Words too many for the tag shrink to fit inside its border.
-    const scale = Math.min(1, TAG_TEXT.height / height)
-    let below = OFFER.tagY + 9 + (TAG_TEXT.height - height * scale) / 2
+    let below = OFFER.tagY + 20 + (46 - height) / 2
     for (const line of lines) {
-      add(line.setPosition(x, below).setScale(scale))
-      below += line.height * scale
+      add(line.setPosition(x, below))
+      below += line.height
     }
+    const top = OFFER.baseY - Math.max(OFFER.catSize, OFFER.houseCatSize)
+    const bottom = OFFER.tagY + TAG.height
+    add(this.add.zone(x, (top + bottom) / 2, TAG.width, bottom - top))
+      .setInteractive({ useHandCursor: true })
+      .on("pointerdown", () => {
+        this.picked = null
+        this.opened = null
+        this.inspected = offer
+        this.draw()
+      })
     this.button(
       add,
       { x, ...OFFER.button },
@@ -516,6 +557,45 @@ export class ShopScene extends Phaser.Scene {
       () => session.apply(offer.action)
     )
     return visitor
+  }
+
+  /** Full-size visitor details; the scrim also stops taps reaching the Shop. */
+  private drawOfferDetails(add: Add, { tag }: Offer) {
+    const { x, top, width, height } = OFFER_DETAILS
+    add(
+      this.add
+        .rectangle(0, 0, WIDTH, HEIGHT, SCRIM.colour, SCRIM.alpha)
+        .setOrigin(0)
+        .setInteractive()
+        .on("pointerdown", () => this.tapElsewhere())
+    )
+    add(this.add.graphics())
+      .fillStyle(0xfdf6ea, 1)
+      .fillRoundedRect(x - width / 2, top, width, height, 18)
+      .lineStyle(3, INK, 1)
+      .strokeRoundedRect(x - width / 2, top, width, height, 18)
+    add(this.add.zone(x, top + height / 2, width, height)).setInteractive()
+    add(this.add.text(x, top + 30, tag.name, display(24))).setOrigin(0.5)
+    if (tag.title)
+      add(
+        this.add.text(x, top + 61, tag.title, font(14, "#7a5a3c", "800"))
+      ).setOrigin(0.5)
+    add(
+      this.add.text(x, top + 88, tag.about, {
+        ...font(16),
+        align: "center",
+        wordWrap: { width: width - 40 }
+      })
+    )
+      .setOrigin(0.5, 0)
+      .setLineSpacing(4)
+    this.button(
+      add,
+      { x, y: top + height - 32, width: 108, height: 44 },
+      { text: "Close" },
+      "ready",
+      () => this.tapElsewhere()
+    )
   }
 
   /** An offered Cat or House Cat, standing in the doorway. */
@@ -538,11 +618,11 @@ export class ShopScene extends Phaser.Scene {
     const y = at.y - FAN_ABOVE
     const xs = fanX(fan.cats.length, at.x, FAN)
     // The panel is wide enough for its words, however few its Cats.
-    const width = Math.max(FAN.minWidth, xs.at(-1)! - xs[0] + FAN.step)
-    const middle = Math.min(
-      Math.max((xs[0] + xs.at(-1)!) / 2, FAN.left + width / 2),
-      FAN.right - width / 2
+    const width = Math.min(
+      FAN.right - FAN.left,
+      Math.max(FAN.minWidth, fan.cats.length * FAN.step)
     )
+    const middle = (xs[0] + xs.at(-1)!) / 2
     const [left, right] = [middle - width / 2, middle + width / 2]
     // The rest of the room dims, and a tap on it closes the fan.
     add(
@@ -672,22 +752,26 @@ export class ShopScene extends Phaser.Scene {
   ) {
     const ready = state === "ready"
     const key = primary ? art.playButton(ready) : art.redrawButton(ready)
-    add(addArt(this, key, x, y)).setDisplaySize(width, height)
+    // Redraw's art has more transparent padding above and below its face.
+    add(addArt(this, key, x, y)).setDisplaySize(
+      width,
+      height * (primary ? 1 : 1.35)
+    )
     const labelSize = primary ? 26 : 20
     const label = this.add
       .text(0, 0, text, display(labelSize, ready ? "#fdf6ea" : "#f3e9da"))
       .setOrigin(0.5)
-      .setStroke(OUTLINE, 4)
+      .setStroke(OUTLINE, 2)
     // The second part: the change to the Treats, or another line.
-    const size = 16
+    const size = 12
     let part: Phaser.GameObjects.Text | Phaser.GameObjects.Container | null =
       null
     let second = { width: 0, height: 0 }
     if (below) {
       part = this.add
-        .text(0, 0, below, font(14, "#fdf6ea", "900"))
+        .text(0, 0, below, font(12, "#fdf6ea", "900"))
         .setOrigin(0.5)
-        .setStroke(OUTLINE, 3)
+        .setStroke(OUTLINE, 2)
       second = { width: part.width, height: part.height }
     } else if (treats !== undefined) {
       const treat = drawTreat(this, size)
@@ -721,17 +805,10 @@ export class ShopScene extends Phaser.Scene {
     const fit = Math.min(
       1,
       (width * BUTTON_FACE.width) / content.width,
-      (height * BUTTON_FACE.height) / content.height
+      (height * (primary ? BUTTON_FACE.primaryHeight : BUTTON_FACE.height)) /
+        content.height
     )
-    add(
-      this.add
-        .container(
-          x,
-          y - height * BUTTON_FACE.above,
-          part ? [label, part] : [label]
-        )
-        .setScale(fit)
-    )
+    add(this.add.container(x, y, part ? [label, part] : [label]).setScale(fit))
     if (ready)
       add(this.add.zone(x, y, width, height))
         .setInteractive({ useHandCursor: true })
@@ -764,9 +841,10 @@ export class ShopScene extends Phaser.Scene {
     this.draw()
   }
 
-  /** Closes the fan and puts back any pick. */
+  /** Closes visitor details or the fan, and puts back any pick. */
   private tapElsewhere() {
-    if (!this.opened && !this.picked) return
+    if (!this.opened && !this.picked && !this.inspected) return
+    this.inspected = null
     this.opened = null
     this.picked = null
     this.draw()
@@ -826,7 +904,9 @@ export class ShopScene extends Phaser.Scene {
    */
   private dawn() {
     const { run } = session
-    const moon = addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    const moon = this.inWindow(
+      addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    )
     // Dawn breaks behind the Shelf and the Shop, over the room by night.
     const night: Phaser.GameObjects.GameObject[] = [moon]
     const rugXs = rugX(Math.ceil(run.config.handSize / 2))
@@ -942,7 +1022,9 @@ export class ShopScene extends Phaser.Scene {
   private nightfall() {
     this.closing = true
     const { run } = session
-    const moon = addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    const moon = this.inWindow(
+      addArt(this, moonArt(run.night.number), MOON.x, MOON.y)
+    )
     const dusk = this.add
       .rectangle(0, 0, WIDTH, HEIGHT, DUSK.colour, 0)
       .setOrigin(0)

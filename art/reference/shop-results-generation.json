@@ -1,0 +1,149 @@
+[
+  {
+    "key": "room/dayWindow",
+    "prompt": "Use case: lighting-weather. Image 1 is the approved style reference; image 2 is the night window to edit. The living room's window, the same as by night: its cream-painted frame and single vertical mullion, now showing a bright, clear blue daytime sky with a few small soft white clouds low down. No sun: that is a separate image. Transparent background. Front-on, with no perspective. It will be resized to exactly 516×240 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Preserve the second image's EXACT outer silhouette, frame, mullion, outline and proportions. Change only the sky to daytime and replace night stars with small low white clouds. Genuine alpha transparency outside the window. Single asset, no sheet, palette or captions.",
+    "references": ["art/reference/style-sheet.png", "art/raw/room/window.png"],
+    "source": "exec-ae47b888-5890-41a0-a83f-23d88fc17d2e.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/sun",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A small, round, friendly sun glowing warm golden yellow, with a soft pale halo and no face. Transparent background. Front-on, with no perspective. It will be resized to exactly 108×108 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency, no opaque background or checkerboard baked in. Compose the visible silhouette to the stated target aspect ratio with small clear margins. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-dd771b10-e046-4c4c-8432-7533f36c44e6.png",
+    "status": "rejected"
+  },
+  {
+    "key": "room/sunbeam",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A soft, slanting beam of warm golden daylight lying across a wooden floor from an open doorway, as a pale translucent band, brightest in the middle and fading at its edges, with nothing else in it. Transparent background. It will be resized to exactly 900×360 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency, no opaque background or checkerboard baked in. Compose the visible silhouette to the stated target aspect ratio with small clear margins. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-0f678b88-35e0-4ea0-98ff-168a9792362e.png",
+    "status": "rejected"
+  },
+  {
+    "key": "room/stormClouds",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A small bank of dark, puffy slate-gray storm clouds with a little yellow zigzag of lightning beneath, as seen through a window, clearly ominous but still cute. Transparent background. Front-on, with no perspective. It will be resized to exactly 450×132 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency, no opaque background or checkerboard baked in. Compose the visible silhouette to the stated target aspect ratio with small clear margins. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-13b589d6-e099-4e3d-93a1-f57fe9b77569.png",
+    "status": "rejected"
+  },
+  {
+    "key": "room/sun",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated 2D game sprite. Approved attached Clowder sheet is style reference only. A round golden SUN DISC with soft pale halo, NO rays, no triangular spikes, no face. Circle only. 108x108 final canvas. Thick dark brown circular outline, one cel shade. Match its warm palette, chunky rounded shapes, cute flat cel shading. True transparent background. No words, Cats, sheet, captions or swatches.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-6371cf85-abed-4ba7-98aa-1e4a6e7a2538.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/sunbeam",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated 2D game sprite. Approved attached Clowder sheet is style reference only. Only a translucent golden slanting LIGHT PATCH overlay. NO FLOORBOARDS, NO WOOD, NO lines, NO solid background, NO objects, NO outline. A pale golden trapezoid of light, brightest middle with feathered transparent edges. Actual semi-transparent alpha throughout the beam (approximately 15 to 40 percent opacity), clear outside. Wide shallow silhouette width to height ratio 2.5. 900x360 final canvas. Match its warm palette, chunky rounded shapes, cute flat cel shading. True transparent background. No words, Cats, sheet, captions or swatches.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-9fb80002-680b-46c1-b09b-a4d15c49c66f.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/stormClouds",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated 2D game sprite. Approved attached Clowder sheet is style reference only. Low wide bank of slate gray puffy storm clouds, with ONE little yellow lightning zigzag beneath. NO FACE, NO eyes, NO mouth, NO expressions, NO glow, NO shadow outside object. Thick dark brown outlines on cloud silhouette and lightning. Width to height ratio 3.4, 450x132 final canvas. Match its warm palette, chunky rounded shapes, cute flat cel shading. True transparent background. No words, Cats, sheet, captions or swatches.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-915fd419-5162-4835-9417-02d130a1173e.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/frontDoor",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is nearly three times as wide as it is tall, standing against the back wall in place of the sofa. Keep the middle of the doorway uncluttered: four visitors will stand in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1116×390 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside the object. Compose visible silhouette to the EXACT stated target aspect ratio with small clear margins. Leave maximum broad blank space for game text, keep strings very short and borders thin. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-7a7bf493-ff22-4efe-b87a-6e185aa198f8.png",
+    "status": "superseded"
+  },
+  {
+    "key": "room/disasterNote",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A brick-red paper note pinned to a wall with one gold drawing pin at its top centre, a corner curling slightly, with a cream inner border. Leave it blank: the game writes the coming trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside the object. Compose visible silhouette to the EXACT stated target aspect ratio with small clear margins. Leave maximum broad blank space for game text, keep strings very short and borders thin. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-4e529538-698b-4f50-8ff6-824784f64736.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/offerTag",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A cream card luggage tag hanging from a short string at its top centre, with a small punched hole and softly rounded corners. Leave it blank: the game writes a name and more on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 258×156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside the object. Compose visible silhouette to the EXACT stated target aspect ratio with small clear margins. Leave maximum broad blank space for game text, keep strings very short and borders thin. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-6e6ba0b9-7760-4901-81ca-c3a12151b521.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/countBadge",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A small, rounded cream pill-shaped badge with a bold dark outline. Leave it blank: the game writes a count on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 96×60 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside the object. Compose visible silhouette to the EXACT stated target aspect ratio with small clear margins. Leave maximum broad blank space for game text, keep strings very short and borders thin. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-e5287c78-bda6-4b6e-b899-9e4515b12217.png",
+    "status": "superseded"
+  },
+  {
+    "key": "room/titleSign",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A wide, rounded wooden signboard propped up on two short stubby legs, as if set down on the floor in front of a sofa at bedtime: warm honey wood with a cream-painted border and a tiny painted moon and stars in one corner. Leave the board blank: the game writes the title and a line beneath it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×252 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside object, compose visible silhouette to EXACT target aspect ratio with minimal margins. No extra objects. Very wide low board with width to height ratio 3.57 including legs. Legs extremely short. Blank text area spans nearly whole width.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-74df5cf4-7308-4268-8349-49066d648e53.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/photoFrame",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A framed photo hung on a living-room wall: a chunky wooden picture frame with a small cream name plate set into the middle of its bottom edge. The photo inside shows a small sage-green sofa seen straight on, with five seat cushions evenly spaced across its whole width, filling the lower two thirds of the photo against a warm cream wall. The sofa is empty: the game draws the Cats on it. Leave the name plate blank: the game writes the Score and the Night on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 516×300 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside object, compose visible silhouette to EXACT target aspect ratio with minimal margins. No extra objects. Layout is critical: in the final 516 by 300 sprite, image opening is x30 to486, y30 to222. Five cushion centres x90,174,258,342,426, top of cushions y168. Empty wall above the couch for Cats drawn by game. Broad blank cream nameplate centred at x258 y259, width360 height51, entirely below photo. No Cats inside.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-bb761d8e-2cd3-49c1-8e03-62a1efa8f713.png",
+    "status": "rejected"
+  },
+  {
+    "key": "room/catBed",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A round, plush cat bed seen from the front at a gentle angle, as it sits on the floor: a soft, puffy terracotta rim around a cream fleece cushion, big enough for one Cat curled up asleep in it. Empty: the game draws the Cat in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 372×156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside object, compose visible silhouette to EXACT target aspect ratio with minimal margins. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-e8d5752d-0f8a-4149-a5ef-56ca9bea646d.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/rosette",
+    "prompt": "Use case: stylized-concept. Generate ONE isolated game sprite. Attached image is STYLE reference only, never reproduce its cat, sheet or swatches. A small prize rosette, like a winner's ribbon at a cat show: a gold pleated circle with a cream centre, and two short orange ribbon tails hanging beneath. Leave the centre blank. Transparent background. Front-on, with no perspective. It will be resized to exactly 72×108 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions. Genuine alpha transparency outside object, compose visible silhouette to EXACT target aspect ratio with minimal margins. No extra objects.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-9a058b75-cd4c-4c79-be3b-7b9603f9f1a1.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/photoFrame",
+    "prompt": "Use case: precise-object-edit. Image 1 is the approved Clowder STYLE sheet. Image 2 is the photo-frame EDIT TARGET. Preserve the exact outside silhouette, transparent background, warm wooden frame, five-cushion green sofa, wallpaper, and all their positions. Change ONLY the cream blank name plate at bottom centre: make it about TWICE AS WIDE, spanning 72 percent of the whole frame width, and about TWICE AS TALL, extending upward into the wooden border. Its centre should be at 86.5 percent of the full object's height measured from the very top of the nail/string to the bottom of the frame. Ensure a large plain cream interior for score text, with tiny fasteners at the extreme ends. The blank plate stays WITHIN the frame's outer bounds, not dangling below. No text, numbers, Cats, captions, watermark, or new details. Keep transparent background and all other art unchanged.",
+    "references": [
+      "art/reference/style-sheet.png",
+      "exec-bb761d8e-2cd3-49c1-8e03-62a1efa8f713.png"
+    ],
+    "source": "exec-b95fa75d-5a9c-4c0a-bcbe-37dd07e8f173.png",
+    "status": "rejected"
+  },
+  {
+    "key": "room/photoFrame",
+    "prompt": "Use case: precise-object-edit. Image 1 is approved Clowder style reference. Image 2 is the edit target. Move ONLY the wide cream blank nameplate UPWARD by exactly 60 pixels in this 1644 by 957 image. Current plate extends roughly y760 to880; desired plate is y700 to820, centred at y760. This is intentional: it must overlap the bottom of the sofa/photo, leaving a visible strip of wooden bottom frame below the plate. Preserve its exact width, height, cream fill, brown outline, two gold screws. Preserve every other pixel, including the sofa, outer frame, hanger, and transparent outside background. NO resizing or reframing. No text.",
+    "references": [
+      "art/reference/style-sheet.png",
+      "exec-b95fa75d-5a9c-4c0a-bcbe-37dd07e8f173.png"
+    ],
+    "source": "exec-32e9b92c-ff26-40f6-9ea0-1c887012f487.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/countBadge",
+    "prompt": "Use case: precise-object-edit. Edit the attached cream count badge for Clowder. Keep the warm cream fill, subtle cel-shaded lower edge, dark-brown outline and small upper-left glint. Make its visible silhouette much TALLER: a rounded capsule whose visible width is exactly 1.6 times its visible height, NOT a thin horizontal pill. It will fill a 96 by 60 pixel game sprite with a tiny 2-pixel transparent margin. Broad blank centre for a bold count. Genuine transparent outside background, preserve clean alpha. One isolated badge only, no words, numbers, symbols or shadow outside. Do not preserve the large empty top and bottom margins: the badge must occupy nearly the full canvas height.",
+    "references": ["art/raw/room/countBadge.png at b45c6cf"],
+    "source": "exec-7a8b8021-405d-46d1-894d-5e7951685aad.png",
+    "status": "delivered"
+  },
+  {
+    "key": "room/countBadge",
+    "prompt": "Use case: stylized-concept. Generate ONE SMALL EMPTY CREAM COUNT BADGE for the attached Clowder style. A stubby rounded rectangle, almost square but wider than tall. CRITICAL visible silhouette aspect ratio: width 1.5 times height, approximately 900 pixels wide and 600 pixels tall. NOT a long thin pill. Uniform bold dark brown outline, softly rounded corners, warm ivory cream face and minimal single lower cel-shadow. Broad blank centre, tiny glint upper left. Genuine transparent outside background, no shadow outside silhouette. No text, no digits, no swatches, no sheet, no Cats. Match reference palette and rounded outline style. This is to leave generous vertical padding around a game-drawn count at 32x20 display pixels.",
+    "references": ["art/reference/style-sheet.png"],
+    "source": "exec-e30eb246-e5fe-48fc-9b29-65a21a885c4e.png",
+    "status": "rejected",
+    "reason": "The broad outer glow weakened the outline."
+  },
+  {
+    "key": "room/frontDoor",
+    "prompt": "Use case: precise-object-edit. Edit this Clowder doorway game sprite to fit four Cats side by side inside the actual opening. Preserve the warm wood, thick dark brown outline, blue sky, grass, sandy path and small mat. CRITICAL: make the EMPTY CENTRAL OPENING about 90 percent of the full visible width. Both open wooden door leaves must be very THIN strips confined to the extreme left and right edges, each at most 5 percent of total width; viewed nearly edge-on, with tiny gold handles. Do NOT use large broad door leaves. The overall visible silhouette must be about 3.3 times as wide as tall: an extra-wide low doorway. Flat front-on, little perspective. Keep the opening clear across its full width: four visitors will occupy centres at about 15, 38, 62 and 85 percent of its width. No Cats, text or labels. Genuine alpha transparency outside the doorway. One sprite only, no shadows outside.",
+    "references": ["art/raw/room/frontDoor.png at 35f56f6"],
+    "source": "exec-9200d62f-c270-4e4c-b337-dd6d7f3dbbb6.png",
+    "status": "delivered"
+  }
+]

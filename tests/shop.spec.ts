@@ -1,11 +1,40 @@
 import { expect, type Page, test } from "@playwright/test"
-import { disasterById } from "../src/engine"
+import { disasterById, houseCat } from "../src/engine"
 import { settled, shop, tap, toShop } from "./scene"
 
 const transition = (page: Page) =>
   page.evaluate(() => window.__clowder!.transition())
 const scenes = (page: Page) => page.evaluate(() => window.__clowder!.scenes())
 const texts = (page: Page) => page.evaluate(() => window.__clowder!.texts())
+
+test("opens a House Cat's full ability without Recruiting it", async ({
+  page
+}) => {
+  await toShop(page, 1)
+  await settled(page)
+  const ability = houseCat("freya").ability
+  const before = await page.evaluate(() => window.__clowder!.run())
+  expect(await texts(page)).not.toContain(ability)
+
+  // Freya's tag, then the full-size panel. Opening it never spends Treats.
+  await tap(page, 326, 438)
+  expect(await texts(page)).toEqual(
+    expect.arrayContaining(["Freya", "Slow to Warm Up", ability, "Close"])
+  )
+  expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
+
+  // A tap outside dismisses the panel without activating Nightfall beneath.
+  await tap(page, ...shop.nightfall)
+  expect(await texts(page)).not.toContain(ability)
+  expect(await scenes(page)).toEqual(["shop"])
+  expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
+
+  // The visitor itself opens the same panel; its Close button dismisses it.
+  await tap(page, 326, 382)
+  expect(await texts(page)).toContain(ability)
+  await tap(page, 195, 528)
+  expect(await texts(page)).not.toContain(ability)
+})
 
 /** Leaves the Shop and clears Nights by the debug hook until the next Shop. */
 async function nextShop(page: Page) {
