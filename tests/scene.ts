@@ -62,6 +62,8 @@ export const layout = {
   seat: (seat: number): [number, number] => [55 + seat * 70, 342],
   play: [135, 790] as [number, number],
   redraw: [316, 790] as [number, number],
+  /** Once the Results show, over Play and Redraw, which no longer answer. */
+  newHousehold: [268, 790] as [number, number],
   /** Open wall below the Shelf, clear of anything that answers a tap. */
   wall: [195, 240] as [number, number]
 }

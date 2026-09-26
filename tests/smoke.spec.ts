@@ -50,21 +50,21 @@ test("plays a seeded Run through to its results", async ({ page }) => {
   // Skips the last Play's scoring sequence.
   await tap(page, ...layout.wall)
   expect(await page.evaluate(() => window.__clowder!.scoring())).toBe(false)
-  // The results wait for the household to fall asleep.
-  await expect(
-    page.getByRole("heading", { name: /Sweet dreams!|Lights out/ })
-  ).toBeVisible({ timeout: 10_000 })
-  await expect(page.getByText("Nights cleared")).toBeVisible()
-  await expect(page.getByText("Star Cat")).toBeVisible()
-  // This seed Recruits a House Cat, so the results list the household's.
+  // The Results wait for the household to fall asleep, then are read out.
+  const summary = page.locator('[aria-live="polite"]', {
+    has: page.getByRole("heading", { name: /Sweet dreams!|Lights out/ })
+  })
+  await expect(summary).toHaveCount(1, { timeout: 10_000 })
+  await expect(summary).toContainText("Nights cleared")
+  await expect(summary).toContainText("Star Cat")
+  // This seed Recruits a House Cat, so the Results list the household's.
   expect(outcome.shelf.length).toBeGreaterThan(0)
-  await expect(page.getByText("House Cats")).toBeVisible()
-  await expect(
-    page.getByText(outcome.shelf.map((id) => houseCat(id).name).join(", "))
-  ).toBeVisible()
+  await expect(summary).toContainText(
+    `House Cats: ${outcome.shelf.map((id) => houseCat(id).name).join(", ")}`
+  )
 
-  await page.getByRole("button", { name: "New Household" }).click()
-  await expect(page.getByRole("heading")).toHaveCount(0)
+  expect(await page.evaluate(() => window.__clowder!.newHousehold())).toBe(true)
+  await expect(summary).toHaveCount(0)
   const fresh = await page.evaluate(() => window.__clowder!.run())
   expect(fresh.status).toBe("playing")
   expect(fresh.night.number).toBe(1)

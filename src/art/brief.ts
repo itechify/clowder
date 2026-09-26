@@ -254,7 +254,15 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   offerTag:
     "A cream card luggage tag hanging from a short string at its top centre, with a small punched hole and softly rounded corners. Leave it blank: the game writes a name and more on it.",
   countBadge:
-    "A small, rounded cream pill-shaped badge with a bold dark outline. Leave it blank: the game writes a count on it."
+    "A small, rounded cream pill-shaped badge with a bold dark outline. Leave it blank: the game writes a count on it.",
+  titleSign:
+    "A wide, rounded wooden signboard propped up on two short stubby legs, as if set down on the floor in front of a sofa at bedtime: warm honey wood with a cream-painted border and a tiny painted moon and stars in one corner. Leave the board blank: the game writes the title and a line beneath it.",
+  photoFrame:
+    "A framed photo hung on a living-room wall: a chunky wooden picture frame with a small cream name plate set into the middle of its bottom edge. The photo inside shows a small sage-green sofa seen straight on, with five seat cushions evenly spaced across its whole width, filling the lower two thirds of the photo against a warm cream wall. The sofa is empty: the game draws the Cats on it. Leave the name plate blank: the game writes the Score and the Night on it.",
+  catBed:
+    "A round, plush cat bed seen from the front at a gentle angle, as it sits on the floor: a soft, puffy terracotta rim around a cream fleece cushion, big enough for one Cat curled up asleep in it. Empty: the game draws the Cat in it.",
+  rosette:
+    "A small prize rosette, like a winner's ribbon at a cat show: a gold pleated circle with a cream centre, and two short orange ribbon tails hanging beneath. Leave the centre blank."
 }
 
 /** The pieces of the room seen only in the Shop, by day. */

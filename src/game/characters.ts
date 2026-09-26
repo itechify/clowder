@@ -104,14 +104,15 @@ function idle(
 /**
  * A Cat centred on (0, 0), about `size` pixels across: its pose, mirrored to
  * face left if it does, eyes tinted, with its Coat badge on its flank. It
- * breathes, blinks, and bobs; `asleep`, it only breathes, slowly.
+ * breathes, blinks, and bobs; `asleep`, it only breathes, slowly; `still`, as
+ * in a photo, it doesn't move at all.
  */
 export function drawCat(
   scene: Phaser.Scene,
   cat: Cat,
   look: CatLook,
   size: number,
-  { asleep = false } = {}
+  { asleep = false, still = false } = {}
 ): Phaser.GameObjects.Container {
   const scale = size / CHARACTER_SPAN
   const side = look.facing === "left" ? -1 : 1
@@ -161,7 +162,7 @@ export function drawCat(
     ...lids,
     badge
   ])
-  idle(scene, rig, { lids, asleep, bobs: true })
+  if (!still) idle(scene, rig, { lids, asleep, bobs: true })
   return scene.add.container(0, 0, [rig])
 }
 
