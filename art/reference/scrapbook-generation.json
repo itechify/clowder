@@ -1,0 +1,58 @@
+{
+  "issue": 73,
+  "tool": "built-in imagegen",
+  "images": [
+    {
+      "key": "scrapbook",
+      "w": 162,
+      "h": 120,
+      "prompt": "Use case: illustration-story. Asset: room/scrapbook, a single isolated game sprite. Reference image is STYLE ONLY. Create a closed chunky handmade scrapbook resting flat, seen from the front at a gentle downward angle: warm brown cloth cover, a small cream paw print on the cover, a few pastel coloured page edges peeking out, a short muted red ribbon bookmark trailing. No floor or other objects. Broad landscape silhouette composed to fit a 162x120 pixel canvas after uniform scaling; fill canvas with the object with only a tiny transparent margin. Transparent background with real alpha. Bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, saturated cozy palette. Match the attached approved style sheet exactly in outline weight, palette, shading and proportions. No text, words, signatures or watermarks.",
+      "source": "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-9ef27518-c180-4ab0-81b2-563bda57f328.png",
+      "reference": "art/reference/style-sheet.png",
+      "output": "art/raw/room/scrapbook.png"
+    },
+    {
+      "key": "scrapbookOpen",
+      "w": 1128,
+      "h": 750,
+      "prompt": "Use case: illustration-story. Asset: room/scrapbookOpen, a single isolated game sprite. Reference image is STYLE ONLY. A handmade scrapbook lying wide open seen from straight above, a warm brown cloth cover narrowly framing one continuous flat cream blank page spread, a small strip of pastel washi tape at each outer corner. Broad rectangle with softly rounded corners, width:height exactly 1128:750; fill canvas almost to its edges, only tiny transparent margin. Crucial: the game writes five rows of words right ACROSS the entire spread. Keep ALL inner page area flat plain pale cream with no central fold, line, seam, gutter, shading, drawings or decoration. The blank area must extend to within 4 percent of the outer edges, including the bottom; thin cover border. Tape must be small and confined to very outer corners. Dark brown bold outlines and flat cel shading only on outer edges. Transparent background with real alpha, no surrounding scene or floor. Match attached approved style sheet's chunky rounded shapes, saturated cozy palette and outline weight. No text, words, signatures or watermarks.",
+      "source": "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-d46cb452-c939-432d-aa93-31f6cecd7232.png",
+      "reference": "art/reference/style-sheet.png",
+      "output": "art/raw/room/scrapbookOpen.png",
+      "status": "superseded: too shallow for the existing text layout"
+    },
+    {
+      "key": "scrapbookPage",
+      "w": 336,
+      "h": 558,
+      "prompt": "Use case: illustration-story. Asset: room/scrapbookPage, single isolated game sprite. Reference image is STYLE ONLY. A single tall cream scrapbook page, straight-on flat rectangle with softly rounded corners and a short strip of pastel sage green washi tape centred across its top edge; extremely faint paper texture. Leave the entire page blank, the game writes the Gathering name, requirement and level on it. Portrait silhouette width:height exactly 336:558; fill canvas almost to its edges with only a tiny transparent margin. Thin bold dark-brown outline at outer edge, cream interior must fill at least 90 percent of width. No page fold, curled corners or other decoration. Transparent background with real alpha, no surrounding scene. Match attached approved style sheet's chunky shapes, warm palette, flat cel shading with one soft shadow tone and dark brown outline. No text, words, signatures or watermarks.",
+      "source": "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-6b06219a-07c6-407d-91d0-808fe58f94dd.png",
+      "reference": "art/reference/style-sheet.png",
+      "output": "art/raw/room/scrapbookPage.png",
+      "status": "superseded: tape overlapped the wrapped Personal Space heading"
+    },
+    {
+      "key": "scrapbookOpen",
+      "w": 1128,
+      "h": 750,
+      "prompt": "Use case: precise-object-edit. Edit image 1, the open scrapbook sprite. Image 2 is the approved style reference only. Keep the same brown cover, four small pastel washi tape corners, bold outlines and completely blank continuous pale cream interior with NO central seam. Change the proportions: make the scrapbook visibly TALLER relative to its width. Its visible silhouette bounding box must have width-to-height ratio 1.504 (1128 wide by 750 tall). The current sprite is too wide and short. Fit the silhouette to fill almost the full image height, with no large transparent top or bottom margins. Keep the cover border thinner, at most 3 percent of height: game text runs near the bottom of the cream page and must not land on the brown cover. Keep the bottom corner tapes tiny and entirely in the narrow border so they cannot obstruct text. Actual transparent alpha background. No text or other objects. Preserve the flat paper, style, palette and handmade look.",
+      "source": "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-1ca0a4a8-27f1-49c2-ae10-81bfcbe49632.png",
+      "references": [
+        "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-d46cb452-c939-432d-aa93-31f6cecd7232.png",
+        "art/reference/style-sheet.png"
+      ],
+      "output": "art/raw/room/scrapbookOpen.png"
+    },
+    {
+      "key": "scrapbookPage",
+      "w": 336,
+      "h": 558,
+      "prompt": "Use case: precise-object-edit. Edit the attached scrapbook-page game sprite, preserving the portrait paper shape, aspect ratio, pale cream blank interior, dark brown outline, rounded corners and transparent alpha background. Change ONLY the washi tape: make the green tape strip MUCH thinner vertically, a delicate short horizontal strip centred over the very top edge. The tape including its outline must occupy at most 4 percent of the total page height, and its entire bottom edge must end within the top 5 percent of the page. This is crucial: game lettering starts 7 percent from the top, and must sit on uninterrupted plain cream paper. Keep a simple subtle sage green tape; remove tall plant motifs so there is no tall decoration. No text, no other decoration. Keep the original canvas size and page width/height.",
+      "source": "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-4d77294e-19ff-4497-9be4-79116912ee53.png",
+      "references": [
+        "/home/jjd/.codex/generated_images/01a0dc75-2d2b-7453-b4c5-20c43b0220c1/exec-6b06219a-07c6-407d-91d0-808fe58f94dd.png"
+      ],
+      "output": "art/raw/room/scrapbookPage.png"
+    }
+  ]
+}

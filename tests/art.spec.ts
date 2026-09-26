@@ -8,14 +8,7 @@ import { boot } from "./scene"
  */
 const codeDrawnForGood = new Set<string>()
 
-/** Keys on their code-drawn fallback until Astra delivers them: the Scrapbook (#71). */
-const awaitingDelivery = new Set<string>([
-  "room/scrapbook",
-  "room/scrapbookOpen",
-  "room/scrapbookPage"
-])
-
-test("shows every art key's delivered image, unless it is code-drawn for now or for good", async ({
+test("shows every art key's delivered image, unless it is code-drawn for good", async ({
   page
 }) => {
   await boot(page, 7)
@@ -29,9 +22,7 @@ test("shows every art key's delivered image, unless it is code-drawn for now or 
     Object.fromEntries(
       keys.map((key) => [
         key,
-        codeDrawnForGood.has(key) || awaitingDelivery.has(key)
-          ? "fallback"
-          : "delivered"
+        codeDrawnForGood.has(key) ? "fallback" : "delivered"
       ])
     )
   )

@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**103 of 106 images delivered; 3 still on fallback.**
+**106 of 106 images delivered; 0 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 42 of 45 |
+| 4. The room, badges, UI furniture, and Gathering overlays | 45 of 45 |
 | 5. The Shop, the living room by day | 8 of 8 |
 
 ## How to generate and deliver
@@ -802,9 +802,9 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [x] `art/raw/room/photoFrame.png`
 - [x] `art/raw/room/catBed.png`
 - [x] `art/raw/room/rosette.png`
-- [ ] `art/raw/room/scrapbook.png`
-- [ ] `art/raw/room/scrapbookOpen.png`
-- [ ] `art/raw/room/scrapbookPage.png`
+- [x] `art/raw/room/scrapbook.png`
+- [x] `art/raw/room/scrapbookOpen.png`
+- [x] `art/raw/room/scrapbookPage.png`
 - [x] `art/raw/ui/playButton/ready.png`
 - [x] `art/raw/ui/redrawButton/ready.png`
 - [x] `art/raw/ui/pip/full.png`
@@ -1162,7 +1162,7 @@ A small prize rosette, like a winner's ribbon at a cat show: a gold pleated circ
 
 ### Scrapbook: `art/raw/room/scrapbook.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/scrapbook`
 - Size: 162×120
@@ -1175,7 +1175,7 @@ A closed, chunky handmade scrapbook lying on a wooden floor, seen from the front
 
 ### Scrapbook open: `art/raw/room/scrapbookOpen.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/scrapbookOpen`
 - Size: 1128×750
@@ -1188,7 +1188,7 @@ A big handmade scrapbook lying wide open, seen from straight above: a warm brown
 
 ### Scrapbook page: `art/raw/room/scrapbookPage.png`
 
-**On fallback.**
+**Delivered.**
 
 - Key: `room/scrapbookPage`
 - Size: 336×558
