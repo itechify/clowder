@@ -109,6 +109,10 @@ describe("the art manifest", () => {
         "room/photoFrame",
         "room/catBed",
         "room/rosette",
+        // The Scrapbook, closed in the room, open, and one of its pages.
+        "room/scrapbook",
+        "room/scrapbookOpen",
+        "room/scrapbookPage",
         "room/moon/1",
         "room/moon/9"
       ])

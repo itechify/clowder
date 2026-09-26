@@ -12,6 +12,8 @@ export const cueNames = [
   "scoreLanded",
   "nightCleared",
   "nightLost",
+  /** A Scrapbook page chosen, flying into the Scrapbook. */
+  "pageChosen",
   /** Treats spent in the Shop. */
   "treatsSpent",
   "uiTap"

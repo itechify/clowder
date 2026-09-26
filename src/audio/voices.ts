@@ -196,6 +196,16 @@ export const voices: Record<CueName, Voice> = {
     })
     playInstrument({ ...out, at: out.at + 0.42 }, "bass", 41, 0.65, 0.13)
   },
+  // A placeholder: a papery flick, then a rising bell flourish.
+  pageChosen: (out) => {
+    noise(out, { duration: 0.12, level: 0.1, cutoff: 3200, sweepTo: 900 })
+    arpeggio(out, [72, 76, 79, 84], {
+      instrument: "bell",
+      spacing: 0.06,
+      duration: 0.3,
+      level: 0.12
+    })
+  },
   // Two glassy Treats falling into a wooden dish.
   treatsSpent: (out) => {
     arpeggio(out, [83, 88], {

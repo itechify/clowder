@@ -1,6 +1,6 @@
 import { houseCatArt } from "../art/manifest"
 import type { Cue, CueName } from "../audio/cues"
-import type { HouseCatId, RunEvent } from "../engine"
+import { gatheringById, type HouseCatId, type RunEvent } from "../engine"
 import { freyaPose } from "../presentation/staging"
 import type { ScoringSpeed } from "../shell/settings"
 import {
@@ -32,7 +32,12 @@ export type Step = {
   fire?: true
   countUp?: CountUp
   rain?: Rain
+  /** Numbers popping up where the step's Purr and Mult come from. */
+  pops?: Pop[]
 } & Impact
+
+/** A number popping up, in the colour of the Purr or Mult it adds. */
+export type Pop = { label: string; tone: "purr" | "mult" }
 
 /** The Score counting up from 0 `to` itself over `duration` ms (see `countedUp`). */
 export type CountUp = { to: number; duration: number; power: number }
@@ -206,6 +211,7 @@ export function choreograph(
       cues: cuesFor(event),
       ...(slam ? { slam } : {}),
       ...(fire && !reducedMotion ? { fire } : {}),
+      ...(event.type === "gatheringActivated" ? { pops: added(event) } : {}),
       ...asSettingsAllow(
         escalate(
           slam ? config[slam] : fire ? config.fire : impactOf(event, config),
@@ -260,6 +266,15 @@ function triggeredPose(houseCat: HouseCatId, event: RunEvent) {
   return houseCatArt(houseCat, "triggered")
 }
 
+/**
+ * What a Gathering adds at its level: its Mult, and any Purr its level adds,
+ * which joins the tally before any Cat scores.
+ */
+const added = ({ purr, mult }: { purr: number; mult: number }): Pop[] => [
+  { label: `+${mult} Mult`, tone: "mult" },
+  ...(purr ? [{ label: `+${purr} Purr`, tone: "purr" } as const] : [])
+]
+
 /** The slam an event makes, if it adds Mult or multiplies it. */
 function slamOf(event: RunEvent): Slam | undefined {
   switch (event.type) {
@@ -311,6 +326,48 @@ const escalate = (
 export function countedUp({ to, duration, power }: CountUp, elapsed: number) {
   const progress = duration > 0 ? Math.min(1, elapsed / duration) : 1
   return Math.round(to * progress ** power)
+}
+
+/**
+ * The moment a chosen Scrapbook page flies into the Scrapbook, before the
+ * Shop opens: what sounds, how the page travels, and when it lands.
+ */
+export type PageMoment = {
+  cues: Cue[]
+  /**
+   * The page's flight into the Scrapbook, arcing `arc` high and turning
+   * `spin` degrees; null under Reduced motion, when it fades where it is.
+   */
+  flight: { arc: number; spin: number } | null
+  /** When the page reaches the Scrapbook, in ms from the moment's start... */
+  lands: number
+  /** ...bursting this many sparkles, and showing its Gathering's new level. */
+  particles: number
+  label: string
+  /** How long the whole moment lasts, in ms. */
+  duration: number
+}
+
+/**
+ * Turns a chosen Scrapbook page into the moment the scene plays out. Reduced
+ * motion keeps its sound and words, the sparkles only softened.
+ */
+export function choreographPage(
+  { gathering, level }: Extract<RunEvent, { type: "pageChosen" }>,
+  { reducedMotion }: Pick<ChoreographySettings, "reducedMotion">,
+  config: EffectConfig = effectConfig
+): PageMoment {
+  const { flyMs, arc, spin, particles, holdMs } = config.page
+  return {
+    cues: [{ name: "pageChosen" }],
+    flight: reducedMotion ? null : { arc, spin },
+    lands: flyMs,
+    particles: reducedMotion
+      ? Math.ceil(particles * config.reducedParticles)
+      : particles,
+    label: `${gatheringById(gathering).name} Lv ${level}`,
+    duration: flyMs + holdMs
+  }
 }
 
 /** The cues that tell how a Play ended: its Score, then its Night's end. */

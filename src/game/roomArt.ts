@@ -347,6 +347,42 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.lineStyle(2, INK, 1).strokeCircle(12, 12, 11)
     g.fillStyle(0xfaf3e6, 1).fillCircle(12, 12, 5.5)
     g.lineStyle(1.5, INK, 1).strokeCircle(12, 12, 5.5)
+  },
+  scrapbook: (g) => {
+    // Coloured page edges beneath a cloth cover, a ribbon trailing out.
+    g.fillStyle(0xd46a4f, 1).fillRect(34, 26, 5, 12)
+    g.fillStyle(0xfdf6ea, 1).fillRoundedRect(6, 14, 44, 20, 3)
+    g.fillStyle(0xa9c8ee, 1).fillRect(8, 30, 40, 2)
+    g.fillStyle(0xf2c6c2, 1).fillRect(8, 26, 40, 2)
+    g.lineStyle(2, INK, 1).strokeRoundedRect(6, 14, 44, 20, 3)
+    g.fillStyle(0x8a5a3c, 1).fillRoundedRect(3, 4, 46, 24, 5)
+    g.lineStyle(2.5, INK, 1).strokeRoundedRect(3, 4, 46, 24, 5)
+    // A paw print on the cover.
+    g.fillStyle(0xf3dfc1, 1).fillEllipse(26, 18, 9, 7)
+    for (const [x, y] of [
+      [20, 12],
+      [24, 10],
+      [28, 10],
+      [32, 12]
+    ])
+      g.fillCircle(x, y, 1.8)
+  },
+  scrapbookOpen: (g) => {
+    g.fillStyle(0x8a5a3c, 1).fillRoundedRect(1.5, 1.5, 373, 247, 14)
+    g.lineStyle(3, INK, 1).strokeRoundedRect(1.5, 1.5, 373, 247, 14)
+    // The cream pages, their corners taped down.
+    g.fillStyle(0xf3e3c8, 1).fillRoundedRect(10, 10, 356, 230, 8)
+    g.lineStyle(2, INK, 0.6).strokeRoundedRect(10, 10, 356, 230, 8)
+    g.fillStyle(0xa9c8ee, 0.8)
+      .fillRect(6, 14, 22, 8)
+      .fillRect(348, 14, 22, 8)
+      .fillRect(6, 228, 22, 8)
+      .fillRect(348, 228, 22, 8)
+  },
+  scrapbookPage: (g) => {
+    g.fillStyle(0xfdf6ea, 1).fillRoundedRect(1, 1, 110, 184, 6)
+    g.fillStyle(0xf2c6c2, 0.9).fillRect(36, 0, 40, 9)
+    g.lineStyle(2, INK, 1).strokeRoundedRect(1, 1, 110, 184, 6)
   }
 }
 

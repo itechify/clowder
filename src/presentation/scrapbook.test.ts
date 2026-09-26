@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { defaultConfig, previewPlay, type Run, startRun } from "../engine"
 import { accepted, runWithCouch } from "../engine/testing"
-import { gatheringLabel, scrapbookChoice } from "./scrapbook"
+import { gatheringLabel, scrapbookChoice, scrapbookView } from "./scrapbook"
 
 /** A Run with its first Night cleared and the Scrapbook open. */
 function choosing(seed = 1): Run {
@@ -109,5 +109,52 @@ describe("a Gathering's label", () => {
     const [napClub] = previewPlay(run).gatherings
 
     expect(gatheringLabel(napClub)).toBe("Nap Club Lv 1 · +3 Mult")
+  })
+})
+
+describe("the Scrapbook", () => {
+  it("lists every Gathering with its level and requirement, hiding undiscovered ones", () => {
+    const run: Run = {
+      ...startRun(1),
+      discoveredGatherings: ["fullSofa", "napClub"],
+      gatheringLevels: { ...startRun(1).gatheringLevels, napClub: 3 }
+    }
+
+    expect(scrapbookView(run)).toEqual({
+      title: "Scrapbook",
+      entries: [
+        { discovered: false, name: "???", requirement: "???" },
+        {
+          discovered: true,
+          gathering: "napClub",
+          name: "Nap Club",
+          requirement: "Three Sleepy Cats side by side",
+          level: 3,
+          label: { level: "Lv 3", adds: "+7 Mult +20 Purr" }
+        },
+        { discovered: false, name: "???", requirement: "???" },
+        { discovered: false, name: "???", requirement: "???" },
+        {
+          discovered: true,
+          gathering: "fullSofa",
+          name: "Full Sofa",
+          requirement: "A Cat on every Seat",
+          level: 1,
+          label: { level: "Lv 1", adds: "+1 Mult" }
+        }
+      ]
+    })
+  })
+
+  it("hides every Gathering at the start of a Run", () => {
+    const { entries } = scrapbookView(startRun(1))
+
+    expect(entries.map((entry) => entry.name)).toEqual([
+      "???",
+      "???",
+      "???",
+      "???",
+      "???"
+    ])
   })
 })

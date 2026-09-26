@@ -4,6 +4,7 @@ import { accepted, runWithCouch } from "../engine/testing"
 import {
   type ChoreographySettings,
   choreograph,
+  choreographPage,
   countedUp,
   type Play,
   skippedCues
@@ -74,6 +75,36 @@ describe("a Play's sound cues", () => {
       { name: "scoreLanded" },
       { name: "nightLost" }
     ])
+  })
+})
+
+describe("a Play's Gatherings", () => {
+  const gatheringStep = (...args: Parameters<typeof runWithCouch>) =>
+    choreograph(playOf(...args), plain).steps.find(
+      (step) => step.event.type === "gatheringActivated"
+    )!
+
+  it("show the Purr and Mult a levelled Gathering adds, as its Purr joins the tally", () => {
+    const step = gatheringStep(
+      ["orange sleepy", "black sleepy", "white sleepy"],
+      { gatheringLevels: { napClub: 3 } }
+    )
+
+    expect(step.pops).toEqual([
+      { label: "+7 Mult", tone: "mult" },
+      { label: "+20 Purr", tone: "purr" }
+    ])
+    expect(step.event).toMatchObject({ tally: { purr: 20, mult: 8 } })
+  })
+
+  it("show only the Mult a Gathering adds at level 1", () => {
+    const step = gatheringStep([
+      "orange sleepy",
+      "black sleepy",
+      "white sleepy"
+    ])
+
+    expect(step.pops).toEqual([{ label: "+3 Mult", tone: "mult" }])
   })
 })
 
@@ -546,5 +577,44 @@ describe("House Cats' triggered poses", () => {
     expect(script.poses.map(({ pose }) => pose)).toEqual([
       "houseCat/freya/triggered"
     ])
+  })
+})
+
+describe("a chosen Scrapbook page", () => {
+  const chosen = {
+    type: "pageChosen",
+    gathering: "napClub",
+    level: 3,
+    discovered: false
+  } as const
+  const tuned: EffectConfig = {
+    ...effectConfig,
+    page: { flyMs: 600, arc: 80, spin: 20, particles: 10, holdMs: 400 }
+  }
+
+  it("flies into the Scrapbook with a flourish, showing the Gathering's new level", () => {
+    expect(choreographPage(chosen, plain, tuned)).toEqual({
+      cues: [{ name: "pageChosen" }],
+      flight: { arc: 80, spin: 20 },
+      lands: 600,
+      particles: 10,
+      label: "Nap Club Lv 3",
+      duration: 1000
+    })
+  })
+
+  it("fades into the Scrapbook under Reduced motion, its sparkles softened", () => {
+    const moment = choreographPage(
+      chosen,
+      { ...plain, reducedMotion: true },
+      tuned
+    )
+
+    expect(moment).toMatchObject({
+      cues: [{ name: "pageChosen" }],
+      flight: null,
+      label: "Nap Club Lv 3",
+      particles: 3
+    })
   })
 })
