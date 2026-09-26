@@ -96,6 +96,15 @@ describe("the art manifest", () => {
         "room/shelf",
         "room/treatJar",
         "room/disasterSign",
+        // The Shop, by day.
+        "room/dayWindow",
+        "room/sun",
+        "room/sunbeam",
+        "room/stormClouds",
+        "room/frontDoor",
+        "room/disasterNote",
+        "room/offerTag",
+        "room/countBadge",
         "room/moon/1",
         "room/moon/9"
       ])

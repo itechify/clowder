@@ -1,4 +1,5 @@
 import type { CatId } from "../engine"
+import type { ShopView } from "../presentation/shop"
 import type { Step } from "./choreography"
 
 /** How many recent effects the log keeps, for end-to-end tests. */
@@ -12,6 +13,12 @@ export type PlayedEffect = Pick<
 
 /** The scenes that show a Run, by their Phaser keys. */
 export type SceneKey = "couch" | "shop"
+
+/**
+ * The room turning from night to day as the Shop opens, or back as it closes;
+ * a plain crossfade under Reduced motion.
+ */
+export type Transition = { to: "day" | "night"; crossfade: boolean }
 
 /**
  * What the scene is in the middle of showing, for the shell and end-to-end
@@ -30,6 +37,16 @@ class Presentation {
    * shell follows.
    */
   seatingOrder: CatId[] = []
+  /**
+   * What the player has open in the Shop: the pile fanned out, and the
+   * doorway as last shown (see the Shop's staging). Not a change the shell
+   * follows, nor are the two below.
+   */
+  shop: ShopView = {}
+  /** The Shop's transition playing out, if any. */
+  transition: Transition | null = null
+  /** How the storm clouds in the Shop's window move, while they show. */
+  clouds: "drifting" | "still" | null = null
   /**
    * The effects of the scoring steps played lately, in order; not a change
    * the shell follows.

@@ -2,7 +2,7 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**91 of 91 images delivered; 0 still on fallback.**
+**91 of 99 images delivered; 8 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
@@ -10,6 +10,7 @@ Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm b
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
 | 4. The room, badges, UI furniture, and Gathering overlays | 38 of 38 |
+| 5. The Shop, the living room by day | 0 of 8 |
 
 ## How to generate and deliver
 
@@ -1306,4 +1307,119 @@ A round, translucent pale-blue bubble around one Cat: just the bubble, see-throu
 
 ```text
 A warm golden glow tracing the outline of a whole sofa, as a rounded rectangle of light, to lay over the sofa exactly. Transparent background. Front-on, with no perspective. It will be resized to exactly 1170×498 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+## 5. The Shop, the living room by day
+
+- [ ] `art/raw/room/dayWindow.png`
+- [ ] `art/raw/room/sun.png`
+- [ ] `art/raw/room/sunbeam.png`
+- [ ] `art/raw/room/stormClouds.png`
+- [ ] `art/raw/room/frontDoor.png`
+- [ ] `art/raw/room/disasterNote.png`
+- [ ] `art/raw/room/offerTag.png`
+- [ ] `art/raw/room/countBadge.png`
+
+### Day window: `art/raw/room/dayWindow.png`
+
+**On fallback.**
+
+- Key: `room/dayWindow`
+- Size: 516×240
+- Anchor: (258, 120): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+The living room's window, the same as by night: its cream-painted frame and single vertical mullion, now showing a bright, clear blue daytime sky with a few small soft white clouds low down. No sun: that is a separate image. Transparent background. Front-on, with no perspective. It will be resized to exactly 516×240 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Sun: `art/raw/room/sun.png`
+
+**On fallback.**
+
+- Key: `room/sun`
+- Size: 108×108
+- Anchor: (54, 54): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A small, round, friendly sun glowing warm golden yellow, with a soft pale halo and no face. Transparent background. Front-on, with no perspective. It will be resized to exactly 108×108 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Sunbeam: `art/raw/room/sunbeam.png`
+
+**On fallback.**
+
+- Key: `room/sunbeam`
+- Size: 900×360
+- Anchor: (450, 180): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A soft, slanting beam of warm golden daylight lying across a wooden floor from an open doorway, as a pale translucent band, brightest in the middle and fading at its edges, with nothing else in it. Transparent background. It will be resized to exactly 900×360 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Storm clouds: `art/raw/room/stormClouds.png`
+
+**On fallback.**
+
+- Key: `room/stormClouds`
+- Size: 450×132
+- Anchor: (225, 66): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A small bank of dark, puffy slate-gray storm clouds with a little yellow zigzag of lightning beneath, as seen through a window, clearly ominous but still cute. Transparent background. Front-on, with no perspective. It will be resized to exactly 450×132 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Front door: `art/raw/room/frontDoor.png`
+
+**On fallback.**
+
+- Key: `room/frontDoor`
+- Size: 1116×300
+- Anchor: (558, 300): bottom centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is much wider than it is tall. Keep the middle of the doorway uncluttered: four visitors will stand in it. Transparent background. Front-on, with no perspective. It will be resized to exactly 1116×300 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Disaster note: `art/raw/room/disasterNote.png`
+
+**On fallback.**
+
+- Key: `room/disasterNote`
+- Size: 492×186
+- Anchor: (246, 0): top centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A brick-red paper note pinned to a wall with one gold drawing pin at its top centre, a corner curling slightly, with a cream inner border. Leave it blank: the game writes the coming trouble on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 492×186 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Offer tag: `art/raw/room/offerTag.png`
+
+**On fallback.**
+
+- Key: `room/offerTag`
+- Size: 258×156
+- Anchor: (129, 0): top centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A cream card luggage tag hanging from a short string at its top centre, with a small punched hole and softly rounded corners. Leave it blank: the game writes a name and more on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 258×156 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Count badge: `art/raw/room/countBadge.png`
+
+**On fallback.**
+
+- Key: `room/countBadge`
+- Size: 96×60
+- Anchor: (48, 30): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+A small, rounded cream pill-shaped badge with a bold dark outline. Leave it blank: the game writes a count on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 96×60 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room by day. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```

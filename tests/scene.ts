@@ -1,5 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 import type {} from "../src/game/debugHook"
+import { fanX } from "../src/game/layout"
+import type { PileSpot } from "../src/presentation/shop"
 
 /**
  * Waits for the debug hook, and for the Run to show once the fonts have
@@ -66,11 +68,61 @@ export const layout = {
 
 /** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */
 export const shop = {
-  /** The button on the `i`th offer card, Cats first, then House Cats. */
-  offer: (i: number): [number, number] => [56 + i * 92.5, 286],
+  /** The Adopt or Recruit button of the `i`th doorway offer, Cats first. */
+  offer: (i: number): [number, number] => [63.75 + i * 87.5, 566],
   /** A House Cat at the `position`th position on the Shelf. */
-  shelf: (position: number): [number, number] => [64 + position * 87.5, 422],
-  reroll: [285, 338] as [number, number],
-  rehome: [105, 790] as [number, number],
-  leave: [285, 790] as [number, number]
+  shelf: (position: number): [number, number] => [64 + position * 87.5, 168],
+  /** A Kind's pile, at its spot in the Shop's staging. */
+  pile: (spot: PileSpot): [number, number] =>
+    spot.on === "couch"
+      ? [55 + spot.seat * 70, 340]
+      : spot.on === "rug"
+        ? spot.row === "back"
+          ? [90 + spot.position * 84, 624]
+          : [48 + spot.position * 84, 702]
+        : [[58, 104][spot.position], 126],
+  /** The `i`th of `count` Cats fanned out from the pile at `spot`. */
+  fanned: (spot: PileSpot, count: number, i: number): [number, number] => {
+    const [x, y] = shop.pile(spot)
+    const xs = fanX(count, x, { left: 16, right: 374, step: 62 })
+    return spot.on === "sill" ? [xs[i], y + 126] : [xs[i], y - 94]
+  },
+  reroll: [50, 800] as [number, number],
+  rehome: [142, 800] as [number, number],
+  nightfall: [291, 800] as [number, number],
+  /** Open wall beside the window, clear of anything that answers a tap. */
+  wall: [300, 110] as [number, number]
+}
+
+/**
+ * Plays a seeded Run's first Nights by the debug hook until the Shop opens,
+ * skipping the clearing Play's sequence; resolves once the Shop shows, as
+ * dawn begins to break.
+ */
+export async function toShop(page: Page, seed: number) {
+  await boot(page, seed)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (!run().shop) {
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+  })
+  await tap(page, ...layout.wall)
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
+      timeout: 40_000
+    })
+    .toEqual(["shop"])
+}
+
+/** Waits for the Shop's dawn, or any transition, to finish playing out. */
+export async function settled(page: Page) {
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.transition()))
+    .toBeNull()
 }

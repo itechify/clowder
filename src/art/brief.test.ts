@@ -14,7 +14,7 @@ describe("the art brief", () => {
     }
   })
 
-  it("groups the images into the four delivery batches", () => {
+  it("groups the images into the five delivery batches", () => {
     const kinds = (batch: (typeof batches)[number]) =>
       new Set(
         batch.entries.flatMap(
@@ -22,8 +22,8 @@ describe("the art brief", () => {
             artManifest.find(({ key }) => key === entry.key)?.kind ?? []
         )
       )
-    const [style, cats, houseCats, room] = batches
-    expect(batches).toHaveLength(4)
+    const [style, cats, houseCats, room, shop] = batches
+    expect(batches).toHaveLength(5)
 
     // The style reference sheet, then one finished hero Cat in that style.
     expect(style.title).toMatch(/style reference/i)
@@ -42,6 +42,23 @@ describe("the art brief", () => {
 
     expect(room.title).toMatch(/room.*badges.*UI.*Gathering/i)
     expect(kinds(room)).toEqual(new Set(["room", "badge", "ui", "gathering"]))
+
+    // The living room by day, delivered after the room it lights.
+    expect(shop.title).toMatch(/Shop/)
+    expect(shop.entries.map((entry) => entry.key).sort()).toEqual(
+      [
+        "room/countBadge",
+        "room/dayWindow",
+        "room/disasterNote",
+        "room/frontDoor",
+        "room/offerTag",
+        "room/stormClouds",
+        "room/sun",
+        "room/sunbeam"
+      ].sort()
+    )
+    for (const entry of room.entries)
+      expect(shop.entries.map(({ key }) => key)).not.toContain(entry.key)
   })
 
   it("gives each image its canvas size and where its anchor sits", () => {
@@ -128,6 +145,17 @@ describe("the art brief", () => {
       expect(prompt("houseCat/bigLoaf/triggered")).toMatch(/nudg/i)
       expect(prompt("houseCat/skadi/bellyUp")).toMatch(/belly/i)
       expect(prompt("houseCat/freya/warming3")).toMatch(/affectionate/i)
+    })
+
+    it("sets the Shop's pieces by day, and the rest of the room at night", () => {
+      for (const entry of batches[4].entries) {
+        expect(entry.prompt).toMatch(/by day/)
+        expect(entry.prompt).not.toMatch(/at night/)
+      }
+      expect(prompt("room/window")).toMatch(/at night/)
+      expect(prompt("room/dayWindow")).toMatch(/sky/i)
+      expect(prompt("room/stormClouds")).toMatch(/storm/i)
+      expect(prompt("room/frontDoor")).toMatch(/door/i)
     })
 
     it("draws Skadi and Freya from their photos", () => {

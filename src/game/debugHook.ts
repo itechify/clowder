@@ -8,9 +8,14 @@ import {
   type Run,
   type ScoreBreakdown
 } from "../engine"
+import { type ShopStaging, stageShop } from "../presentation/shop"
 import { type Staging, stage } from "../presentation/staging"
 import { artTexture, delivered } from "./art"
-import { type PlayedEffect, presentation } from "./presentation"
+import {
+  type PlayedEffect,
+  presentation,
+  type Transition
+} from "./presentation"
 import { session } from "./session"
 
 export type DebugHook = {
@@ -28,6 +33,15 @@ export type DebugHook = {
   texts: () => string[]
   /** What the living room shows for the Run as it stands (see staging). */
   staging: () => Staging
+  /**
+   * What the Shop shows, while it is open: the Kinds' piles, the pile fanned
+   * out, the doorway's offers, and the Disaster warning (see its staging).
+   */
+  shop: () => ShopStaging | null
+  /** The Shop's transition between night and day playing out, if any. */
+  transition: () => Transition | null
+  /** How the Shop's storm clouds move, while they show. */
+  clouds: () => "drifting" | "still" | null
   /** Every sound cue the game has asked for, in order. */
   cues: () => Cue[]
   /** The effects of every scoring step the scene has played, in order. */
@@ -64,6 +78,10 @@ export function installDebugHook(game: Phaser.Game) {
         .getScenes(true)
         .flatMap((scene) => textsIn(scene.children.list)),
     staging: () => stage(session.run, presentation.seatingOrder),
+    shop: () =>
+      session.run.shop ? stageShop(session.run, presentation.shop) : null,
+    transition: () => presentation.transition,
+    clouds: () => presentation.clouds,
     cues: () => [...sound.log],
     effects: () => [...presentation.effects],
     audio: () => ({ unlocked: sound.unlocked, theme: sound.theme })

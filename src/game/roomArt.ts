@@ -15,6 +15,8 @@ type Paint = (g: Graphics, ctx: CanvasRenderingContext2D) => void
 
 /** The night sky through the window, which the moon's shadow matches. */
 const NIGHT_SKY = 0x2d3561
+/** The sky by day, through the window and the open front door. */
+const DAY_SKY = 0x9fd3f0
 /** The bold dark-brown outline round everything drawn in the game's style. */
 export const INK = 0x3b2a22
 /** The red of a Disaster, wherever one is announced. */
@@ -37,6 +39,17 @@ function bracketsX(width: number) {
   for (let position = 1; position < xs.length; position += 2)
     brackets.push((xs[position - 1] + xs[position]) / 2 - 4 - left)
   return brackets
+}
+
+type Point = [x: number, y: number]
+
+/** Traces a closed outline through `points`, ready to fill or stroke. */
+function trace(g: Graphics, points: readonly Point[]) {
+  g.beginPath()
+  for (const [i, [x, y]] of points.entries())
+    if (i === 0) g.moveTo(x, y)
+    else g.lineTo(x, y)
+  return g.closePath()
 }
 
 /** Waxing across the Run: the moon's shadow slides off until it is full. */
@@ -170,6 +183,106 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.lineStyle(2, 0xf0b28c, 1).strokeRoundedRect(8, 21, 148, 34, 8)
     g.lineStyle(3, INK, 1).strokeRoundedRect(3, 16, 158, 44, 12)
     g.fillStyle(0x5e3a25, 1).fillCircle(82, 5, 3.5)
+  },
+  dayWindow: (g) => {
+    g.fillStyle(DAY_SKY, 1).fillRoundedRect(6, 5, 160, 70, 8)
+    // A few soft clouds low in a clear sky.
+    g.fillStyle(0xffffff, 0.8)
+      .fillEllipse(40, 58, 34, 12)
+      .fillEllipse(54, 54, 22, 12)
+      .fillEllipse(128, 62, 30, 10)
+    g.lineStyle(6, 0xfaf3e6, 1).strokeRoundedRect(6, 5, 160, 70, 8)
+    g.lineBetween(86, 5, 86, 75)
+  },
+  sun: (g) => {
+    g.fillStyle(0xfff1b0, 0.5).fillCircle(18, 18, 17)
+    g.fillStyle(0xf6c453, 1).fillCircle(18, 18, 12)
+    g.fillStyle(0xfff1b0, 1).fillCircle(14, 14, 4)
+    g.lineStyle(2, 0xe8893a, 1).strokeCircle(18, 18, 12)
+  },
+  sunbeam: (g) => {
+    // Daylight slanting in from the front door, softest at its edges.
+    trace(g.fillStyle(0xfff1b0, 0.14), [
+      [40, 0],
+      [260, 0],
+      [300, 120],
+      [0, 120]
+    ]).fillPath()
+    trace(g.fillStyle(0xfff1b0, 0.16), [
+      [80, 0],
+      [220, 0],
+      [250, 120],
+      [50, 120]
+    ]).fillPath()
+  },
+  stormClouds: (g) => {
+    for (const [x, y, w, h, shade] of [
+      [38, 26, 60, 28, 0x6b6f86],
+      [72, 18, 64, 30, 0x7d8198],
+      [112, 26, 62, 26, 0x6b6f86],
+      [58, 30, 70, 20, 0x5a5d73],
+      [100, 32, 72, 18, 0x5a5d73]
+    ])
+      g.fillStyle(shade, 1).fillEllipse(x, y, w, h)
+    g.lineStyle(2, INK, 0.6).strokeEllipse(72, 18, 64, 30)
+    // A flash of lightning beneath.
+    trace(g.fillStyle(0xf6d743, 1), [
+      [84, 30],
+      [94, 30],
+      [88, 37],
+      [95, 37],
+      [80, 44],
+      [85, 36],
+      [79, 36]
+    ]).fillPath()
+  },
+  frontDoor: (g) => {
+    // A wide doorway onto a sunny day, its two doors swung open either side.
+    g.fillStyle(DAY_SKY, 1).fillRect(34, 6, 304, 70)
+    g.fillStyle(0x9ccf7a, 1).fillRect(34, 58, 304, 34)
+    trace(g.fillStyle(0xe9d8b4, 1), [
+      [160, 58],
+      [212, 58],
+      [250, 92],
+      [122, 92]
+    ]).fillPath()
+    g.fillStyle(0xfff1b0, 0.35).fillRect(34, 6, 304, 86)
+    g.lineStyle(6, 0xfaf3e6, 1).strokeRect(34, 6, 304, 90)
+    for (const [hinge, edge] of [
+      [34, 4],
+      [338, 368]
+    ]) {
+      const door: Point[] = [
+        [hinge, 6],
+        [edge, 0],
+        [edge, 100],
+        [hinge, 96]
+      ]
+      trace(g.fillStyle(0x7a5a3c, 1), door).fillPath()
+      trace(g.lineStyle(2.5, INK, 1), door).strokePath()
+    }
+    // A doormat on the threshold.
+    g.fillStyle(0xc98a4b, 1).fillRoundedRect(136, 84, 100, 14, 4)
+    g.lineStyle(2, INK, 1).strokeRoundedRect(136, 84, 100, 14, 4)
+  },
+  disasterNote: (g) => {
+    // A red note pinned to the wall, a corner curling.
+    g.fillStyle(DISASTER_RED, 1).fillRoundedRect(4, 8, 156, 50, 6)
+    g.lineStyle(2, 0xf0b28c, 1).strokeRoundedRect(9, 13, 146, 40, 4)
+    g.lineStyle(3, INK, 1).strokeRoundedRect(4, 8, 156, 50, 6)
+    g.fillStyle(0xf6c453, 1).fillCircle(82, 9, 4.5)
+    g.lineStyle(2, INK, 1).strokeCircle(82, 9, 4.5)
+  },
+  offerTag: (g) => {
+    // A cream luggage tag hung from a string, a hole at its top.
+    g.lineStyle(1.5, INK, 1).lineBetween(43, 0, 43, 6)
+    g.fillStyle(0xfdf6ea, 1).fillRoundedRect(2, 5, 82, 45, 7)
+    g.lineStyle(2.5, INK, 1).strokeRoundedRect(2, 5, 82, 45, 7)
+    g.fillStyle(0xe9cfa9, 1).fillCircle(43, 10, 2.5)
+  },
+  countBadge: (g) => {
+    g.fillStyle(0xfdf6ea, 1).fillRoundedRect(1.5, 1.5, 29, 17, 8.5)
+    g.lineStyle(2.5, INK, 1).strokeRoundedRect(1.5, 1.5, 29, 17, 8.5)
   }
 }
 

@@ -69,11 +69,13 @@ export type BriefEntry = {
 /** A set of images handed over together, in the order they are generated. */
 export type Batch = { title: string; entries: BriefEntry[] }
 
-const STYLE =
+/** The style direction, for the living room at night or, in the Shop, by day. */
+const style = (when: "at night" | "by day") =>
   "Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold " +
   "dark-brown outlines, chunky rounded shapes, flat cel shading with one " +
   "soft shadow tone, and a saturated, cute palette, for a cozy living room " +
-  "at night."
+  `${when}.`
+const STYLE = style("at night")
 const MATCH =
   "Match the attached style reference sheet exactly: its outline weight, " +
   "palette, shading, and proportions."
@@ -237,8 +239,37 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   treatJar:
     "A glass jar full of fish-shaped orange cat treats, with a red lid and no label: the game writes the count beside it.",
   disasterSign:
-    "A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it."
+    "A warning sign hung from a single nail by a string: a wide, rounded wooden plaque painted brick red, with a cream border, hanging from the top centre. Leave the plaque blank: the game writes tonight's trouble on it.",
+  dayWindow:
+    "The living room's window, the same as by night: its cream-painted frame and single vertical mullion, now showing a bright, clear blue daytime sky with a few small soft white clouds low down. No sun: that is a separate image.",
+  sun: "A small, round, friendly sun glowing warm golden yellow, with a soft pale halo and no face.",
+  sunbeam:
+    "A soft, slanting beam of warm golden daylight lying across a wooden floor from an open doorway, as a pale translucent band, brightest in the middle and fading at its edges, with nothing else in it.",
+  stormClouds:
+    "A small bank of dark, puffy slate-gray storm clouds with a little yellow zigzag of lightning beneath, as seen through a window, clearly ominous but still cute.",
+  frontDoor:
+    "A wide front doorway seen straight on from inside, with its two wooden doors swung wide open to either side, bright daylight, blue sky, a green lawn, and a sandy path beyond, and a small woven doormat on the threshold. It is much wider than it is tall. Keep the middle of the doorway uncluttered: four visitors will stand in it.",
+  disasterNote:
+    "A brick-red paper note pinned to a wall with one gold drawing pin at its top centre, a corner curling slightly, with a cream inner border. Leave it blank: the game writes the coming trouble on it.",
+  offerTag:
+    "A cream card luggage tag hanging from a short string at its top centre, with a small punched hole and softly rounded corners. Leave it blank: the game writes a name and more on it.",
+  countBadge:
+    "A small, rounded cream pill-shaped badge with a bold dark outline. Leave it blank: the game writes a count on it."
 }
+
+/** The pieces of the room seen only in the Shop, by day. */
+const shopPieces = new Set<RoomPiece>([
+  "dayWindow",
+  "sun",
+  "sunbeam",
+  "stormClouds",
+  "frontDoor",
+  "disasterNote",
+  "offerTag",
+  "countBadge"
+])
+const inShop = (entry: ArtEntry) =>
+  entry.kind === "room" && shopPieces.has(entry.piece)
 
 /** Each UI piece, ready (to press, or still to spend) and not. */
 const uiLooks: Record<UiPiece, { ready: string; notReady: string }> = {
@@ -307,7 +338,7 @@ const capitalised = (word: string) => word[0].toUpperCase() + word.slice(1)
 const piecePrompt = (
   { canvas }: ArtEntry,
   look: string,
-  { opaque = false, onFloor = false } = {}
+  { opaque = false, onFloor = false, byDay = false } = {}
 ) =>
   [
     look,
@@ -315,7 +346,7 @@ const piecePrompt = (
     onFloor ? "" : "Front-on, with no perspective.",
     `It will be resized to exactly ${canvas.width}×${canvas.height} pixels, so compose for that shape.`,
     NO_WORDS,
-    STYLE,
+    byDay ? style("by day") : STYLE,
     MATCH
   ]
     .filter(Boolean)
@@ -385,7 +416,8 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
         ),
         prompt: piecePrompt(entry, roomLooks[entry.piece], {
           opaque: entry.piece === "wall",
-          onFloor: entry.piece === "rug"
+          onFloor: entry.piece === "rug" || entry.piece === "sunbeam",
+          byDay: inShop(entry)
         })
       }
     case "ui": {
@@ -466,7 +498,8 @@ const styleSheet: BriefEntry = {
 
 export function briefBatches(manifest: readonly ArtEntry[]): Batch[] {
   const hero = manifest.filter((entry) => entry.key === HERO)
-  const rest = manifest.filter((entry) => entry.key !== HERO)
+  const shop = manifest.filter(inShop)
+  const rest = manifest.filter((entry) => entry.key !== HERO && !inShop(entry))
   const of = (...kinds: ArtEntry["kind"][]) =>
     rest.filter((entry) => kinds.includes(entry.kind)).map(fromManifest)
   return [
@@ -479,6 +512,10 @@ export function briefBatches(manifest: readonly ArtEntry[]): Batch[] {
     {
       title: "The room, badges, UI furniture, and Gathering overlays",
       entries: of("room", "badge", "ui", "gathering")
+    },
+    {
+      title: "The Shop, the living room by day",
+      entries: shop.map(fromManifest)
     }
   ]
 }

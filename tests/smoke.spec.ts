@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { houseCat } from "../src/engine"
-import { boot, layout, ready, shop, tap } from "./scene"
+import { boot, layout, ready, settled, shop, tap, toShop } from "./scene"
 
 test("boots into Night 1 with a seeded Hand of 8", async ({ page }) => {
   await boot(page, 7)
@@ -94,43 +94,46 @@ test("redraws Cats chosen by tapping in the scene", async ({ page }) => {
 
 test("shops between Nights by tapping in the scene", async ({ page }) => {
   test.setTimeout(60_000)
-  await boot(page, 1)
-  await page.evaluate(() => {
-    const { run, apply } = window.__clowder!
-    while (!run().shop) {
-      run()
-        .night.hand.slice(0, 5)
-        .forEach((cat, seat) => {
-          apply({ type: "place", cat, seat })
-        })
-      apply({ type: "play" })
-    }
-  })
-  // The cleared Night celebrates on the Couch, then the Shop opens; headless
-  // frame rates slow the scene's clock, so allow it a while.
-  await expect
-    .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
-      timeout: 40_000
-    })
-    .toEqual(["shop"])
+  await toShop(page, 1)
+  await settled(page)
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.treats).toBe(5)
   const [offer] = before.shop!.catOffers
+  const staged = () => page.evaluate(() => window.__clowder!.shop()!)
 
-  // Adopt the first offer, pick out and Rehome a Roster Cat, then Reroll
-  // (see ShopScene's layout).
+  // Adopt the first offer, which leaves its spot in the doorway empty.
   await tap(page, ...shop.offer(0))
-  await tap(page, 43, 540)
+  const { doorway, piles } = await staged()
+  expect(doorway.map(({ offer }) => offer?.tag.name ?? null)).toEqual([
+    null,
+    ...doorway.slice(1).map(({ offer }) => offer!.tag.name)
+  ])
+
+  // Open the first Kind's pile, pick out its first Cat, and Rehome it.
+  const [pile] = piles
+  await tap(page, ...shop.pile(pile.spot))
+  const { fan } = await staged()
+  expect(fan!.cats).toHaveLength(pile.count)
+  const [chosen] = fan!.cats
+  await tap(page, ...shop.fanned(pile.spot, fan!.cats.length, 0))
+  expect(await page.evaluate(() => window.__clowder!.texts())).toContain(
+    `Rehome ${chosen.name}?`
+  )
   await tap(page, ...shop.rehome)
   await tap(page, ...shop.reroll)
 
   const after = await page.evaluate(() => window.__clowder!.run())
   expect(after.treats).toBe(0)
   expect(after.roster.map((cat) => cat.id)).toContain(offer.id)
+  expect(after.roster.map((cat) => cat.id)).not.toContain(chosen.cat)
   expect(after.roster).toHaveLength(30)
   expect(after.shop!.rerollPrice).toBe(2)
+  // The Reroll replaced every offer.
+  expect((await staged()).doorway.every(({ offer }) => offer !== null)).toBe(
+    true
+  )
 
-  await tap(page, ...shop.leave)
+  await tap(page, ...shop.nightfall)
   await expect
     .poll(() => page.evaluate(() => window.__clowder!.scenes()))
     .toEqual(["couch"])
@@ -147,44 +150,34 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
 }) => {
   test.setTimeout(60_000)
   // This seed's first Shop offers Do Not Touch, for all 5 Treats.
-  await boot(page, 2)
-  await page.evaluate(() => {
-    const { run, apply } = window.__clowder!
-    while (!run().shop) {
-      run()
-        .night.hand.slice(0, 5)
-        .forEach((cat, seat) => {
-          apply({ type: "place", cat, seat })
-        })
-      apply({ type: "play" })
-    }
-  })
-  await tap(page, ...layout.wall)
-  await expect
-    .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
-      timeout: 40_000
-    })
-    .toEqual(["shop"])
+  await toShop(page, 2)
+  await settled(page)
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.treats).toBe(5)
-  const card = before.shop!.houseCatOffers.indexOf("doNotTouch")
-  // Every price is a signed cost, read just after its button's label, beside
-  // the Treats there are to spend.
+  const spot = before.shop!.houseCatOffers.indexOf("doNotTouch")
+  // Every price is a signed cost, read just after its button's label; the
+  // Treats there are to spend are in the treat jar.
   const texts = () => page.evaluate(() => window.__clowder!.texts())
   /** The text drawn right after each of a label's appearances. */
   const after = async (label: string) =>
     (await texts()).filter((_, i, all) => all[i - 1] === label)
-  expect(await texts()).toContain("5 Treats")
+  expect(await texts()).toContain("5")
   expect(await after("Adopt")).toContain("−3")
   expect(await after("Recruit")).toContain("−5")
   expect(await after("Reroll")).toEqual(["−1"])
   expect(await after("Rehome")).toEqual(["−1"])
+  // Each offer is tagged: a Cat with its Kind, a House Cat with its ability.
+  const [cat] = before.shop!.catOffers
+  expect(await after(cat.name)).toContain(
+    `${cat.coat[0].toUpperCase()}${cat.coat.slice(1)} ${cat.personality[0].toUpperCase()}${cat.personality.slice(1)}`
+  )
+  expect(await after("Do Not Touch")).toEqual([houseCat("doNotTouch").ability])
 
-  await tap(page, ...shop.offer(before.shop!.catOffers.length + card))
+  await tap(page, ...shop.offer(before.shop!.catOffers.length + spot))
   const recruited = await page.evaluate(() => window.__clowder!.run())
   expect(recruited.shelf).toEqual(["doNotTouch"])
   expect(recruited.treats).toBe(0)
-  expect(await texts()).toContain("0 Treats")
+  expect(await texts()).toContain("0")
 
   // Rehoming a House Cat refunds Treats: a signed gain.
   await tap(page, ...shop.shelf(0))
@@ -193,6 +186,45 @@ test("recruits and Rehomes a House Cat by tapping in the Shop", async ({
   const rehomed = await page.evaluate(() => window.__clowder!.run())
   expect(rehomed.shelf).toEqual([])
   expect(rehomed.treats).toBe(2)
+})
+
+test("rearranges the Shelf by tapping in the Shop", async ({ page }) => {
+  test.setTimeout(60_000)
+  // This seed Recruits a second House Cat in its second Shop.
+  await boot(page, 14)
+  // Recruits whatever it can afford until the Shelf holds two House Cats.
+  const shelf = await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    while (run().status === "playing") {
+      if (run().shop) {
+        for (const houseCat of run().shop!.houseCatOffers)
+          apply({ type: "recruit", houseCat })
+        if (run().shelf.length >= 2) break
+        apply({ type: "leaveShop" })
+      }
+      run()
+        .night.hand.slice(0, 5)
+        .forEach((cat, seat) => {
+          apply({ type: "place", cat, seat })
+        })
+      apply({ type: "play" })
+    }
+    return run().shelf
+  })
+  expect(shelf).toHaveLength(2)
+  await tap(page, ...layout.wall)
+  await expect
+    .poll(() => page.evaluate(() => window.__clowder!.scenes()), {
+      timeout: 40_000
+    })
+    .toEqual(["shop"])
+  await settled(page)
+
+  // Pick up the first House Cat and put it down in the second position.
+  await tap(page, ...shop.shelf(0))
+  await tap(page, ...shop.shelf(1))
+  const moved = await page.evaluate(() => window.__clowder!.run().shelf)
+  expect(moved).toEqual([shelf[1], shelf[0]])
 })
 
 test("resumes a Run where it was left after a reload", async ({ page }) => {

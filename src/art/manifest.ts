@@ -60,6 +60,15 @@ export type RoomPiece =
   | "shelf"
   | "treatJar"
   | "disasterSign"
+  // The Shop, the living room by day.
+  | "dayWindow"
+  | "sun"
+  | "sunbeam"
+  | "stormClouds"
+  | "frontDoor"
+  | "disasterNote"
+  | "offerTag"
+  | "countBadge"
 export type UiPiece = "playButton" | "redrawButton" | "pip" | "purrMeter"
 
 type Size = { width: number; height: number }
@@ -132,7 +141,15 @@ export const art = {
     rug: "room/rug",
     shelf: "room/shelf",
     treatJar: "room/treatJar",
-    disasterSign: "room/disasterSign"
+    disasterSign: "room/disasterSign",
+    dayWindow: "room/dayWindow",
+    sun: "room/sun",
+    sunbeam: "room/sunbeam",
+    stormClouds: "room/stormClouds",
+    frontDoor: "room/frontDoor",
+    disasterNote: "room/disasterNote",
+    offerTag: "room/offerTag",
+    countBadge: "room/countBadge"
   },
   playButton: (ready: boolean) =>
     `ui/playButton/${ready ? "ready" : "disabled"}`,
@@ -258,6 +275,59 @@ function* entries(): Generator<ArtEntry> {
     piece: "disasterSign",
     key: art.room.disasterSign,
     ...room(164, 62, topCentre)
+  }
+
+  // The Shop is the living room by day. The window by day swaps in for the
+  // window by night, its sun rising where the moon set.
+  yield {
+    kind: "room",
+    piece: "dayWindow",
+    key: art.room.dayWindow,
+    ...room(172, 80)
+  }
+  yield { kind: "room", piece: "sun", key: art.room.sun, ...room(36, 36) }
+  // Daylight from the open front door, lying across the rug.
+  yield {
+    kind: "room",
+    piece: "sunbeam",
+    key: art.room.sunbeam,
+    ...room(300, 120)
+  }
+  // Gathering in the window before a Disaster Night.
+  yield {
+    kind: "room",
+    piece: "stormClouds",
+    key: art.room.stormClouds,
+    ...room(150, 44)
+  }
+  // Standing open between the Couch and the rug, the offers waiting in it.
+  yield {
+    kind: "room",
+    piece: "frontDoor",
+    key: art.room.frontDoor,
+    ...room(372, 100, bottomCentre)
+  }
+  // Pinned to the wall before a Disaster Night; the game writes the
+  // Disaster and its rule on it.
+  yield {
+    kind: "room",
+    piece: "disasterNote",
+    key: art.room.disasterNote,
+    ...room(164, 62, topCentre)
+  }
+  // Hung beneath each offer; the game writes its name and Kind or ability.
+  yield {
+    kind: "room",
+    piece: "offerTag",
+    key: art.room.offerTag,
+    ...room(86, 52, topCentre)
+  }
+  // Beside each Kind's pile; the game writes how many Cats it holds.
+  yield {
+    kind: "room",
+    piece: "countBadge",
+    key: art.room.countBadge,
+    ...room(32, 20)
   }
 
   for (const ready of [true, false]) {
