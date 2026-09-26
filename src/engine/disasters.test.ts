@@ -106,14 +106,14 @@ describe("a Disaster Night's Target", () => {
 
   it("is by default what a normal Night at that point would require", () => {
     expect(targets()).toEqual([
-      300, 480, 768, 1229, 1966, 3146, 5033, 8053, 12885
+      480, 720, 1080, 1620, 2430, 3645, 5468, 8201, 12302
     ])
   })
 
   it("is raised by the configured Disaster Target factor", () => {
-    // Normally 768, 3146, and 12885 on Nights 3, 6, and 9.
-    expect(targets({ disasterTargetFactor: 1.5 })).toEqual([
-      300, 480, 1152, 1229, 1966, 4719, 5033, 8053, 19328
+    // Normally 1080, 3645, and 12302 on Nights 3, 6, and 9.
+    expect(targets({ disasterTargetFactor: 2 })).toEqual([
+      480, 720, 2160, 1620, 2430, 7290, 5468, 8201, 24604
     ])
   })
 })
@@ -199,7 +199,7 @@ describe("the Nights after a Disaster", () => {
 })
 
 describe("clearing a Disaster Night", () => {
-  it("pays 6 Treats, +1 per unused Play", () => {
+  it("pays 3 Treats, +1 per unused Play", () => {
     let run = easyRun()
     const paid: Record<string, unknown> = {}
     while (run.status === "playing") {
@@ -214,10 +214,10 @@ describe("clearing a Disaster Night", () => {
     // Each is cleared on its first Play; The Human Wakes Up has one to spare.
     const award = (forUnusedPlays: number) => ({
       type: "treatsAwarded",
-      forNight: 6,
+      forNight: 3,
       forUnusedPlays,
       forHouseCats: [],
-      treats: 6 + forUnusedPlays
+      treats: 3 + forUnusedPlays
     })
     expect(paid).toEqual({
       vacuum: award(2),

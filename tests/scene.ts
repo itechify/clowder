@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test"
+import { type Config, defaultConfig } from "../src/engine"
 import type {} from "../src/game/debugHook"
 import { fanX } from "../src/game/layout"
 import type { PileSpot } from "../src/presentation/shop"
@@ -13,11 +14,29 @@ export async function ready(page: Page) {
   )
 }
 
-/** Opens the game on a seeded Run, ready to play. */
-export async function boot(page: Page, seed: number) {
+/**
+ * Opens the game on a seeded Run, ready to play; given a config, restarts it
+ * from the same seed with that config changed as given.
+ */
+export async function boot(page: Page, seed: number, config?: Partial<Config>) {
   await page.goto(`/?seed=${seed}`)
   await expect(page.locator("#game canvas")).toBeVisible()
   await ready(page)
+  if (config)
+    await page.evaluate(
+      ({ seed, config }) => window.__clowder!.start(seed, config),
+      { seed, config }
+    )
+}
+
+/**
+ * The first Night that specs shopping with exact Treats were written around,
+ * whatever the game's balance: a Target of 300, and 3 Treats for clearing it,
+ * so 5 when cleared on the first Play.
+ */
+export const firstShop: Partial<Config> = {
+  firstTarget: 300,
+  clearReward: { ...defaultConfig.clearReward, early: 3, perUnusedPlay: 1 }
 }
 
 /** Opens the Settings menu, returning it. */
@@ -105,8 +124,12 @@ export const shop = {
  * opens, skipping the clearing Play's sequence; resolves once the Scrapbook
  * shows.
  */
-export async function toScrapbook(page: Page, seed: number) {
-  await boot(page, seed)
+export async function toScrapbook(
+  page: Page,
+  seed: number,
+  config?: Partial<Config>
+) {
+  await boot(page, seed, config)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     while (!run().scrapbookPages) {
@@ -129,8 +152,12 @@ export async function toScrapbook(page: Page, seed: number) {
  * opens, then chooses its first page by the debug hook too; resolves once the
  * Shop shows, as dawn begins to break.
  */
-export async function toShop(page: Page, seed: number) {
-  await toScrapbook(page, seed)
+export async function toShop(
+  page: Page,
+  seed: number,
+  config?: Partial<Config>
+) {
+  await toScrapbook(page, seed, config)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
     apply({ type: "choosePage", gathering: run().scrapbookPages![0] })

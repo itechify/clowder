@@ -127,13 +127,10 @@ describe("Play", () => {
   })
 
   it("scripts a Night-clearing Play phase by phase, then its Treats and the Scrapbook", () => {
-    const run = runWithCouch([
-      "orange sleepy",
-      "orange sleepy",
-      "black sleepy",
-      null,
-      "white aloof"
-    ])
+    const run = runWithCouch(
+      ["orange sleepy", "orange sleepy", "black sleepy", null, "white aloof"],
+      { config: { firstTarget: 300 } }
+    )
     const [a, b, c, , d] = run.night.couch
     const scored = (seat: number, cat: string | null, bonus: number) => ({
       type: "catScored",
@@ -175,10 +172,10 @@ describe("Play", () => {
       { type: "nightCleared", score: 340 },
       {
         type: "treatsAwarded",
-        forNight: 3,
+        forNight: 2,
         forUnusedPlays: 2,
         forHouseCats: [],
-        treats: 5
+        treats: 4
       },
       { type: "scrapbookOpened", pages: after.scrapbookPages }
     ])

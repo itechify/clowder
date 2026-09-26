@@ -12,7 +12,7 @@ describe("the HUD", () => {
     expect(hud(startRun(7))).toEqual({
       night: { moon: 1, label: "Night 1/9" },
       treats: 0,
-      meter: { filled: 0, label: "0 / 300" },
+      meter: { filled: 0, label: "0 / 480" },
       plays: { left: 3, of: 3 },
       redraws: { left: 2, of: 2 },
       drawPile: 22,
@@ -39,7 +39,7 @@ describe("the HUD", () => {
       plays: { left: 2, of: 3 },
       redraws: { left: 1, of: 2 }
     })
-    expect(hud(run).meter.label).toBe(`${run.night.score} / 300`)
+    expect(hud(run).meter.label).toBe(`${run.night.score} / 480`)
     // A played Cat and a Redrawn one are gone from the Draw pile's count too.
     expect(hud(run).drawPile).toBe(run.night.drawPile.length)
   })
