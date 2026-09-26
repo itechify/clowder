@@ -53,7 +53,7 @@ describe("the doorway", () => {
           name: "The Void",
           title: null,
           about:
-            "After a Play with a Gathering, its Black Cats gain +2 base Purr"
+            "After a Play with a Gathering, its Black Cats gain +5 base Purr"
         },
         action: { type: "recruit", houseCat: "theVoid" },
         price: 6
@@ -65,6 +65,15 @@ describe("the doorway", () => {
         price: 7
       }
     ])
+  })
+
+  it("tags The Void with the growth it is configured to give", () => {
+    const { doorway } = stageShop(inShop(1, { houseCats: { voidGrowth: 7 } }))
+
+    expect(
+      doorway.find(({ offer }) => offer?.tag.name === "The Void")?.offer?.tag
+        .about
+    ).toBe("After a Play with a Gathering, its Black Cats gain +7 base Purr")
   })
 
   it("leaves an empty spot where a Cat was Adopted, the rest keeping theirs", () => {
