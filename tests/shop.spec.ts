@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test"
-import { disasterById, houseCat } from "../src/engine"
+import { defaultConfig, disasterById, houseCat } from "../src/engine"
 import { settled, shop, tap, toShop } from "./scene"
 
 const transition = (page: Page) =>
@@ -13,7 +13,7 @@ test("opens a House Cat's full ability without Recruiting it", async ({
   // This seed's first Shop offers Freya, second of its House Cats.
   await toShop(page, 14)
   await settled(page)
-  const ability = houseCat("freya").ability
+  const ability = houseCat("freya").ability(defaultConfig.houseCats)
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(await texts(page)).not.toContain(ability)
 

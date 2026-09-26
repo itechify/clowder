@@ -11,6 +11,10 @@ export type Config = {
     aloofWithoutNeighbors: number
     sleepyBesideSleepy: number
   }
+  houseCats: {
+    /** Base Purr The Void grows each Black Cat after a Play with a Gathering. */
+    voidGrowth: number
+  }
   handSize: number
   seats: number
   /** The most House Cats the Shelf holds. */
@@ -70,6 +74,9 @@ export const defaultConfig: Config = {
     aloofWithoutNeighbors: 15,
     sleepyBesideSleepy: 10
   },
+  houseCats: {
+    voidGrowth: 5
+  },
   handSize: 8,
   seats: 5,
   shelfSize: 4,
@@ -88,7 +95,7 @@ export const defaultConfig: Config = {
   firstTarget: 300,
   targetGrowth: 1.6,
   disasterNights: [3, 6, 9],
-  disasterTargetFactor: 1.5,
+  disasterTargetFactor: 1,
   clearReward: {
     early: 3,
     earlyNights: 2,

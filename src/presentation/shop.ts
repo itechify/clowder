@@ -159,7 +159,7 @@ function offerFor(run: Run, id: OfferId): Offer | null {
   return {
     houseCat: id.houseCat,
     pose: houseCatArt(id.houseCat),
-    tag: { name: called, title, about: ability },
+    tag: { name: called, title, about: ability(run.config.houseCats) },
     action: { type: "recruit", houseCat: id.houseCat },
     price: prices.recruitPrices[id.houseCat]
   }

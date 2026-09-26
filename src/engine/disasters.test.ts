@@ -93,16 +93,26 @@ describe("Disaster Nights", () => {
 })
 
 describe("a Disaster Night's Target", () => {
-  it("is 1.5× what a normal Night at that point would require", () => {
-    let run = easyRun()
+  /** Every Night's Target in an easy Run with the given config. */
+  const targets = (config: Partial<Config> = {}) => {
+    let run = easyRun(1, config)
     const targets = [run.night.target]
     for (let night = 1; night < 9; night++) {
       run = playOnToNextNight(run)
       targets.push(run.night.target)
     }
+    return targets
+  }
 
+  it("is by default what a normal Night at that point would require", () => {
+    expect(targets()).toEqual([
+      300, 480, 768, 1229, 1966, 3146, 5033, 8053, 12885
+    ])
+  })
+
+  it("is raised by the configured Disaster Target factor", () => {
     // Normally 768, 3146, and 12885 on Nights 3, 6, and 9.
-    expect(targets).toEqual([
+    expect(targets({ disasterTargetFactor: 1.5 })).toEqual([
       300, 480, 1152, 1229, 1966, 4719, 5033, 8053, 19328
     ])
   })

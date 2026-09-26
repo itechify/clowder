@@ -11,7 +11,7 @@ import type { Cat, Night, NightStatus, Run, RunStatus, Shop } from "./types"
  * The shape of saved Runs. Bump it whenever Run state changes meaning, so a
  * save from before the change is discarded rather than resumed.
  */
-const SAVE_VERSION = 5
+const SAVE_VERSION = 6
 
 /** Run state as plain text, to keep on the device between visits. */
 export function serialiseRun(run: Run): string {
@@ -93,6 +93,9 @@ const isConfig = shape<Config>({
     clingyPerNeighbor: integer,
     aloofWithoutNeighbors: integer,
     sleepyBesideSleepy: integer
+  }),
+  houseCats: shape<Config["houseCats"]>({
+    voidGrowth: integer
   }),
   handSize: integer,
   seats: integer,

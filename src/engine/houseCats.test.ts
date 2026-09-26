@@ -402,10 +402,15 @@ describe("Freya (Slow to Warm Up)", () => {
 
 describe("The Void", () => {
   /** A Run whose whole Roster is in Hand, where any Play clears the Night. */
-  const withVoid = (shelf: HouseCatId[] = ["theVoid"]) =>
+  const withVoid = (shelf: HouseCatId[] = ["theVoid"], voidGrowth = 2) =>
     withShelf(
       shelf,
-      startRun(1, { ...defaultConfig, handSize: 30, firstTarget: 1 })
+      startRun(1, {
+        ...defaultConfig,
+        handSize: 30,
+        firstTarget: 1,
+        houseCats: { voidGrowth }
+      })
     )
   const basePurr = (run: Run, cat: string) =>
     run.roster.find((c) => c.id === cat)!.basePurr
@@ -433,6 +438,22 @@ describe("The Void", () => {
     expect(basePurr(after, cuddled!)).toBe(12)
     expect(basePurr(after, apart!)).toBe(12)
     expect(basePurr(after, orange!)).toBe(10)
+  })
+
+  it("grows them by the configured amount", () => {
+    const run = seatFromHand(withVoid(["theVoid"], 5), [
+      "black aloof",
+      null,
+      "black aloof"
+    ])
+    const [black] = run.night.couch
+
+    const { run: after, events } = accepted(run, { type: "play" })
+
+    expect(events).toContainEqual(
+      expect.objectContaining({ type: "catGrew", purr: 5, basePurr: 15 })
+    )
+    expect(basePurr(after, black!)).toBe(15)
   })
 
   it("grows nobody after a Play without a Gathering", () => {
@@ -534,7 +555,8 @@ describe("Treat Dealer", () => {
 describe("a Play with the remaining House Cats", () => {
   it("scripts Repeats with their source, per-score Mult, Freya warming up, then Void growth", () => {
     const run = runWithCouch(["orange sleepy", null, "black aloof"], {
-      shelf: ["bigLoaf", "oneBraincell", "freya", "theVoid"]
+      shelf: ["bigLoaf", "oneBraincell", "freya", "theVoid"],
+      config: { houseCats: { voidGrowth: 2 } }
     })
     const [orange, , black] = run.night.couch
     const braincell = {

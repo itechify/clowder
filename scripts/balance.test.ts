@@ -37,7 +37,7 @@ describe("the simulation's arguments", () => {
         "--strategies",
         "no purchases,growing void",
         "--disasterTargetFactor",
-        "1",
+        "1.5",
         "--shop.recruitPrices.theVoid",
         "4"
       ],
@@ -46,7 +46,7 @@ describe("the simulation's arguments", () => {
 
     expect(args.runs).toBe(5)
     expect(args.strategies).toEqual(["no purchases", "growing void"])
-    expect(args.config.disasterTargetFactor).toBe(1)
+    expect(args.config.disasterTargetFactor).toBe(1.5)
     expect(args.config.shop.recruitPrices.theVoid).toBe(4)
     expect(defaultConfig).toEqual(defaults)
   })

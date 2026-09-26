@@ -1005,7 +1005,7 @@ export class CouchScene extends Phaser.Scene {
     // from the Shelf does.
     const picked = this.heldHouseCat && houseCat(this.heldHouseCat)
     const breakdown = picked
-      ? `${picked.name}: ${picked.ability}. Tap elsewhere on the Shelf to move it.`
+      ? `${picked.name}: ${picked.ability(run.config.houseCats)}. Tap elsewhere on the Shelf to move it.`
       : multBreakdown(preview)
     if (breakdown && !choice)
       add(

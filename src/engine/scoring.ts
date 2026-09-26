@@ -209,7 +209,7 @@ export function previewPlay(run: Run): ScoreBreakdown {
   couch.forEach((cat, seat) => {
     if (!cat) return
     for (const { id, name, grows } of shelf) {
-      const purr = grows?.(cat, active.length) ?? null
+      const purr = grows?.(cat, active.length, run.config.houseCats) ?? null
       if (purr !== null)
         growth.push({ seat, cat: cat.id, houseCat: id, name, purr })
     }
