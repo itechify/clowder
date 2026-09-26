@@ -89,7 +89,7 @@ export const voices: Record<CueName, Voice> = {
     })
   },
   // A fluttering call answered by a warm major-sixth chord.
-  gatheringActivated: (out) => {
+  clowderActivated: (out) => {
     for (let i = 0; i < 4; i++)
       tone(out, {
         wave: "triangle",

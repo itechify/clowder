@@ -16,9 +16,9 @@ function seat(page: Page, cats: number) {
       .forEach((cat, seat) => {
         apply({ type: "place", cat, seat })
       })
-    const { gatherings, scoringEvents } = preview()
+    const { clowders, scoringEvents } = preview()
     return {
-      gatherings: gatherings.length,
+      clowders: clowders.length,
       scoringEvents: scoringEvents.length
     }
   }, cats)
@@ -38,7 +38,7 @@ test("fires a Play's cues in order, pitch rising with each Scoring event", async
   page
 }) => {
   await boot(page, 7)
-  const { gatherings, scoringEvents } = await seat(page, 3)
+  const { clowders, scoringEvents } = await seat(page, 3)
   expect(scoringEvents).toBe(3)
   const before = (await cues(page)).length
 
@@ -48,8 +48,8 @@ test("fires a Play's cues in order, pitch rising with each Scoring event", async
   const fired = (await cues(page)).slice(before)
   expect(fired).toEqual([
     { name: "uiTap" },
-    ...Array.from({ length: gatherings }, () => ({
-      name: "gatheringActivated"
+    ...Array.from({ length: clowders }, () => ({
+      name: "clowderActivated"
     })),
     { name: "catScored", pitch: 0 },
     { name: "catScored", pitch: 1 },
@@ -91,8 +91,8 @@ test("plays each part of a Run's music", async ({ page }) => {
     const { night, shop, scrapbookPages } = await run(page)
     if (scrapbookPages) {
       // The Night's music plays on while a Scrapbook page is chosen.
-      await page.evaluate((gathering) => {
-        window.__clowder!.apply({ type: "choosePage", gathering })
+      await page.evaluate((clowder) => {
+        window.__clowder!.apply({ type: "choosePage", clowder })
       }, scrapbookPages[0])
       continue
     }

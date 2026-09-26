@@ -3,7 +3,7 @@ import { previewPlay } from "./index"
 import { accepted, runWithCouch } from "./testing"
 
 const active = (breakdown: ReturnType<typeof previewPlay>) =>
-  breakdown.gatherings.map((g) => g.gathering)
+  breakdown.clowders.map((g) => g.clowder)
 
 describe("Cuddle Puddle", () => {
   it("adds +3 Mult for three same-Coat Cats in consecutive occupied Seats", () => {
@@ -11,9 +11,9 @@ describe("Cuddle Puddle", () => {
       runWithCouch(["orange clingy", "orange clingy", "orange aloof"])
     )
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "cuddlePuddle",
+        clowder: "cuddlePuddle",
         name: "Cuddle Puddle",
         level: 1,
         purr: 0,
@@ -33,9 +33,9 @@ describe("Nap Club", () => {
       runWithCouch(["orange sleepy", "black sleepy", "white sleepy"])
     )
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "napClub",
+        clowder: "napClub",
         name: "Nap Club",
         level: 1,
         purr: 0,
@@ -62,9 +62,9 @@ describe("Personal Space", () => {
       runWithCouch(["orange aloof", null, "black clingy", null, "white aloof"])
     )
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "personalSpace",
+        clowder: "personalSpace",
         name: "Personal Space",
         level: 1,
         purr: 0,
@@ -99,9 +99,9 @@ describe("Variety Pack", () => {
       ])
     )
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "varietyPack",
+        clowder: "varietyPack",
         name: "Variety Pack",
         level: 1,
         purr: 0,
@@ -138,9 +138,9 @@ describe("Full Sofa", () => {
       ])
     )
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "fullSofa",
+        clowder: "fullSofa",
         name: "Full Sofa",
         level: 1,
         purr: 0,
@@ -165,7 +165,7 @@ describe("Full Sofa", () => {
   })
 })
 
-describe("Gatherings together", () => {
+describe("Clowders together", () => {
   it("scores three Orange Sleepy Cats seated together as 60 Purr × 7 Mult = 420", () => {
     const breakdown = previewPlay(
       runWithCouch(["orange sleepy", "orange sleepy", "orange sleepy"], {
@@ -179,7 +179,7 @@ describe("Gatherings together", () => {
     expect(breakdown.score).toBe(420)
   })
 
-  it("applies every qualifying Gathering", () => {
+  it("applies every qualifying Clowder", () => {
     const breakdown = previewPlay(
       runWithCouch([
         "orange sleepy",
@@ -194,7 +194,7 @@ describe("Gatherings together", () => {
     expect(breakdown.mult).toBe(8)
   })
 
-  it("applies each Gathering at most once per Play", () => {
+  it("applies each Clowder at most once per Play", () => {
     const breakdown = previewPlay(
       runWithCouch(
         [
@@ -210,9 +210,9 @@ describe("Gatherings together", () => {
       )
     )
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "cuddlePuddle",
+        clowder: "cuddlePuddle",
         name: "Cuddle Puddle",
         level: 1,
         purr: 0,
@@ -223,29 +223,29 @@ describe("Gatherings together", () => {
     expect(breakdown.mult).toBe(4)
   })
 
-  it("leaves Mult at 1 when no Gathering forms", () => {
+  it("leaves Mult at 1 when no Clowder forms", () => {
     const breakdown = previewPlay(
       runWithCouch(["orange clingy", "black aloof"])
     )
 
-    expect(breakdown.gatherings).toEqual([])
+    expect(breakdown.clowders).toEqual([])
     expect(breakdown.mult).toBe(1)
   })
 })
 
-describe("Gatherings in a Play", () => {
+describe("Clowders in a Play", () => {
   it("activate before any Cat scores", () => {
     const run = runWithCouch(["orange sleepy", "orange sleepy", "black sleepy"])
 
     const { events } = accepted(run, { type: "play" })
 
     expect(events.map((event) => event.type).slice(0, 2)).toEqual([
-      "gatheringActivated",
+      "clowderActivated",
       "catScored"
     ])
     expect(events[0]).toEqual({
-      type: "gatheringActivated",
-      gathering: "napClub",
+      type: "clowderActivated",
+      clowder: "napClub",
       name: "Nap Club",
       level: 1,
       purr: 0,
@@ -258,7 +258,7 @@ describe("Gatherings in a Play", () => {
 
   it("are discovered for the rest of the Run the first time they activate", () => {
     const run = runWithCouch(["orange aloof", null, "black aloof"])
-    expect(run.discoveredGatherings).toEqual([])
+    expect(run.discoveredClowders).toEqual([])
 
     const first = accepted(run, { type: "play" })
     const [a, b] = first.run.night.hand
@@ -271,19 +271,19 @@ describe("Gatherings in a Play", () => {
       { type: "play" }
     )
 
-    expect(first.run.discoveredGatherings).toEqual(["personalSpace"])
+    expect(first.run.discoveredClowders).toEqual(["personalSpace"])
     expect(again.events[0]).toMatchObject({
-      type: "gatheringActivated",
-      gathering: "personalSpace",
+      type: "clowderActivated",
+      clowder: "personalSpace",
       firstTime: false
     })
-    expect(again.run.discoveredGatherings).toEqual(["personalSpace"])
+    expect(again.run.discoveredClowders).toEqual(["personalSpace"])
   })
 
   it("are not discovered by arranging Cats without Playing", () => {
     const run = runWithCouch(["orange aloof", null, "black aloof"])
 
-    expect(previewPlay(run).gatherings).toHaveLength(1)
-    expect(run.discoveredGatherings).toEqual([])
+    expect(previewPlay(run).clowders).toHaveLength(1)
+    expect(run.discoveredClowders).toEqual([])
   })
 })

@@ -3,8 +3,8 @@ import {
   type Action,
   applyAction,
   type Config,
+  clowders,
   defaultConfig,
-  gatherings,
   previewPlay,
   type Run,
   restoreRun,
@@ -28,16 +28,16 @@ function playOne(run: Run) {
 /** An easy Run with its first Night cleared and the Scrapbook open. */
 const choosing = (seed = 1) => playOne(easyRun(seed)).run
 
-const allGatherings = gatherings.map((gathering) => gathering.id)
+const allClowders = clowders.map((clowder) => clowder.id)
 
 describe("the Scrapbook", () => {
-  it("offers three different Gatherings once a Night is cleared, before the Shop", () => {
+  it("offers three different Clowders once a Night is cleared, before the Shop", () => {
     const { run, events } = playOne(easyRun())
 
     const pages = run.scrapbookPages!
     expect(pages).toHaveLength(3)
     expect(new Set(pages).size).toBe(3)
-    for (const page of pages) expect(allGatherings).toContain(page)
+    for (const page of pages) expect(allClowders).toContain(page)
     expect(run.shop).toBeNull()
     expect(events).toContainEqual({ type: "scrapbookOpened", pages })
     expect(events).not.toContainEqual({ type: "shopOpened" })
@@ -54,8 +54,8 @@ describe("the Scrapbook", () => {
       run = playOne(run).run
       if (run.scrapbookPages) {
         opened.push(run.night.number)
-        const gathering = run.scrapbookPages[0]
-        run = accepted(run, { type: "choosePage", gathering }).run
+        const clowder = run.scrapbookPages[0]
+        run = accepted(run, { type: "choosePage", clowder }).run
         run = accepted(run, { type: "leaveShop" }).run
       }
     }
@@ -69,7 +69,7 @@ describe("the Scrapbook", () => {
     expect(choosing(5).scrapbookPages).toEqual(choosing(5).scrapbookPages)
   })
 
-  it("draws its pages from every Gathering, at random", () => {
+  it("draws its pages from every Clowder, at random", () => {
     const offered = new Set<string>()
     const sets = new Set<string>()
     for (let seed = 1; seed <= 20; seed++) {
@@ -78,85 +78,83 @@ describe("the Scrapbook", () => {
       sets.add([...pages].sort().join())
     }
 
-    expect([...offered].sort()).toEqual([...allGatherings].sort())
+    expect([...offered].sort()).toEqual([...allClowders].sort())
     expect(sets.size).toBeGreaterThan(1)
   })
 })
 
 describe("choosing a Scrapbook page", () => {
-  it("raises that Gathering's level by one, closes the Scrapbook, and opens the Shop", () => {
+  it("raises that Clowder's level by one, closes the Scrapbook, and opens the Shop", () => {
     const run = choosing()
-    const gathering = run.scrapbookPages![1]
+    const clowder = run.scrapbookPages![1]
 
     const { run: after, events } = accepted(run, {
       type: "choosePage",
-      gathering
+      clowder
     })
 
-    expect(after.gatheringLevels[gathering]).toBe(2)
-    for (const other of allGatherings.filter((id) => id !== gathering))
-      expect(after.gatheringLevels[other]).toBe(1)
+    expect(after.clowderLevels[clowder]).toBe(2)
+    for (const other of allClowders.filter((id) => id !== clowder))
+      expect(after.clowderLevels[other]).toBe(1)
     expect(after.scrapbookPages).toBeNull()
     expect(after.shop).not.toBeNull()
     expect(events).toEqual([
-      { type: "pageChosen", gathering, level: 2, discovered: true },
+      { type: "pageChosen", clowder, level: 2, discovered: true },
       { type: "shopOpened" }
     ])
   })
 
-  it("keeps raising a Gathering's level, without limit", () => {
+  it("keeps raising a Clowder's level, without limit", () => {
     const run = choosing()
-    const [gathering] = run.scrapbookPages!
+    const [clowder] = run.scrapbookPages!
     const levelled = {
       ...run,
-      gatheringLevels: { ...run.gatheringLevels, [gathering]: 12 }
+      clowderLevels: { ...run.clowderLevels, [clowder]: 12 }
     }
 
-    const after = accepted(levelled, { type: "choosePage", gathering }).run
+    const after = accepted(levelled, { type: "choosePage", clowder }).run
 
-    expect(after.gatheringLevels[gathering]).toBe(13)
+    expect(after.clowderLevels[clowder]).toBe(13)
   })
 
-  it("reveals a Gathering not yet discovered", () => {
+  it("reveals a Clowder not yet discovered", () => {
     const run = choosing()
-    const gathering = run.scrapbookPages!.find(
-      (page) => !run.discoveredGatherings.includes(page)
+    const clowder = run.scrapbookPages!.find(
+      (page) => !run.discoveredClowders.includes(page)
     )!
 
-    const after = accepted(run, { type: "choosePage", gathering }).run
+    const after = accepted(run, { type: "choosePage", clowder }).run
 
-    expect(after.discoveredGatherings).toEqual([
-      ...run.discoveredGatherings,
-      gathering
+    expect(after.discoveredClowders).toEqual([
+      ...run.discoveredClowders,
+      clowder
     ])
   })
 
-  it("leaves a discovered Gathering discovered once", () => {
+  it("leaves a discovered Clowder discovered once", () => {
     const run = choosing()
-    const [gathering] = run.scrapbookPages!
-    const discovered = { ...run, discoveredGatherings: [gathering] }
+    const [clowder] = run.scrapbookPages!
+    const discovered = { ...run, discoveredClowders: [clowder] }
 
     const { run: after, events } = accepted(discovered, {
       type: "choosePage",
-      gathering
+      clowder
     })
 
-    expect(after.discoveredGatherings).toEqual([gathering])
+    expect(after.discoveredClowders).toEqual([clowder])
     expect(events[0]).toEqual({
       type: "pageChosen",
-      gathering,
+      clowder,
       level: 2,
       discovered: false
     })
   })
 
-  it("is rejected for a Gathering that was not offered", () => {
+  it("is rejected for a Clowder that was not offered", () => {
     const run = choosing()
-    const gathering = allGatherings.find(
-      (id) => !run.scrapbookPages!.includes(id)
-    )!
+    const clowder = allClowders.find((id) => !run.scrapbookPages!.includes(id))!
 
-    const result = applyAction(run, { type: "choosePage", gathering })
+    const result = applyAction(run, { type: "choosePage", clowder })
 
     expect(result).toEqual({
       ok: false,
@@ -169,12 +167,12 @@ describe("choosing a Scrapbook page", () => {
     const run = startRun(1)
     const inShop = accepted(choosing(), {
       type: "choosePage",
-      gathering: choosing().scrapbookPages![0]
+      clowder: choosing().scrapbookPages![0]
     }).run
 
     for (const closed of [run, inShop])
       expect(
-        applyAction(closed, { type: "choosePage", gathering: "napClub" }).ok
+        applyAction(closed, { type: "choosePage", clowder: "napClub" }).ok
       ).toBe(false)
   })
 
@@ -204,20 +202,20 @@ describe("choosing a Scrapbook page", () => {
 describe("a Run saved mid-choice", () => {
   it("resumes with the same pages, and chooses as it would have", () => {
     const run = choosing(3)
-    const gathering = run.scrapbookPages![2]
+    const clowder = run.scrapbookPages![2]
 
     const resumed = restoreRun(serialiseRun(run))!
 
     expect(resumed).toStrictEqual(run)
-    expect(
-      applyAction(resumed, { type: "choosePage", gathering })
-    ).toStrictEqual(applyAction(run, { type: "choosePage", gathering }))
+    expect(applyAction(resumed, { type: "choosePage", clowder })).toStrictEqual(
+      applyAction(run, { type: "choosePage", clowder })
+    )
   })
 })
 
-describe("Gathering levels", () => {
+describe("Clowder levels", () => {
   it("all start at 1", () => {
-    expect(startRun(1).gatheringLevels).toEqual({
+    expect(startRun(1).clowderLevels).toEqual({
       cuddlePuddle: 1,
       napClub: 1,
       personalSpace: 1,
@@ -232,20 +230,20 @@ describe("Gathering levels", () => {
       ["orange sleepy", "black sleepy", "white sleepy"],
       {
         config: {
-          gatheringLevelBonus: {
-            ...defaultConfig.gatheringLevelBonus,
+          clowderLevelBonus: {
+            ...defaultConfig.clowderLevelBonus,
             napClub: { purr: 10, mult: 2 }
           }
         },
-        gatheringLevels: { napClub: 3 }
+        clowderLevels: { napClub: 3 }
       }
     )
 
     const breakdown = previewPlay(run)
 
-    expect(breakdown.gatherings).toEqual([
+    expect(breakdown.clowders).toEqual([
       {
-        gathering: "napClub",
+        clowder: "napClub",
         name: "Nap Club",
         level: 3,
         purr: 20,
@@ -259,12 +257,12 @@ describe("Gathering levels", () => {
     expect(breakdown.score).toBe(640)
   })
 
-  it("add nothing at level 1 beyond the Gathering's Mult", () => {
+  it("add nothing at level 1 beyond the Clowder's Mult", () => {
     const run = runWithCouch(["orange sleepy", "black sleepy", "white sleepy"])
 
-    expect(previewPlay(run).gatherings).toEqual([
+    expect(previewPlay(run).clowders).toEqual([
       {
-        gathering: "napClub",
+        clowder: "napClub",
         name: "Nap Club",
         level: 1,
         purr: 0,
@@ -280,25 +278,25 @@ describe("Gathering levels", () => {
       ["orange sleepy", "orange sleepy", "orange sleepy"],
       {
         config: { copiesPerCombination: 3 },
-        gatheringLevels: { cuddlePuddle: 2, napClub: 4 }
+        clowderLevels: { cuddlePuddle: 2, napClub: 4 }
       }
     )
     const preview = previewPlay(run)
-    const [puddle, club] = preview.gatherings
+    const [puddle, club] = preview.clowders
 
     const { events } = accepted(run, { type: "play" })
 
-    const activated = events.filter((e) => e.type === "gatheringActivated")
+    const activated = events.filter((e) => e.type === "clowderActivated")
     expect(activated).toEqual([
       expect.objectContaining({
-        gathering: "cuddlePuddle",
+        clowder: "cuddlePuddle",
         level: 2,
         purr: puddle.purr,
         mult: puddle.mult,
         tally: { purr: puddle.purr, mult: 1 + puddle.mult }
       }),
       expect.objectContaining({
-        gathering: "napClub",
+        clowder: "napClub",
         level: 4,
         purr: club.purr,
         mult: club.mult,

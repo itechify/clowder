@@ -14,7 +14,7 @@ type Point = { x: number; y: number }
  */
 export const OPEN_SCRAPBOOK = { y: 574, titleY: 472 }
 /**
- * Opened from the room, a row for each Gathering, the first at `top`, each
+ * Opened from the room, a row for each Clowder, the first at `top`, each
  * `step` below the last; its name and requirement from the left, its level
  * and what it adds from the right; and how to close it beneath.
  */
@@ -58,7 +58,7 @@ export function drawOpenScrapbook(
 }
 
 /**
- * The Scrapbook opened from the room: a row for every Gathering, its name
+ * The Scrapbook opened from the room: a row for every Clowder, its name
  * and what forms it, its level and all it adds at that level; one not yet
  * discovered this Run shows only "???". A tap anywhere closes it.
  */

@@ -50,7 +50,7 @@ fired.
 
 The Night's eight-bar felt-key melody returns in parallel minor for Disasters;
 the Shop has a syncopated tune over plucked bass, and results use a music-box
-lullaby in three. Seated Cats chirp and purr, Gatherings trill, and the scoring
+lullaby in three. Seated Cats chirp and purr, Clowders trill, and the scoring
 ticks keep their pentatonic pitch ladder even at 4× speed. Instruments, cat
 calls, and noise bursts all stop and release their audio nodes after sounding.
 

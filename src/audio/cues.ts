@@ -6,7 +6,7 @@ export const cueNames = [
   "catSeated",
   /** Climbs one pitch step per Scoring event within a Play. */
   "catScored",
-  "gatheringActivated",
+  "clowderActivated",
   "multAdded",
   "timesApplied",
   "scoreLanded",

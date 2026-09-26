@@ -58,7 +58,7 @@ async function nextShop(page: Page) {
   await tap(page, ...shop.wall)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
-    apply({ type: "choosePage", gathering: run().scrapbookPages![0] })
+    apply({ type: "choosePage", clowder: run().scrapbookPages![0] })
   })
   await expect.poll(() => scenes(page), { timeout: 40_000 }).toEqual(["shop"])
 }

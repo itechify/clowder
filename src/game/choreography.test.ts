@@ -43,7 +43,7 @@ describe("a Play's sound cues", () => {
     expect(scored.map((cue) => cue.pitch)).toEqual([0, 1, 2, 3, 4])
   })
 
-  it("follow the engine's events, from Gatherings to the cleared Night", () => {
+  it("follow the engine's events, from Clowders to the cleared Night", () => {
     // Three Orange Cats: a Cuddle Puddle; Do Not Touch adds Mult for the two
     // empty Seats, One Braincell as each Cat scores, then Box Goblin's ×2.
     const play = playOf(["orange sleepy", "orange sleepy", "orange clingy"], {
@@ -51,7 +51,7 @@ describe("a Play's sound cues", () => {
     })
 
     expect(cuesOf(choreograph(play, plain))).toEqual([
-      { name: "gatheringActivated" },
+      { name: "clowderActivated" },
       { name: "multAdded" },
       { name: "catScored", pitch: 0 },
       { name: "multAdded" },
@@ -78,28 +78,24 @@ describe("a Play's sound cues", () => {
   })
 })
 
-describe("a Play's Gatherings", () => {
-  const gatheringStep = (...args: Parameters<typeof runWithCouch>) =>
+describe("a Play's Clowders", () => {
+  const clowderStep = (...args: Parameters<typeof runWithCouch>) =>
     choreograph(playOf(...args), plain).steps.find(
-      (step) => step.event.type === "gatheringActivated"
+      (step) => step.event.type === "clowderActivated"
     )!
 
-  it("show the Purr and Mult a levelled Gathering adds, as its Purr joins the tally", () => {
-    const step = gatheringStep(
+  it("show the Purr and Mult a levelled Clowder adds, as its Purr joins the tally", () => {
+    const step = clowderStep(
       ["orange sleepy", "black sleepy", "white sleepy"],
-      { gatheringLevels: { napClub: 3 } }
+      { clowderLevels: { napClub: 3 } }
     )
 
     expect(step.adds).toEqual({ mult: "+7 Mult", purr: "+20 Purr" })
     expect(step.event).toMatchObject({ tally: { purr: 20, mult: 8 } })
   })
 
-  it("show only the Mult a Gathering adds at level 1", () => {
-    const step = gatheringStep([
-      "orange sleepy",
-      "black sleepy",
-      "white sleepy"
-    ])
+  it("show only the Mult a Clowder adds at level 1", () => {
+    const step = clowderStep(["orange sleepy", "black sleepy", "white sleepy"])
 
     expect(step.adds).toEqual({ mult: "+3 Mult", purr: null })
   })
@@ -242,7 +238,7 @@ describe("a Play's slams", () => {
         .filter((step) => step.slam)
         .map((step) => [step.event.type, step.slam])
     ).toEqual([
-      ["gatheringActivated", "mult"],
+      ["clowderActivated", "mult"],
       ["wholePlayEffect", "mult"],
       ["catScored", "mult"],
       ["catScored", "mult"],
@@ -580,7 +576,7 @@ describe("House Cats' triggered poses", () => {
 describe("a chosen Scrapbook page", () => {
   const chosen = {
     type: "pageChosen",
-    gathering: "napClub",
+    clowder: "napClub",
     level: 3,
     discovered: false
   } as const
@@ -598,7 +594,7 @@ describe("a chosen Scrapbook page", () => {
     }
   }
 
-  it("flies into the Scrapbook with a flourish, showing the Gathering's new level", () => {
+  it("flies into the Scrapbook with a flourish, showing the Clowder's new level", () => {
     expect(choreographPage(chosen, plain, tuned)).toEqual({
       cues: [{ name: "pageChosen" }],
       fadeMs: 150,

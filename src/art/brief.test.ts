@@ -40,8 +40,8 @@ describe("the art brief", () => {
     expect(kinds(houseCats)).toEqual(new Set(["houseCat"]))
     expect(houseCats.entries).toHaveLength(22)
 
-    expect(room.title).toMatch(/room.*badges.*UI.*Gathering/i)
-    expect(kinds(room)).toEqual(new Set(["room", "badge", "ui", "gathering"]))
+    expect(room.title).toMatch(/room.*badges.*UI.*Clowder/i)
+    expect(kinds(room)).toEqual(new Set(["room", "badge", "ui", "clowder"]))
 
     // The living room by day, delivered after the room it lights.
     expect(shop.title).toMatch(/Shop/)

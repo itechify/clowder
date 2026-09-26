@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 import { disasterById } from "../src/engine"
-import { gatheringLabel } from "../src/presentation/scrapbook"
+import { clowderLabel } from "../src/presentation/scrapbook"
 import { boot, layout, tap } from "./scene"
 
 const texts = (page: Page) => page.evaluate(() => window.__clowder!.texts())
@@ -29,21 +29,21 @@ test("shows the Night, Treats, and Target progress in the room, exactly", async 
   expect(await texts(page)).toContain(`${score} / 300`)
 })
 
-test("names Gatherings on the Couch as they form", async ({ page }) => {
+test("names Clowders on the Couch as they form", async ({ page }) => {
   await boot(page, 7)
-  const gatherings = await page.evaluate(() => {
+  const clowders = await page.evaluate(() => {
     const { run, apply, preview } = window.__clowder!
     run()
       .night.hand.slice(0, 4)
       .forEach((cat, seat) => {
         apply({ type: "place", cat, seat })
       })
-    return preview().gatherings
+    return preview().clowders
   })
 
-  expect(gatherings.length).toBeGreaterThan(0)
+  expect(clowders.length).toBeGreaterThan(0)
   expect(await texts(page)).toEqual(
-    expect.arrayContaining(gatherings.map(gatheringLabel))
+    expect.arrayContaining(clowders.map(clowderLabel))
   )
 })
 
@@ -60,7 +60,7 @@ test("hangs tonight's Disaster in the room throughout its Night", async ({
     ) {
       const pages = run().scrapbookPages
       if (pages) {
-        apply({ type: "choosePage", gathering: pages[0] })
+        apply({ type: "choosePage", clowder: pages[0] })
         continue
       }
       if (run().shop) {

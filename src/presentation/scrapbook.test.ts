@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { defaultConfig, previewPlay, type Run, startRun } from "../engine"
 import { accepted, runWithCouch } from "../engine/testing"
-import { gatheringLabel, scrapbookChoice, scrapbookView } from "./scrapbook"
+import { clowderLabel, scrapbookChoice, scrapbookView } from "./scrapbook"
 
 /** A Run with its first Night cleared and the Scrapbook open. */
 function choosing(seed = 1): Run {
@@ -16,12 +16,12 @@ describe("the Scrapbook choice", () => {
     expect(scrapbookChoice(startRun(1))).toBeNull()
   })
 
-  it("shows each offered page's Gathering, requirement, and exact level change", () => {
+  it("shows each offered page's Clowder, requirement, and exact level change", () => {
     const run: Run = {
       ...choosing(),
       scrapbookPages: ["napClub", "fullSofa", "personalSpace"],
-      gatheringLevels: {
-        ...choosing().gatheringLevels,
+      clowderLevels: {
+        ...choosing().clowderLevels,
         napClub: 2,
         personalSpace: 4
       }
@@ -31,31 +31,31 @@ describe("the Scrapbook choice", () => {
       title: "Choose a Scrapbook page",
       pages: [
         {
-          gathering: "napClub",
+          clowder: "napClub",
           name: "Nap Club",
           requirement: "Three Sleepy Cats side by side",
           level: { from: 2, to: 3 },
           change: { purr: 10, mult: 2 },
           label: { levels: "Lv 2 → 3", adds: "+2 Mult +10 Purr" },
-          action: { type: "choosePage", gathering: "napClub" }
+          action: { type: "choosePage", clowder: "napClub" }
         },
         {
-          gathering: "fullSofa",
+          clowder: "fullSofa",
           name: "Full Sofa",
           requirement: "A Cat on every Seat",
           level: { from: 1, to: 2 },
           change: { purr: 5, mult: 1 },
           label: { levels: "Lv 1 → 2", adds: "+1 Mult +5 Purr" },
-          action: { type: "choosePage", gathering: "fullSofa" }
+          action: { type: "choosePage", clowder: "fullSofa" }
         },
         {
-          gathering: "personalSpace",
+          clowder: "personalSpace",
           name: "Personal Space",
           requirement: "Two or more Cats, none with a Neighbor",
           level: { from: 4, to: 5 },
           change: { purr: 10, mult: 2 },
           label: { levels: "Lv 4 → 5", adds: "+2 Mult +10 Purr" },
-          action: { type: "choosePage", gathering: "personalSpace" }
+          action: { type: "choosePage", clowder: "personalSpace" }
         }
       ]
     })
@@ -68,8 +68,8 @@ describe("the Scrapbook choice", () => {
       ...run,
       config: {
         ...run.config,
-        gatheringLevelBonus: {
-          ...run.config.gatheringLevelBonus,
+        clowderLevelBonus: {
+          ...run.config.clowderLevelBonus,
           [page]: { purr: 0, mult: 3 }
         }
       }
@@ -89,27 +89,27 @@ describe("the Scrapbook choice", () => {
   })
 })
 
-describe("a Gathering's label", () => {
+describe("a Clowder's label", () => {
   it("names it with its level, leaving what it adds to the Scrapbook", () => {
     const run = runWithCouch(
       ["orange sleepy", "black sleepy", "white sleepy"],
       {
-        gatheringLevels: { napClub: 3 }
+        clowderLevels: { napClub: 3 }
       }
     )
 
-    const [napClub] = previewPlay(run).gatherings
+    const [napClub] = previewPlay(run).clowders
 
-    expect(gatheringLabel(napClub)).toBe("Nap Club Lv 3")
+    expect(clowderLabel(napClub)).toBe("Nap Club Lv 3")
   })
 })
 
 describe("the Scrapbook", () => {
-  it("lists every Gathering with its level and requirement, hiding undiscovered ones", () => {
+  it("lists every Clowder with its level and requirement, hiding undiscovered ones", () => {
     const run: Run = {
       ...startRun(1),
-      discoveredGatherings: ["fullSofa", "napClub"],
-      gatheringLevels: { ...startRun(1).gatheringLevels, napClub: 3 }
+      discoveredClowders: ["fullSofa", "napClub"],
+      clowderLevels: { ...startRun(1).clowderLevels, napClub: 3 }
     }
 
     expect(scrapbookView(run)).toEqual({
@@ -118,7 +118,7 @@ describe("the Scrapbook", () => {
         { discovered: false, name: "???", requirement: "???" },
         {
           discovered: true,
-          gathering: "napClub",
+          clowder: "napClub",
           name: "Nap Club",
           requirement: "Three Sleepy Cats side by side",
           level: 3,
@@ -128,7 +128,7 @@ describe("the Scrapbook", () => {
         { discovered: false, name: "???", requirement: "???" },
         {
           discovered: true,
-          gathering: "fullSofa",
+          clowder: "fullSofa",
           name: "Full Sofa",
           requirement: "A Cat on every Seat",
           level: 1,
@@ -138,7 +138,7 @@ describe("the Scrapbook", () => {
     })
   })
 
-  it("hides every Gathering at the start of a Run", () => {
+  it("hides every Clowder at the start of a Run", () => {
     const { entries } = scrapbookView(startRun(1))
 
     expect(entries.map((entry) => entry.name)).toEqual([

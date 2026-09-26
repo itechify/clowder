@@ -24,7 +24,7 @@ test("plays a seeded Run through to its results", async ({ page }) => {
     const seed = run().seed
     while (run().status === "playing") {
       const pages = run().scrapbookPages
-      if (pages) apply({ type: "choosePage", gathering: pages[0] })
+      if (pages) apply({ type: "choosePage", clowder: pages[0] })
       const { shop } = run()
       if (shop) {
         for (const houseCat of shop.houseCatOffers)
@@ -199,7 +199,7 @@ test("rearranges the Shelf by tapping in the Shop", async ({ page }) => {
     const { run, apply } = window.__clowder!
     while (run().status === "playing") {
       const pages = run().scrapbookPages
-      if (pages) apply({ type: "choosePage", gathering: pages[0] })
+      if (pages) apply({ type: "choosePage", clowder: pages[0] })
       if (run().shop) {
         for (const houseCat of run().shop!.houseCatOffers)
           if (run().shelf.length < 2) apply({ type: "recruit", houseCat })
@@ -267,7 +267,7 @@ test("starts afresh once the saved Run has finished", async ({ page }) => {
     const { run, apply } = window.__clowder!
     while (run().status === "playing") {
       const pages = run().scrapbookPages
-      if (pages) apply({ type: "choosePage", gathering: pages[0] })
+      if (pages) apply({ type: "choosePage", clowder: pages[0] })
       if (run().shop) apply({ type: "leaveShop" })
       run()
         .night.hand.slice(0, 5)
@@ -295,7 +295,7 @@ test("resumes a Run left in the Shop there", async ({ page }) => {
     while (!run().shop) {
       const pages = run().scrapbookPages
       if (pages) {
-        apply({ type: "choosePage", gathering: pages[0] })
+        apply({ type: "choosePage", clowder: pages[0] })
         continue
       }
       run()

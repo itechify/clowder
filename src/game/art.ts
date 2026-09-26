@@ -135,7 +135,7 @@ function image(scene: Phaser.Scene, key: string, x: number, y: number) {
     .setOrigin(anchor.x, anchor.y)
 }
 
-/** A room, UI, or Gathering image with its anchor at (x, y). */
+/** A room, UI, or Clowder image with its anchor at (x, y). */
 export function addArt(scene: Phaser.Scene, key: string, x = 0, y = 0) {
   const { canvas } = artEntry(key)
   return image(scene, key, x, y).setDisplaySize(

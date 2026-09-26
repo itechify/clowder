@@ -1,4 +1,4 @@
-import type { GatheringBonus, GatheringId } from "./content/gatherings"
+import type { ClowderBonus, ClowderId } from "./content/clowders"
 import type { HouseCatId } from "./content/houseCats"
 
 /** Tuning numbers for a Run. Playtesting changes belong here, not in rules. */
@@ -12,7 +12,7 @@ export type Config = {
     sleepyBesideSleepy: number
   }
   houseCats: {
-    /** Base Purr The Void grows each Black Cat after a Play with a Gathering. */
+    /** Base Purr The Void grows each Black Cat after a Play with a Clowder. */
     voidGrowth: number
   }
   handSize: number
@@ -24,10 +24,10 @@ export type Config = {
   /** The most Cats one Redraw may swap. */
   catsPerRedraw: number
   /**
-   * What each Gathering level above 1 adds to a Gathering, whenever it is
+   * What each Clowder level above 1 adds to a Clowder, whenever it is
    * active: Purr, and Mult on top of its own.
    */
-  gatheringLevelBonus: Record<GatheringId, GatheringBonus>
+  clowderLevelBonus: Record<ClowderId, ClowderBonus>
   /** Scrapbook pages offered after each cleared Night but the last. */
   scrapbookPages: number
   /** Clearing the last Night wins the Run. */
@@ -83,7 +83,7 @@ export const defaultConfig: Config = {
   playsPerNight: 3,
   redrawsPerNight: 2,
   catsPerRedraw: 3,
-  gatheringLevelBonus: {
+  clowderLevelBonus: {
     cuddlePuddle: { purr: 10, mult: 2 },
     napClub: { purr: 10, mult: 2 },
     personalSpace: { purr: 10, mult: 2 },

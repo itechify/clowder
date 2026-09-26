@@ -52,7 +52,7 @@ test("chooses the page tapped, and the Shop opens", async ({ page }) => {
   await tap(page, ...layout.page(1))
 
   const after = await run(page)
-  expect(after.gatheringLevels[chosen]).toBe(before.gatheringLevels[chosen] + 1)
+  expect(after.clowderLevels[chosen]).toBe(before.clowderLevels[chosen] + 1)
   expect(after.scrapbookPages).toBeNull()
   // It flies into the Scrapbook with a flourish before the Shop opens.
   expect(await cues(page)).toContainEqual({ name: "pageChosen" })
@@ -75,7 +75,7 @@ test("shows the same three pages after a reload mid-choice", async ({
   await expect.poll(() => texts(page)).toEqual(expect.arrayContaining(shown))
 })
 
-test("opens the Scrapbook from the room, showing Gathering levels, and closes it", async ({
+test("opens the Scrapbook from the room, showing Clowder levels, and closes it", async ({
   page
 }) => {
   test.setTimeout(90_000)
@@ -90,11 +90,11 @@ test("opens the Scrapbook from the room, showing Gathering levels, and closes it
 
   const shown = await texts(page)
   expect(shown).toContain("Scrapbook")
-  const { discoveredGatherings } = await run(page)
-  expect(discoveredGatherings).toContain(chosen)
+  const { discoveredClowders } = await run(page)
+  expect(discoveredClowders).toContain(chosen)
   expect(shown).toContain("Lv 2")
   expect(shown.filter((text) => text === "???")).toHaveLength(
-    2 * (5 - discoveredGatherings.length)
+    2 * (5 - discoveredClowders.length)
   )
 
   await tap(page, ...layout.scrapbook)
@@ -128,8 +128,8 @@ test("opens the Scrapbook in the Shop too, and closes it", async ({ page }) => {
   test.setTimeout(60_000)
   await toShop(page, 1)
   await settled(page)
-  const { gatheringLevels } = await run(page)
-  const levelled = Object.values(gatheringLevels).filter((level) => level > 1)
+  const { clowderLevels } = await run(page)
+  const levelled = Object.values(clowderLevels).filter((level) => level > 1)
   expect(levelled).toEqual([2])
 
   await tap(page, ...shop.scrapbook)

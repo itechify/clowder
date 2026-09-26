@@ -1,7 +1,7 @@
 import { type Action, applyAction } from "./actions"
 import { type Config, defaultConfig } from "./config"
+import type { ClowderId } from "./content/clowders"
 import type { Coat } from "./content/coats"
-import type { GatheringId } from "./content/gatherings"
 import type { HouseCatId } from "./content/houseCats"
 import type { Personality } from "./content/personalities"
 import { startRun } from "./run"
@@ -41,7 +41,7 @@ export function seatFromHand(run: Run, specs: SeatSpec[]): Run {
 
 /**
  * A fresh Run whose Hand holds Roster Cats matching the specs, seated in order
- * from Seat 0, with the given Shelf and Gathering levels. Test-only: stands in
+ * from Seat 0, with the given Shelf and Clowder levels. Test-only: stands in
  * for a lucky draw and the Shop visits and Scrapbook pages before it.
  */
 export function runWithCouch(
@@ -50,12 +50,12 @@ export function runWithCouch(
     seed = 1,
     config = {},
     shelf = [],
-    gatheringLevels = {}
+    clowderLevels = {}
   }: {
     seed?: number
     config?: Partial<Config>
     shelf?: HouseCatId[]
-    gatheringLevels?: Partial<Record<GatheringId, number>>
+    clowderLevels?: Partial<Record<ClowderId, number>>
   } = {}
 ): Run {
   const run = startRun(seed, { ...defaultConfig, ...config })
@@ -75,7 +75,7 @@ export function runWithCouch(
   let next: Run = {
     ...run,
     shelf,
-    gatheringLevels: { ...run.gatheringLevels, ...gatheringLevels },
+    clowderLevels: { ...run.clowderLevels, ...clowderLevels },
     night: {
       ...run.night,
       hand,
@@ -103,6 +103,6 @@ export function chooseFirstPage(run: Run) {
   if (!run.scrapbookPages) return { run, events: [] }
   return accepted(run, {
     type: "choosePage",
-    gathering: run.scrapbookPages[0]
+    clowder: run.scrapbookPages[0]
   })
 }

@@ -1,7 +1,7 @@
 import type { Config } from "./config"
+import type { ClowderId } from "./content/clowders"
 import type { Coat } from "./content/coats"
 import type { DisasterId } from "./content/disasters"
-import type { GatheringId } from "./content/gatherings"
 import type { HouseCatId } from "./content/houseCats"
 import type { Personality } from "./content/personalities"
 import type { RngState } from "./rng"
@@ -75,17 +75,17 @@ export type Run = {
   /** Open between a cleared Night and the next; null during a Night. */
   shop: Shop | null
   /**
-   * Gatherings activated by any Play, or revealed by a Scrapbook page, so far
+   * Clowders activated by any Play, or revealed by a Scrapbook page, so far
    * this Run, in discovery order.
    */
-  discoveredGatherings: GatheringId[]
-  /** Every Gathering's Gathering level, each starting at 1. */
-  gatheringLevels: Record<GatheringId, number>
+  discoveredClowders: ClowderId[]
+  /** Every Clowder's Clowder level, each starting at 1. */
+  clowderLevels: Record<ClowderId, number>
   /**
-   * The Gatherings of the Scrapbook pages offered after a cleared Night,
+   * The Clowders of the Scrapbook pages offered after a cleared Night,
    * until one is chosen and the Shop opens; null otherwise.
    */
-  scrapbookPages: GatheringId[] | null
+  scrapbookPages: ClowderId[] | null
   status: RunStatus
   treats: number
   stats: RunStats

@@ -1,20 +1,20 @@
 import type { Config } from "./config"
 import {
-  type GatheringBonus,
-  type GatheringId,
-  gatheringById,
-  gatherings
-} from "./content/gatherings"
+  type ClowderBonus,
+  type ClowderId,
+  clowderById,
+  clowders
+} from "./content/clowders"
 import { actingShelf, type HouseCatId } from "./content/houseCats"
 import { personalityBonus } from "./content/personalities"
 import type { Cat, CatId, Run } from "./types"
 
 /**
- * A Gathering formed on the Couch, adding its Purr and Mult, at its Gathering
+ * A Clowder formed on the Couch, adding its Purr and Mult, at its Clowder
  * level, once to the Play.
  */
-export type ActiveGathering = {
-  gathering: GatheringId
+export type ActiveClowder = {
+  clowder: ClowderId
   name: string
   level: number
   purr: number
@@ -24,18 +24,18 @@ export type ActiveGathering = {
 }
 
 /**
- * What a Gathering adds at `level`: its own Mult, and for each level above 1
+ * What a Clowder adds at `level`: its own Mult, and for each level above 1
  * the configured Purr and Mult more.
  */
-export function gatheringBonus(
+export function clowderBonus(
   config: Config,
-  gathering: GatheringId,
+  clowder: ClowderId,
   level: number
-): GatheringBonus {
-  const perLevel = config.gatheringLevelBonus[gathering]
+): ClowderBonus {
+  const perLevel = config.clowderLevelBonus[clowder]
   return {
     purr: (level - 1) * perLevel.purr,
-    mult: gatheringById(gathering).mult + (level - 1) * perLevel.mult
+    mult: clowderById(clowder).mult + (level - 1) * perLevel.mult
   }
 }
 
@@ -46,7 +46,7 @@ export type MultEffect = {
   mult: number
 }
 
-/** A House Cat adding Mult once to the whole Play, alongside the Gatherings. */
+/** A House Cat adding Mult once to the whole Play, alongside the Clowders. */
 export type WholePlayEffect = MultEffect
 
 /**
@@ -97,8 +97,8 @@ export type TimesEffect = {
 
 /** A Play's Score, phase by phase (ADR-0001). */
 export type ScoreBreakdown = {
-  /** Phase 1: Gatherings, each adding Purr, and Mult to the starting 1... */
-  gatherings: ActiveGathering[]
+  /** Phase 1: Clowders, each adding Purr, and Mult to the starting 1... */
+  clowders: ActiveClowder[]
   /** ...and whole-Play House Cat effects, in Shelf order. */
   wholePlayEffects: WholePlayEffect[]
   /** Phase 2: in scoring order, left to right by Seat. */
@@ -125,17 +125,17 @@ export function previewPlay(run: Run): ScoreBreakdown {
   )
   const catAt = (seat: number): Cat | undefined => couch[seat] ?? undefined
 
-  // Phase 1: Gatherings add Purr and Mult, and whole-Play effects Mult.
-  const active: ActiveGathering[] = []
-  for (const { id, name, seats: forming } of gatherings) {
+  // Phase 1: Clowders add Purr and Mult, and whole-Play effects Mult.
+  const active: ActiveClowder[] = []
+  for (const { id, name, seats: forming } of clowders) {
     const seats = forming(couch)
-    const level = run.gatheringLevels[id]
+    const level = run.clowderLevels[id]
     if (seats.length > 0)
       active.push({
-        gathering: id,
+        clowder: id,
         name,
         level,
-        ...gatheringBonus(run.config, id, level),
+        ...clowderBonus(run.config, id, level),
         seats
       })
   }
@@ -186,7 +186,7 @@ export function previewPlay(run: Run): ScoreBreakdown {
   })
   const purr = scoringEvents.reduce(
     (sum, event) => sum + event.purr,
-    active.reduce((sum, gathering) => sum + gathering.purr, 0)
+    active.reduce((sum, clowder) => sum + clowder.purr, 0)
   )
 
   // Phase 3: × effects multiply Mult, some warmed up by this Play.
@@ -217,7 +217,7 @@ export function previewPlay(run: Run): ScoreBreakdown {
 
   // Phase 4: Purr × Mult, rounded down only here.
   return {
-    gatherings: active,
+    clowders: active,
     wholePlayEffects,
     scoringEvents,
     warmUps,
