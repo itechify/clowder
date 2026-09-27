@@ -29,7 +29,7 @@ export const SEAT_Y = 352
 export const SEATED_SIZE = 64
 /** Each rug row's Cats: their centres' height, and how big they are shown. */
 export const RUG_ROWS = {
-  back: { y: 592, size: 66 },
+  back: { y: 592, size: 76 },
   front: { y: 680, size: 76 }
 } as const
 
@@ -116,22 +116,14 @@ export function layOutRow(
 }
 
 /**
- * Position centres along the rug's two rows, `positions` to a row and
- * staggered: each back-row position falls between two front-row positions,
- * so a full Hand fits across.
+ * Position centres along the rug's two rows, `positions` to a row, spread
+ * evenly clear of the room's sides; each back-row position stands directly
+ * behind its front-row one.
  */
 export function rugX(positions: number) {
-  const step = (WIDTH - 96) / (2 * positions - 1)
-  /** The `i`th position from the left, counting across both rows. */
-  const nth = (i: number) => 48 + step * i
-  return {
-    front: Array.from({ length: positions }, (_, position) =>
-      nth(2 * position)
-    ),
-    back: Array.from({ length: positions }, (_, position) =>
-      nth(2 * position + 1)
-    )
-  }
+  const step = (WIDTH - 96) / Math.max(1, positions - 1)
+  const row = Array.from({ length: positions }, (_, i) => 48 + step * i)
+  return { front: row, back: [...row] }
 }
 
 /**

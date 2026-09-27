@@ -105,9 +105,11 @@ const PURR_Y = 298
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
 /**
  * Each rug position's tap and drag area, around its Cat's centre: `w` wide,
- * and `margin` taller than the Cat.
+ * and `margin` taller than the Cat, but no further than halfway to the other
+ * row's.
  */
 const RUG_AREA = { w: 80, margin: 28, dy: -4 }
+const BETWEEN_RUG_ROWS = (RUG_ROWS.back.y + RUG_ROWS.front.y) / 2 + RUG_AREA.dy
 /** How far a Cat picked up from the rug lifts off it. */
 const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
@@ -377,12 +379,21 @@ export class CouchScene extends Phaser.Scene {
         )
     })
     // Each rug position answers for whichever Cat lounges there, however it is
-    // moving; the front row over the back.
+    // moving.
     for (const row of ["back", "front"] as const)
       this.rugX[row].forEach((_, position) => {
         const { x, y, size } = this.spot({ on: "rug", row, position })
+        const half = (size + RUG_AREA.margin) / 2
+        const top =
+          row === "front"
+            ? Math.max(y + RUG_AREA.dy - half, BETWEEN_RUG_ROWS)
+            : y + RUG_AREA.dy - half
+        const bottom =
+          row === "back"
+            ? Math.min(y + RUG_AREA.dy + half, BETWEEN_RUG_ROWS)
+            : y + RUG_AREA.dy + half
         this.add
-          .zone(x, y + RUG_AREA.dy, RUG_AREA.w, size + RUG_AREA.margin)
+          .zone(x, (top + bottom) / 2, RUG_AREA.w, bottom - top)
           .setInteractive({ useHandCursor: true })
           .on("pointerdown", (pointer: Phaser.Input.Pointer) => {
             const cat = this.loungingAt(row, position)
@@ -889,12 +900,7 @@ export class CouchScene extends Phaser.Scene {
             .text(x, SEAT_Y + 38, cat.name, font(11, "#f6f1e4"))
             .setOrigin(0.5)
         : this.add
-            .text(
-              x,
-              y + size * 0.42,
-              cat.name,
-              font(placement.row === "front" ? 12 : 11, "#fdf6ea")
-            )
+            .text(x, y + size * 0.42, cat.name, font(12, "#fdf6ea"))
             .setOrigin(0.5)
             .setStroke("#7a3526", 3)
     )
@@ -1110,18 +1116,21 @@ export class CouchScene extends Phaser.Scene {
     this.drawScrapbookObject(add)
 
     // The Hand's Cats not yet on the Couch, lounging on the rug; the one
-    // picked up lifts and glows.
-    for (const lounging of staged) {
-      const { cat: id, placement, spot } = lounging
-      if (placement.on !== "rug") continue
-      const cat = catById.get(id)!
-      const { x, y, size } = spot
+    // picked up lifts and glows. Their labels go over every Cat, so the front
+    // row's ears never hide the back row's names.
+    const lounging = staged.filter(({ placement }) => placement.on === "rug")
+    for (const look of lounging) {
+      const { cat: id, spot } = look
       const held = id === this.held
       this.drawShadow(add, spot)
       if (chosen.has(id)) this.drawGlow(add, spot, "chosen")
-      if (held) this.drawGlow(add, { ...spot, y: y - LIFT }, "held")
-      this.drawCatAt(add, cat, lounging, held ? LIFT : 0)
+      if (held) this.drawGlow(add, { ...spot, y: spot.y - LIFT }, "held")
+      this.drawCatAt(add, catById.get(id)!, look, held ? LIFT : 0)
+    }
+    for (const { cat: id, placement, spot } of lounging) {
       if (id === this.dragging) continue
+      const cat = catById.get(id)!
+      const { x, y, size } = spot
       this.drawGrowth(add, cat, x - size * 0.36, y - size * 0.55)
       this.drawName(add, cat, placement, spot)
     }
@@ -1572,10 +1581,11 @@ export class CouchScene extends Phaser.Scene {
     presentation.lastCouch = before.night.couch
 
     // The committed Couch, and the rest of the Hand waiting on the rug,
-    // where it settles from once the sequence is over.
+    // where it settles from once the sequence is over; names over every Cat.
     const seated = new Map<number, Phaser.GameObjects.Container>()
     this.lastLooks.clear()
-    for (const look of this.byDepth(stage(before, order).cats)) {
+    const looks = this.byDepth(stage(before, order).cats)
+    for (const look of looks) {
       const { cat: id, placement, spot } = look
       const cat = catById.get(id)!
       const { x, y, size } = spot
@@ -1584,8 +1594,9 @@ export class CouchScene extends Phaser.Scene {
       const sprite = add(drawCat(this, cat, look, size)).setPosition(x, y)
       this.shown.set(id, { sprite, on: placement.on, size, look })
       if (placement.on === "couch") seated.set(placement.seat, sprite)
-      this.drawName(add, cat, placement, spot)
     }
+    for (const { cat, placement, spot } of looks)
+      this.drawName(add, catById.get(cat)!, placement, spot)
     this.drawScrapbookObject(add)
     const { plays, redraws } = hud(before)
     this.drawButton(PLAY_BUTTON, "Get Comfy", false, plays, add)

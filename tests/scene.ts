@@ -58,7 +58,7 @@ export async function drag(
 /** Where things are in CouchScene's layout. */
 export const layout = {
   /** The first four Hand Cats not on the Couch, on the rug's front row. */
-  hand: (i: number): [number, number] => [48 + i * 84, 680],
+  hand: (i: number): [number, number] => [48 + i * 98, 680],
   seat: (seat: number): [number, number] => [55 + seat * 70, 342],
   play: [135, 790] as [number, number],
   redraw: [316, 790] as [number, number],
