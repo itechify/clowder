@@ -77,7 +77,7 @@ export async function drag(
 /** Where things are in CouchScene's layout. */
 export const layout = {
   /** The first four Hand Cats not on the Couch, on the rug's front row. */
-  hand: (i: number): [number, number] => [48 + i * 84, 680],
+  hand: (i: number): [number, number] => [48 + i * 98, 688],
   seat: (seat: number): [number, number] => [55 + seat * 70, 342],
   play: [135, 790] as [number, number],
   redraw: [316, 790] as [number, number],
@@ -88,7 +88,7 @@ export const layout = {
   /** The `i`th of the three Scrapbook pages, once a Night is cleared. */
   page: (i: number): [number, number] => [74 + i * 121, 590],
   /** The Scrapbook lying on the floor by the rug. */
-  scrapbook: [346, 522] as [number, number]
+  scrapbook: [346, 500] as [number, number]
 }
 
 /** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */
