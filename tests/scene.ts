@@ -113,7 +113,7 @@ export async function drag(
 export const layout = {
   /** The first four Hand Cats not on the Couch, on the rug's front row. */
   hand: (i: number): [number, number] => [48 + i * 98, 688],
-  seat: (seat: number): [number, number] => [55 + seat * 70, 342],
+  seat: (seat: number): [number, number] => [55 + seat * 70, 354],
   play: [135, 790] as [number, number],
   redraw: [316, 790] as [number, number],
   /** Once the Results show, over Play and Redraw, which no longer answer. */

@@ -93,15 +93,15 @@ const DRAW_PILE_LABEL = { x: 22, y: 52 }
 const JAR_MOUTH = 44
 /** How long the jar bobs as each treat lands in it, at 1×. */
 const JAR_BOB_MS = 120
-const PURR_METER = { x: WIDTH / 2, y: 276 }
+const PURR_METER = { x: WIDTH / 2, y: 288 }
 /**
  * A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from
  * the top of its back, beneath the purr meter.
  */
-const FULL_SOFA_Y = 337
-const BUNTING_Y = 286
+const FULL_SOFA_Y = 349
+const BUNTING_Y = 298
 /** Where a seated Cat's Purr shows above it, just below the purr meter. */
-const PURR_Y = 298
+const PURR_Y = 310
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
 /**
@@ -116,9 +116,9 @@ const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
 const HOP_HEIGHT = 46
 /** Where Clowder names sit, side by side just above the purr meter... */
-const CLOWDER_NAME_Y = 248
+const CLOWDER_NAME_Y = 260
 /** ...and where the Mult a Clowder adds pops up, just above its name. */
-const CLOWDER_POP_Y = 222
+const CLOWDER_POP_Y = 234
 /**
  * Each Clowder name's pill: its padding either side, its height, the gap
  * between pills, and how far in from the room's sides they keep.
