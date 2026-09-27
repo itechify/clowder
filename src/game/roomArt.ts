@@ -87,7 +87,10 @@ const upholstery = {
 /** The Shelf's wood, lit along its top. */
 const wood = { top: 0xb07a52, front: 0x8a5a3b, dark: 0x5e3a25 }
 
-const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
+const room: Record<
+  RoomPiece,
+  (g: Graphics, entry: ArtEntry, ctx: CanvasRenderingContext2D) => void
+> = {
   wall: (g) => {
     g.fillStyle(0xf3dfc1, 1).fillRect(0, 0, 390, 844)
     g.fillStyle(0xe9cfa9, 1)
@@ -383,6 +386,23 @@ const room: Record<RoomPiece, (g: Graphics, entry: ArtEntry) => void> = {
     g.fillStyle(0xfdf6ea, 1).fillRoundedRect(1, 1, 110, 184, 6)
     g.fillStyle(0xf2c6c2, 0.9).fillRect(36, 0, 40, 9)
     g.lineStyle(2, INK, 1).strokeRoundedRect(1, 1, 110, 184, 6)
+  },
+  logo: (g, _, ctx) => {
+    // The name in the display face, a little moon and stars beside it.
+    ctx.font = displayFont(66)
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    ctx.lineJoin = "round"
+    ctx.lineWidth = 9
+    ctx.strokeStyle = OUTLINE
+    ctx.strokeText("Clowder", 142, 54)
+    ctx.fillStyle = "#fdf6ea"
+    ctx.fillText("Clowder", 142, 54)
+    // A gold crescent, its bite the wall's own cream.
+    g.fillStyle(INK, 1).fillCircle(276, 22, 11)
+    g.fillStyle(0xf6c453, 1).fillCircle(276, 22, 8.5)
+    g.fillStyle(0xf3dfc1, 1).fillCircle(282, 17, 7.5)
+    g.fillStyle(0xf6c453, 1).fillCircle(256, 12, 3).fillCircle(292, 42, 2.5)
   }
 }
 
@@ -491,7 +511,7 @@ function clowder(
  */
 export function paintRoomArt(entry: ArtEntry): Paint {
   return (g, ctx) => {
-    if (entry.kind === "room") room[entry.piece](g, entry)
+    if (entry.kind === "room") room[entry.piece](g, entry, ctx)
     else if (entry.kind === "ui") ui[entry.piece](g, entry.ready)
     else if (entry.kind === "clowder") clowder(g, ctx, entry)
   }

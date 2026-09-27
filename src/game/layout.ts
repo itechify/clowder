@@ -160,3 +160,23 @@ export function fanX(
     (_, i) => middle - half + spacing * (i + 0.5)
   )
 }
+
+/**
+ * The title screen, which has the room to itself: the logo on the wall with
+ * the definition beneath it, the Shelf lower down than in a Run to make room,
+ * and the buttons on the rug in front of the Couch, `h` tall and `w` wide,
+ * each `gap` below the one before, the last `lastY` from the top.
+ */
+export const TITLE = {
+  logo: { x: WIDTH / 2, y: 104 },
+  definitionY: 166,
+  shelfY: 228,
+  buttons: { x: WIDTH / 2, lastY: 690, gap: 84, w: 230, h: 58 }
+}
+
+/** The centres of the title screen's `count` buttons, top to bottom. */
+export const titleButtonsY = (count: number) =>
+  Array.from(
+    { length: count },
+    (_, i) => TITLE.buttons.lastY - TITLE.buttons.gap * (count - 1 - i)
+  )

@@ -32,11 +32,15 @@ const randomSeed = () => Math.floor(Math.random() * 2 ** 31)
 /**
  * The one Run in progress. The scene and the shell both read it and send
  * actions through it; neither computes any rule itself. It is saved on this
- * device after every change, and resumed on the next visit unless the page
- * asks for a seeded Run instead.
+ * device after every change, and can be continued on the next visit unless
+ * the page asks for a seeded Run instead.
  */
 export class Session {
   run: Run
+  /** Whether the page asks for a seeded Run, which starts without the title screen. */
+  readonly seeded: boolean
+  /** Whether a Run was saved on this device to continue, as the page opened. */
+  readonly resumable: boolean
   /** Bumped on every change, for React's useSyncExternalStore. */
   revision = 0
   private listeners = new Set<Listener>()
@@ -46,11 +50,13 @@ export class Session {
     search = ""
   ) {
     const seed = seedFrom(search)
-    this.run =
-      seed === undefined
-        ? (this.load() ?? startRun(randomSeed()))
-        : startRun(seed)
-    this.save()
+    const saved = seed === undefined ? this.load() : undefined
+    this.seeded = seed !== undefined
+    this.resumable = saved !== undefined
+    this.run = saved ?? startRun(seed ?? randomSeed())
+    // A Run no one has started yet is not saved, so the next visit has
+    // nothing to continue.
+    if (this.seeded) this.save()
   }
 
   start(seed: number, config: Config = defaultConfig) {

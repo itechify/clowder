@@ -4,10 +4,14 @@ import {
   boot,
   firstShop,
   layout,
-  ready,
+  reopen,
+  resume,
+  scenes,
   settled,
   shop,
   tap,
+  texts,
+  title,
   toShop
 } from "./scene"
 
@@ -259,8 +263,7 @@ test("resumes a Run where it was left after a reload", async ({ page }) => {
   const before = await page.evaluate(() => window.__clowder!.run())
   expect(before.night.couch[4]).not.toBeNull()
 
-  await page.reload()
-  await ready(page)
+  await resume(page)
 
   expect(new URL(page.url()).search).toBe("")
   expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
@@ -288,8 +291,11 @@ test("starts afresh once the saved Run has finished", async ({ page }) => {
     return run().seed
   })
 
-  await page.reload()
-  await ready(page)
+  // Nothing is left to continue: only a New Household.
+  await reopen(page)
+  expect(await texts(page)).not.toContain("Continue")
+  await tap(page, ...title.newHousehold(1))
+  await expect.poll(() => scenes(page)).toEqual(["couch"])
 
   const fresh = await page.evaluate(() => window.__clowder!.run())
   expect(fresh.status).toBe("playing")
@@ -318,8 +324,7 @@ test("resumes a Run left in the Shop there", async ({ page }) => {
   })
   const before = await page.evaluate(() => window.__clowder!.run())
 
-  await page.reload()
-  await ready(page)
+  await resume(page)
 
   expect(await page.evaluate(() => window.__clowder!.run())).toEqual(before)
   await expect

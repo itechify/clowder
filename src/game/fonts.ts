@@ -25,9 +25,11 @@ const SHADOW = "rgba(46, 31, 25, 0.6)"
  * whatever font is ready, so no scene may draw any before this settles.
  */
 export const loadFonts = () =>
-  Promise.all(
-    [DISPLAY, BODY].map((name) => document.fonts.load(`16px "${name}"`))
-  ).catch(() => [])
+  Promise.all([
+    ...[DISPLAY, BODY].map((name) => document.fonts.load(`16px "${name}"`)),
+    // The title screen's pronunciation needs Nunito's extended Latin too.
+    document.fonts.load(`16px "${BODY}"`, "ˈʊə")
+  ]).catch(() => [])
 
 /** Body text, in Nunito. */
 export const font = (size: number, colour = "#4a3426", weight = "600") => ({

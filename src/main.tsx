@@ -10,10 +10,14 @@ import { themeFor } from "./game/music"
 import { presentation } from "./game/presentation"
 import { ShopScene } from "./game/ShopScene"
 import { session } from "./game/session"
+import { TitleScene } from "./game/TitleScene"
+import { title } from "./presentation/title"
+import { NewHouseholdConfirm } from "./shell/NewHouseholdConfirm"
 import { PwaPrompts } from "./shell/PwaPrompts"
 import { pwa } from "./shell/pwa"
 import { ResultsReadout } from "./shell/ResultsReadout"
 import { SettingsMenu } from "./shell/SettingsMenu"
+import { TitleReadout } from "./shell/TitleReadout"
 // The game's typefaces, bundled for offline play (see src/game/fonts.ts).
 import "@fontsource/lilita-one"
 import "@fontsource-variable/nunito/wght.css"
@@ -51,7 +55,7 @@ function App() {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
       },
-      scene: [BootScene, CouchScene, ShopScene],
+      scene: [BootScene, TitleScene, CouchScene, ShopScene],
       // All sound is the game's own, synthesized (src/audio, ADR-0004).
       audio: { noAudio: true },
       render: { antialias: true }
@@ -63,8 +67,16 @@ function App() {
     <>
       <div id="game" />
       <SettingsMenu />
+      {presentation.scene === "title" && (
+        <TitleReadout title={title({ resumable: session.resumable })} />
+      )}
       {results && <ResultsReadout results={results} />}
-      <PwaPrompts />
+      {/* One prompt at a time along the top. */}
+      {presentation.confirmingNewHousehold ? (
+        <NewHouseholdConfirm />
+      ) : (
+        <PwaPrompts />
+      )}
     </>
   )
 }

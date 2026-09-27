@@ -12,8 +12,8 @@ export type PlayedEffect = Pick<
   "shake" | "flash" | "particles" | "haptic"
 > & { event: Step["event"]["type"]; fire: boolean }
 
-/** The scenes that show a Run, by their Phaser keys. */
-export type SceneKey = "couch" | "shop"
+/** The scenes the game shows, by their Phaser keys: the title screen, then the Run's. */
+export type SceneKey = "title" | "couch" | "shop"
 
 /**
  * The room turning from night to day as the Shop opens, or back as it closes;
@@ -36,6 +36,8 @@ class Presentation {
   scoring = false
   /** The Run is over and the household has fallen asleep. */
   asleep = false
+  /** The title screen asks before a New Household replaces the saved Run. */
+  confirmingNewHousehold = false
   /**
    * The Couch's Cats in the order they were placed, earliest first, which way
    * they face depends on (see staging's `seatingOrder`). Not a change the
@@ -66,7 +68,14 @@ class Presentation {
   revision = 0
   private listeners = new Set<() => void>()
 
-  update(change: Partial<Pick<Presentation, "scene" | "scoring" | "asleep">>) {
+  update(
+    change: Partial<
+      Pick<
+        Presentation,
+        "scene" | "scoring" | "asleep" | "confirmingNewHousehold"
+      >
+    >
+  ) {
     Object.assign(this, change)
     this.revision++
     for (const listener of this.listeners) listener()

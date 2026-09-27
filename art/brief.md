@@ -2,14 +2,14 @@
 
 Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm brief` from the art manifest (`src/art/manifest.ts`) and its prompts (`src/art/brief.ts`); don't edit it by hand.
 
-**106 of 106 images delivered; 0 still on fallback.**
+**106 of 107 images delivered; 1 still on fallback.**
 
 | Batch | Delivered |
 | --- | --- |
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Clowder overlays | 45 of 45 |
+| 4. The room, badges, UI furniture, and Clowder overlays | 45 of 46 |
 | 5. The Shop, the living room by day | 8 of 8 |
 
 ## How to generate and deliver
@@ -805,6 +805,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [x] `art/raw/room/scrapbook.png`
 - [x] `art/raw/room/scrapbookOpen.png`
 - [x] `art/raw/room/scrapbookPage.png`
+- [ ] `art/raw/room/logo.png`
 - [x] `art/raw/ui/playButton/ready.png`
 - [x] `art/raw/ui/redrawButton/ready.png`
 - [x] `art/raw/ui/pip/full.png`
@@ -1197,6 +1198,19 @@ A big handmade scrapbook lying wide open, seen from straight above: a warm brown
 
 ```text
 A single tall cream scrapbook page with softly rounded corners, a strip of pastel washi tape across its top, and a faint paper texture. Leave it blank: the game writes a name and more on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 336×558 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
+```
+
+### Logo: `art/raw/room/logo.png`
+
+**On fallback.**
+
+- Key: `room/logo`
+- Size: 900×288
+- Anchor: (450, 144): centre
+- Attach: `art/reference/style-sheet.png`
+
+```text
+The game's logo, painted straight onto a living-room wall at night: the word "Clowder" in big, chunky, rounded cream lettering with a thick dark-brown outline, slightly bouncy, the "o" shaped like a curled-up sleeping cat seen from above, a pair of little cat ears peeking over the "C", and a tiny crescent moon and two stars tucked beside the word. Spell it exactly "Clowder", and keep the lettering bold and readable at a small size. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×288 pixels, so compose for that shape. No other words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
 ### Play button, ready: `art/raw/ui/playButton/ready.png`

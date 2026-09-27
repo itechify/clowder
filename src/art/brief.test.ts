@@ -158,6 +158,12 @@ describe("the art brief", () => {
       expect(prompt("room/frontDoor")).toMatch(/door/i)
     })
 
+    it("letters the logo with the game's name, and no other words", () => {
+      expect(prompt("room/logo")).toMatch(/"Clowder"/)
+      expect(prompt("room/logo")).toMatch(/No other words/)
+      expect(prompt("room/logo")).not.toMatch(/No words/)
+    })
+
     it("leaves the Results' sign and photo frame blank for the game to fill", () => {
       expect(prompt("room/titleSign")).toMatch(/blank/i)
       expect(prompt("room/photoFrame")).toMatch(/sofa/i)

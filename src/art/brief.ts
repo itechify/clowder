@@ -268,7 +268,8 @@ const roomLooks: Record<Exclude<RoomPiece, "moon">, string> = {
   scrapbookOpen:
     "A big handmade scrapbook lying wide open, seen from straight above: a warm brown cloth cover framing its cream pages, a strip of washi tape at each corner. Keep the pages flat, blank, and plain, with no fold showing down the middle: the game lays pages and writes lines of words right across them.",
   scrapbookPage:
-    "A single tall cream scrapbook page with softly rounded corners, a strip of pastel washi tape across its top, and a faint paper texture. Leave it blank: the game writes a name and more on it."
+    "A single tall cream scrapbook page with softly rounded corners, a strip of pastel washi tape across its top, and a faint paper texture. Leave it blank: the game writes a name and more on it.",
+  logo: 'The game\'s logo, painted straight onto a living-room wall at night: the word "Clowder" in big, chunky, rounded cream lettering with a thick dark-brown outline, slightly bouncy, the "o" shaped like a curled-up sleeping cat seen from above, a pair of little cat ears peeking over the "C", and a tiny crescent moon and two stars tucked beside the word. Spell it exactly "Clowder", and keep the lettering bold and readable at a small size.'
 }
 
 /** The pieces of the room seen only in the Shop, by day. */
@@ -352,14 +353,14 @@ const capitalised = (word: string) => word[0].toUpperCase() + word.slice(1)
 const piecePrompt = (
   { canvas }: ArtEntry,
   look: string,
-  { opaque = false, onFloor = false, byDay = false } = {}
+  { opaque = false, onFloor = false, byDay = false, lettered = false } = {}
 ) =>
   [
     look,
     opaque ? "" : "Transparent background.",
     onFloor ? "" : "Front-on, with no perspective.",
     `It will be resized to exactly ${canvas.width}×${canvas.height} pixels, so compose for that shape.`,
-    NO_WORDS,
+    lettered ? "No other words, signatures, or watermarks." : NO_WORDS,
     byDay ? style("by day") : STYLE,
     MATCH
   ]
@@ -431,7 +432,8 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
         prompt: piecePrompt(entry, roomLooks[entry.piece], {
           opaque: entry.piece === "wall",
           onFloor: entry.piece === "rug" || entry.piece === "sunbeam",
-          byDay: inShop(entry)
+          byDay: inShop(entry),
+          lettered: entry.piece === "logo"
         })
       }
     case "ui": {

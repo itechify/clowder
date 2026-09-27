@@ -50,6 +50,7 @@ import { INK, NIGHT_SKY } from "./roomArt"
 import { drawClosedScrapbook, drawScrapbookView } from "./scrapbookView"
 import { session } from "./session"
 import { drawShelf, tapShelf } from "./shelfView"
+import { arriveFromTitle } from "./TitleScene"
 import { drawTreat } from "./treatArt"
 
 /**
@@ -223,6 +224,7 @@ export class ShopScene extends Phaser.Scene {
       return
     }
     presentation.update({ scene: "shop" })
+    arriveFromTitle(this)
     this.cameras.main.setZoom(RESOLUTION).centerOn(WIDTH / 2, HEIGHT / 2)
     this.picked = null
     this.opened = null

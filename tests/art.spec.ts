@@ -8,7 +8,10 @@ import { boot } from "./scene"
  */
 const codeDrawnForGood = new Set<string>()
 
-test("shows every art key's delivered image, unless it is code-drawn for good", async ({
+/** Keys on their code-drawn fallback until Astra delivers them: the title screen's logo (#81). */
+const awaitingDelivery = new Set<string>(["room/logo"])
+
+test("shows every art key's delivered image, unless it is code-drawn for now or for good", async ({
   page
 }) => {
   await boot(page, 7)
@@ -22,7 +25,9 @@ test("shows every art key's delivered image, unless it is code-drawn for good", 
     Object.fromEntries(
       keys.map((key) => [
         key,
-        codeDrawnForGood.has(key) ? "fallback" : "delivered"
+        codeDrawnForGood.has(key) || awaitingDelivery.has(key)
+          ? "fallback"
+          : "delivered"
       ])
     )
   )
