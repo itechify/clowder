@@ -29,8 +29,8 @@ export const SEAT_Y = 352
 export const SEATED_SIZE = 64
 /** Each rug row's Cats: their centres' height, and how big they are shown. */
 export const RUG_ROWS = {
-  back: { y: 592, size: 76 },
-  front: { y: 680, size: 76 }
+  back: { y: 584, size: 76 },
+  front: { y: 688, size: 76 }
 } as const
 
 /** Seat centres, spread evenly between the Couch's arms. */
