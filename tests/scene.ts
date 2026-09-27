@@ -69,7 +69,7 @@ export const layout = {
   /** The `i`th of the three Scrapbook pages, once a Night is cleared. */
   page: (i: number): [number, number] => [74 + i * 121, 590],
   /** The Scrapbook lying on the floor by the rug. */
-  scrapbook: [346, 522] as [number, number]
+  scrapbook: [346, 500] as [number, number]
 }
 
 /** Where things are in ShopScene's layout, with two Cats and two House Cats on offer. */

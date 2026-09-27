@@ -199,7 +199,7 @@ const PAGE = { y: 590, w: 112, h: 186, step: 121 }
  * The Scrapbook lying on the floor by the rug's corner, where a chosen page
  * flies into it and a tap opens it.
  */
-const SCRAPBOOK_OBJECT = { x: 346, y: 522 }
+const SCRAPBOOK_OBJECT = { x: 346, y: 500 }
 /** The Scrapbook's page centres, side by side. */
 const pageX = (count: number) =>
   Array.from(
@@ -1077,6 +1077,10 @@ export class CouchScene extends Phaser.Scene {
     }
     this.drawGatherings(add, preview.gatherings, "over")
 
+    // The Scrapbook on the floor by the rug, beneath the words over the floor
+    // and the Cats lounging on it.
+    this.drawScrapbookObject(add)
+
     // Live preview: Purr × Mult = Score, and where it would leave the Night;
     // the Scrapbook, open, lies over it.
     const open = choice !== null || this.viewingScrapbook
@@ -1111,9 +1115,6 @@ export class CouchScene extends Phaser.Scene {
           })
           .setOrigin(0.5)
       )
-
-    // The Scrapbook on the floor by the rug, beneath the Cats lounging on it.
-    this.drawScrapbookObject(add)
 
     // The Hand's Cats not yet on the Couch, lounging on the rug; the one
     // picked up lifts and glows.
