@@ -90,8 +90,8 @@ describe("a Play's Clowders", () => {
       { clowderLevels: { napClub: 3 } }
     )
 
-    expect(step.adds).toEqual({ mult: "+7 Mult", purr: "+20 Purr" })
-    expect(step.event).toMatchObject({ tally: { purr: 20, mult: 8 } })
+    expect(step.adds).toEqual({ mult: "+5 Mult", purr: "+20 Purr" })
+    expect(step.event).toMatchObject({ tally: { purr: 20, mult: 6 } })
   })
 
   it("show only the Mult a Clowder adds at level 1", () => {

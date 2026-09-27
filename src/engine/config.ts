@@ -75,7 +75,7 @@ export const defaultConfig: Config = {
     sleepyBesideSleepy: 10
   },
   houseCats: {
-    voidGrowth: 5
+    voidGrowth: 8
   },
   handSize: 8,
   seats: 5,
@@ -84,23 +84,23 @@ export const defaultConfig: Config = {
   redrawsPerNight: 2,
   catsPerRedraw: 3,
   clowderLevelBonus: {
-    cuddlePuddle: { purr: 10, mult: 2 },
-    napClub: { purr: 10, mult: 2 },
-    personalSpace: { purr: 10, mult: 2 },
+    cuddlePuddle: { purr: 10, mult: 1 },
+    napClub: { purr: 10, mult: 1 },
+    personalSpace: { purr: 5, mult: 1 },
     varietyPack: { purr: 10, mult: 2 },
     fullSofa: { purr: 5, mult: 1 }
   },
   scrapbookPages: 3,
   nights: 9,
-  firstTarget: 300,
-  targetGrowth: 1.6,
+  firstTarget: 480,
+  targetGrowth: 1.5,
   disasterNights: [3, 6, 9],
   disasterTargetFactor: 1,
   clearReward: {
-    early: 3,
-    earlyNights: 2,
-    later: 4,
-    disaster: 6,
+    early: 2,
+    earlyNights: 5,
+    later: 5,
+    disaster: 3,
     perUnusedPlay: 1
   },
   shop: {

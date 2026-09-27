@@ -11,7 +11,7 @@ test("shows the Night, Treats, and Target progress in the room, exactly", async 
   await boot(page, 7)
 
   expect(await texts(page)).toEqual(
-    expect.arrayContaining(["Night 1/9", "0", "0 / 300", "Draw pile 22"])
+    expect.arrayContaining(["Night 1/9", "0", "0 / 480", "Draw pile 22"])
   )
 
   const score = await page.evaluate(() => {
@@ -26,7 +26,7 @@ test("shows the Night, Treats, and Target progress in the room, exactly", async 
   })
   // Skipped, the purr meter lands on the Night's score.
   await tap(page, ...layout.wall)
-  expect(await texts(page)).toContain(`${score} / 300`)
+  expect(await texts(page)).toContain(`${score} / 480`)
 })
 
 test("names Clowders on the Couch as they form", async ({ page }) => {

@@ -519,17 +519,17 @@ describe("Treat Dealer", () => {
 
     const { run: after, events } = playOne(run)
 
-    // 3 for Night 1, 2 for unused Plays, 1 for the unused Redraw.
+    // 2 for Night 1, 2 for unused Plays, 1 for the unused Redraw.
     expect(events).toContainEqual({
       type: "treatsAwarded",
-      forNight: 3,
+      forNight: 2,
       forUnusedPlays: 2,
       forHouseCats: [
         { houseCat: "treatDealer", name: "Treat Dealer", treats: 1 }
       ],
-      treats: 6
+      treats: 5
     })
-    expect(after.treats).toBe(6)
+    expect(after.treats).toBe(5)
   })
 
   it("pays nothing with no Redraws left", () => {
@@ -542,13 +542,13 @@ describe("Treat Dealer", () => {
     expect(events).toContainEqual(
       expect.objectContaining({ type: "treatsAwarded", forHouseCats: [] })
     )
-    expect(after.treats).toBe(5)
+    expect(after.treats).toBe(4)
   })
 
   it("pays twice with a Copycat copying it", () => {
     const { run: after } = playOne(easy(["treatDealer", "copycat"]))
 
-    expect(after.treats).toBe(3 + 2 + 2 * 2)
+    expect(after.treats).toBe(2 + 2 + 2 * 2)
   })
 })
 
