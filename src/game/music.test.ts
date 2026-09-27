@@ -38,6 +38,17 @@ describe("the music", () => {
     expect(themeFor({ scene: "couch", run: over, asleep: false })).toBe("night")
   })
 
+  it("plays the Night theme on the title screen", () => {
+    const disasterNight = {
+      ...run,
+      night: { ...run.night, disaster: "vacuum" as const }
+    }
+
+    expect(
+      themeFor({ scene: "title", run: disasterNight, asleep: false })
+    ).toBe("night")
+  })
+
   it("plays nothing before a scene shows", () => {
     expect(themeFor({ scene: null, run, asleep: false })).toBe(null)
   })

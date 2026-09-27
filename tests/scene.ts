@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 import { type Config, defaultConfig } from "../src/engine"
 import type {} from "../src/game/debugHook"
-import { fanX } from "../src/game/layout"
+import { fanX, TITLE, titleButtonsY } from "../src/game/layout"
 import type { PileSpot } from "../src/presentation/shop"
 
 /**
@@ -12,6 +12,41 @@ export async function ready(page: Page) {
   await page.waitForFunction(() =>
     window.__clowder?.scenes().some((scene) => scene !== "boot")
   )
+}
+
+/** The scenes showing now, such as ["title"] or ["couch"]. */
+export const scenes = (page: Page) =>
+  page.evaluate(() => window.__clowder!.scenes())
+
+/** Every piece of text the showing scenes draw. */
+export const texts = (page: Page) =>
+  page.evaluate(() => window.__clowder!.texts())
+
+/** Where the title screen's buttons are, as it shows `count` of them. */
+export const title = {
+  button: (i: number, count: number): [number, number] => [
+    TITLE.buttons.x,
+    titleButtonsY(count)[i]
+  ],
+  /** Continue, when a Run is saved... */
+  continue: (): [number, number] => title.button(0, 2),
+  /** ...and New Household, the last of however many show. */
+  newHousehold: (count: 1 | 2): [number, number] =>
+    title.button(count - 1, count)
+}
+
+/** Reloads the game, as on a later visit, and waits for the title screen. */
+export async function reopen(page: Page) {
+  await page.reload()
+  await ready(page)
+  await expect.poll(() => scenes(page)).toEqual(["title"])
+}
+
+/** Reloads the game and continues the saved Run from the title screen. */
+export async function resume(page: Page) {
+  await reopen(page)
+  await tap(page, ...title.continue())
+  await expect.poll(() => scenes(page)).not.toEqual(["title"])
 }
 
 /**

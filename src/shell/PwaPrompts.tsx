@@ -1,27 +1,6 @@
 import { useSyncExternalStore } from "react"
 import { pwa } from "./pwa"
-
-type ToastProps = {
-  message: string
-  action: string
-  onAction: () => void
-  dismiss: string
-  onDismiss: () => void
-}
-
-function Toast({ message, action, onAction, dismiss, onDismiss }: ToastProps) {
-  return (
-    <aside className="toast" aria-live="polite">
-      <p>{message}</p>
-      <button type="button" onClick={onAction}>
-        {action}
-      </button>
-      <button type="button" className="quiet" onClick={onDismiss}>
-        {dismiss}
-      </button>
-    </aside>
-  )
-}
+import { Toast } from "./Toast"
 
 /** One prompt at a time along the top: a waiting update, else installing. */
 export function PwaPrompts() {

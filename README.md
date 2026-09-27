@@ -16,8 +16,10 @@ pnpm build        # production build, then verifies the precache
 pnpm deploy       # build and publish to Cloudflare via Wrangler
 ```
 
-`?seed=<n>` in the URL starts a reproducible Run. In development builds,
-`window.__clowder` exposes the Run to end-to-end tests.
+The game opens on a title screen, to Continue the Run saved on the device or
+start a New Household. `?seed=<n>` in the URL skips it and starts a
+reproducible Run. In development builds, `window.__clowder` exposes the Run to
+end-to-end tests.
 
 ## Art
 

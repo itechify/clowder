@@ -80,6 +80,7 @@ import {
 } from "./scrapbookView"
 import { session } from "./session"
 import { drawShelf, shelfNotes, tapShelf } from "./shelfView"
+import { arriveFromTitle } from "./TitleScene"
 
 /**
  * Where the HUD sits in the room: the Night on the wall beside the window with
@@ -340,6 +341,7 @@ export class CouchScene extends Phaser.Scene {
       return
     }
     presentation.update({ scene: "couch" })
+    arriveFromTitle(this)
     // Back from the Shop, the scene starts afresh.
     this.held = null
     this.heldHouseCat = null

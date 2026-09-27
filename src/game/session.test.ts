@@ -38,6 +38,34 @@ describe("resuming the Run", () => {
     expect(session.run.night.playsLeft).toBe(3)
   })
 
+  it("offers nothing to continue when nothing is saved", () => {
+    const storage = memoryStorage()
+
+    expect(new Session(storage).resumable).toBe(false)
+    // Opening the game without starting a household saves nothing to continue.
+    expect(new Session(storage).resumable).toBe(false)
+  })
+
+  it("offers to continue a saved Run", () => {
+    const storage = memoryStorage()
+    playFive(new Session(storage, "?seed=7"))
+
+    expect(new Session(storage).resumable).toBe(true)
+  })
+
+  it("offers nothing to continue once the saved Run has finished", () => {
+    const storage = memoryStorage()
+    const session = new Session(storage, "?seed=7")
+    while (session.run.status === "playing") playFive(session)
+
+    expect(new Session(storage).resumable).toBe(false)
+  })
+
+  it("knows when the page asks for a seeded Run", () => {
+    expect(new Session(memoryStorage(), "?seed=7").seeded).toBe(true)
+    expect(new Session(memoryStorage()).seeded).toBe(false)
+  })
+
   it("picks up the saved Run exactly where it was left", () => {
     const storage = memoryStorage()
     const first = new Session(storage)

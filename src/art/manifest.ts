@@ -77,6 +77,8 @@ export type RoomPiece =
   | "scrapbook"
   | "scrapbookOpen"
   | "scrapbookPage"
+  // The title screen: the game's name, lettered on the wall.
+  | "logo"
 export type UiPiece = "playButton" | "redrawButton" | "pip" | "purrMeter"
 
 type Size = { width: number; height: number }
@@ -162,7 +164,8 @@ export const art = {
     rosette: "room/rosette",
     scrapbook: "room/scrapbook",
     scrapbookOpen: "room/scrapbookOpen",
-    scrapbookPage: "room/scrapbookPage"
+    scrapbookPage: "room/scrapbookPage",
+    logo: "room/logo"
   },
   playButton: (ready: boolean) =>
     `ui/playButton/${ready ? "ready" : "disabled"}`,
@@ -339,6 +342,14 @@ function* entries(): Generator<ArtEntry> {
     piece: "scrapbookPage",
     key: art.room.scrapbookPage,
     ...room(112, 186)
+  }
+  // The game's name on the title screen's wall, its definition written
+  // beneath by the game.
+  yield {
+    kind: "room",
+    piece: "logo",
+    key: art.room.logo,
+    ...room(300, 96)
   }
 
   // The Shop is the living room by day. The window by day swaps in for the

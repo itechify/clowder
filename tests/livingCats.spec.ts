@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test"
-import { boot, layout, ready, tap } from "./scene"
+import { boot, layout, resume, tap } from "./scene"
 
 /** The Cats as the living room stages them now. */
 const staging = (page: Page) => page.evaluate(() => window.__clowder!.staging())
@@ -64,7 +64,6 @@ test("every Cat keeps its eye tint after a reload", async ({ page }) => {
   const before = await tints()
   expect(new Set(Object.values(before)).size).toBeGreaterThan(1)
 
-  await page.reload()
-  await ready(page)
+  await resume(page)
   expect(await tints()).toEqual(before)
 })

@@ -10,11 +10,12 @@ export type Showing = {
 }
 
 /**
- * The theme for what is showing: the Night's, or its Disaster variation, on
- * the Couch; the Shop's in the Shop; and a lullaby once the Run is over and
- * the household asleep.
+ * The theme for what is showing: the Night's on the title screen; the
+ * Night's, or its Disaster variation, on the Couch; the Shop's in the Shop;
+ * and a lullaby once the Run is over and the household asleep.
  */
 export function themeFor({ scene, run, asleep }: Showing): ThemeName | null {
+  if (scene === "title") return "night"
   if (asleep) return "results"
   if (scene === "shop") return "shop"
   if (scene === "couch") return run.night.disaster ? "disaster" : "night"

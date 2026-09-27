@@ -3,7 +3,7 @@ import { scrapbookChoice } from "../src/presentation/scrapbook"
 import {
   boot,
   layout,
-  ready,
+  resume,
   settled,
   shop,
   tap,
@@ -67,8 +67,7 @@ test("shows the same three pages after a reload mid-choice", async ({
   const pages = (await run(page)).scrapbookPages
   const shown = await pageTexts(page)
 
-  await page.reload()
-  await ready(page)
+  await resume(page)
 
   expect((await run(page)).scrapbookPages).toEqual(pages)
   expect(await scenes(page)).toEqual(["couch"])
