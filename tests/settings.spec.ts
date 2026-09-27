@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import { boot, openSettings } from "./scene"
+import { boot, layout, onPage, openSettings } from "./scene"
 
 test("keeps sound, haptics, and Reduced motion choices across reloads", async ({
   page
@@ -31,6 +31,23 @@ test("keeps sound, haptics, and Reduced motion choices across reloads", async ({
   await expect(
     settings.getByRole("checkbox", { name: "Reduced motion" })
   ).toBeChecked()
+})
+
+test("keeps presses on the Settings menu out of the scene behind it", async ({
+  page
+}) => {
+  await boot(page, 7)
+  const settings = await openSettings(page)
+
+  const cues = () => page.evaluate(() => window.__clowder!.cues().length)
+  const before = await cues()
+
+  // Over Redraw, which answers as soon as it is pressed, with a tap's sound.
+  const redraw = await onPage(page, ...layout.redraw)
+  await page.mouse.click(redraw.x, redraw.y)
+
+  await expect(settings).toBeVisible()
+  expect(await cues()).toBe(before)
 })
 
 test.describe("where the OS asks for reduced motion", () => {
