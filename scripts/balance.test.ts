@@ -14,7 +14,7 @@ describe("the balance simulation", () => {
     expect(report).toMatch(/avg House Cats on Night 6: /)
     // Every Night cleared but the last chooses a Scrapbook page.
     expect(report).toMatch(
-      /avg Gathering levels at Run end: Cuddle Puddle \d+\.\d, Nap Club/
+      /avg Clowder levels at Run end: Cuddle Puddle \d+\.\d, Nap Club/
     )
   }, 120_000)
 })

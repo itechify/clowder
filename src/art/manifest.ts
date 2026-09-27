@@ -1,8 +1,8 @@
 import {
+  type ClowderId,
   type Coat,
   coats,
   defaultConfig,
-  type GatheringId,
   type HouseCatId,
   houseCats,
   type Personality,
@@ -95,7 +95,7 @@ type Subject =
    */
   | { kind: "ui"; piece: UiPiece; ready: boolean }
   /** `span` counts the Seats from its first to its last, where that varies. */
-  | { kind: "gathering"; gathering: GatheringId; span?: number }
+  | { kind: "clowder"; clowder: ClowderId; span?: number }
 
 export type ArtEntry = Subject & {
   key: string
@@ -120,22 +120,20 @@ export const houseCatArt = (
 export const moonArt = (night: number) =>
   `room/moon/${Math.min(Math.max(night, 1), MOON_PHASES)}`
 
-/** Gatherings whose look stretches with the Seats they span. */
-const spanning: Partial<Record<GatheringId, number>> = {
+/** Clowders whose look stretches with the Seats they span. */
+const spanning: Partial<Record<ClowderId, number>> = {
   cuddlePuddle: 3,
   varietyPack: 4
 }
 
 /**
- * A Gathering's overlay: a blanket over a Cuddle Puddle, bunting across a
+ * A Clowder's overlay: a blanket over a Cuddle Puddle, bunting across a
  * Variety Pack, both as wide as the `span` of Seats they cover; Zs between
  * two Nap Club Cats; a bubble round one Cat with Personal Space; a glow round
  * a Full Sofa.
  */
-export const gatheringArt = (gathering: GatheringId, span = 1) =>
-  gathering in spanning
-    ? `gathering/${gathering}/${span}`
-    : `gathering/${gathering}`
+export const clowderArt = (clowder: ClowderId, span = 1) =>
+  clowder in spanning ? `clowder/${clowder}/${span}` : `clowder/${clowder}`
 
 export const art = {
   badge: (coat: Coat) => `badge/${coat}`,
@@ -327,7 +325,7 @@ function* entries(): Generator<ArtEntry> {
     key: art.room.scrapbook,
     ...room(54, 40)
   }
-  // ...open over the rug, the game laying its pages or its Gatherings over
+  // ...open over the rug, the game laying its pages or its Clowders over
   // the spread...
   yield {
     kind: "room",
@@ -359,7 +357,7 @@ function* entries(): Generator<ArtEntry> {
     key: art.room.sunbeam,
     ...room(300, 120)
   }
-  // Gathering in the window before a Disaster Night.
+  // Storm clouds building in the window before a Disaster Night.
   yield {
     kind: "room",
     piece: "stormClouds",
@@ -431,36 +429,36 @@ function* entries(): Generator<ArtEntry> {
   const { seats } = defaultConfig
   for (let span = spanning.cuddlePuddle!; span <= seats; span++)
     yield {
-      kind: "gathering",
-      gathering: "cuddlePuddle",
+      kind: "clowder",
+      clowder: "cuddlePuddle",
       span,
-      key: gatheringArt("cuddlePuddle", span),
+      key: clowderArt("cuddlePuddle", span),
       ...room(SEAT_SPACING * (span - 1) + 68, 18)
     }
   for (let span = spanning.varietyPack!; span <= seats; span++)
     yield {
-      kind: "gathering",
-      gathering: "varietyPack",
+      kind: "clowder",
+      clowder: "varietyPack",
       span,
-      key: gatheringArt("varietyPack", span),
+      key: clowderArt("varietyPack", span),
       ...room(SEAT_SPACING * (span - 1) + 60, 14, topCentre)
     }
   yield {
-    kind: "gathering",
-    gathering: "napClub",
-    key: gatheringArt("napClub"),
+    kind: "clowder",
+    clowder: "napClub",
+    key: clowderArt("napClub"),
     ...room(42, 24)
   }
   yield {
-    kind: "gathering",
-    gathering: "personalSpace",
-    key: gatheringArt("personalSpace"),
+    kind: "clowder",
+    clowder: "personalSpace",
+    key: clowderArt("personalSpace"),
     ...room(68, 68)
   }
   yield {
-    kind: "gathering",
-    gathering: "fullSofa",
-    key: gatheringArt("fullSofa"),
+    kind: "clowder",
+    clowder: "fullSofa",
+    key: clowderArt("fullSofa"),
     ...room(390, 166)
   }
 }

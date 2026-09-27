@@ -1,13 +1,13 @@
 import Phaser from "phaser"
-import { art, gatheringArt, moonArt } from "../art/manifest"
+import { art, clowderArt, moonArt } from "../art/manifest"
 import { sound } from "../audio/sound"
 import {
   type Action,
-  type ActiveGathering,
+  type ActiveClowder,
   applyAction,
   type Cat,
   type CatId,
-  type GatheringId,
+  type ClowderId,
   type HouseCatId,
   houseCat,
   previewPlay,
@@ -23,7 +23,7 @@ import {
   purrMeter
 } from "../presentation/hud"
 import {
-  gatheringLabel,
+  clowderLabel,
   type ScrapbookChoice,
   scrapbookChoice,
   scrapbookView
@@ -112,15 +112,15 @@ const RUG_AREA = { w: 80, margin: 28, dy: -4 }
 const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
 const HOP_HEIGHT = 46
-/** Where Gathering names sit, side by side just above the purr meter... */
-const GATHERING_NAME_Y = 248
-/** ...and where the Mult a Gathering adds pops up, just above its name. */
-const GATHERING_POP_Y = 222
+/** Where Clowder names sit, side by side just above the purr meter... */
+const CLOWDER_NAME_Y = 248
+/** ...and where the Mult a Clowder adds pops up, just above its name. */
+const CLOWDER_POP_Y = 222
 /**
- * Each Gathering name's pill: its padding either side, its height, the gap
+ * Each Clowder name's pill: its padding either side, its height, the gap
  * between pills, and how far in from the room's sides they keep.
  */
-const GATHERING_PILL = { padding: 9, height: 24, gap: 6, margin: 8 }
+const CLOWDER_PILL = { padding: 9, height: 24, gap: 6, margin: 8 }
 /**
  * The colours numbers pop up in as a Play scores: Purr, Mult, then a House
  * Cat's Repeats, The Void's growth, and Freya's hearts.
@@ -156,7 +156,7 @@ const FIRST_NOD = 400
 /** ...and the last this long after the first, however many there are. */
 const NODDING_SPREAD = 1200
 const NOD_DURATION = 500
-/** How long a "New Gathering!" banner holds the wall at 1×. */
+/** How long a "New Clowder!" banner holds the wall at 1×. */
 const BANNER_MS = 2000
 /**
  * Where the Results sit in the sleeping room: the Nights cleared beneath the
@@ -245,7 +245,7 @@ const contiguous = (seats: number[]) =>
  * when it is the plain starting 1.
  */
 function multBreakdown({
-  gatherings,
+  clowders,
   wholePlayEffects,
   scoringEvents,
   timesEffects,
@@ -256,7 +256,7 @@ function multBreakdown({
   for (const { name, mult } of scoringEvents.flatMap((e) => e.multFrom))
     perScore.set(name, (perScore.get(name) ?? 0) + mult)
   const sources = [
-    ...[...gatherings, ...wholePlayEffects].map(
+    ...[...clowders, ...wholePlayEffects].map(
       ({ name, mult }) => `${name} ${mult}`
     ),
     ...[...perScore].map(([name, mult]) => `${name} ${mult}`)
@@ -307,16 +307,16 @@ export class CouchScene extends Phaser.Scene {
   private pageAreas: Phaser.GameObjects.Zone[] = []
   /** Over everything, listening only while the Scrapbook is open to close it. */
   private closeArea!: Phaser.GameObjects.Zone
-  /** The Scrapbook opened from the room, showing every Gathering. */
+  /** The Scrapbook opened from the room, showing every Clowder. */
   private viewingScrapbook = false
   /** The Scrapbook object as last drawn, which chosen pages fly into. */
   private scrapbookObject: Phaser.GameObjects.Image | null = null
   /**
-   * The Scrapbook's choice as last drawn: each page by its Gathering, and the
+   * The Scrapbook's choice as last drawn: each page by its Clowder, and the
    * open Scrapbook around them.
    */
   private choiceShown: {
-    pages: Map<GatheringId, Phaser.GameObjects.Container>
+    pages: Map<ClowderId, Phaser.GameObjects.Container>
     around: Phaser.GameObjects.GameObject[]
   } | null = null
   /** A chosen page's moment, until the Shop opens after it. */
@@ -1043,8 +1043,8 @@ export class CouchScene extends Phaser.Scene {
     const staged = this.byDepth(stage(run, presentation.seatingOrder).cats)
 
     // Seated Cats with their live Personality bonus floating above, inside
-    // whichever Gatherings they form. A Cat being dragged leaves its labels.
-    this.drawGatherings(add, preview.gatherings, "behind")
+    // whichever Clowders they form. A Cat being dragged leaves its labels.
+    this.drawClowders(add, preview.clowders, "behind")
     for (const seated of staged) {
       const { cat: id, placement, spot } = seated
       if (placement.on !== "couch") continue
@@ -1069,7 +1069,7 @@ export class CouchScene extends Phaser.Scene {
           .setOrigin(0.5)
       )
     }
-    this.drawGatherings(add, preview.gatherings, "over")
+    this.drawClowders(add, preview.clowders, "over")
 
     // Live preview: Purr × Mult = Score, and where it would leave the Night;
     // the Scrapbook, open, lies over it.
@@ -1167,15 +1167,15 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * The Scrapbook open over the rug after a cleared Night, its pages side by
-   * side, each naming its Gathering, what forms it, and exactly what its next
+   * side, each naming its Clowder, what forms it, and exactly what its next
    * level adds; tapping one chooses it, and it flies into the Scrapbook.
    */
   private drawScrapbookChoice(add: Add, { title, pages }: ScrapbookChoice) {
     const around = drawOpenScrapbook(this, add, title)
     const xs = pageX(pages.length)
     const wrapped = { wordWrap: { width: PAGE.w - 14 }, align: "center" }
-    const shown = new Map<GatheringId, Phaser.GameObjects.Container>()
-    pages.forEach(({ gathering, name, requirement, label }, page) => {
+    const shown = new Map<ClowderId, Phaser.GameObjects.Container>()
+    pages.forEach(({ clowder, name, requirement, label }, page) => {
       const words = [
         this.add.text(0, -64, name, { ...display(17), ...wrapped }),
         this.add.text(0, -14, requirement, {
@@ -1190,7 +1190,7 @@ export class CouchScene extends Phaser.Scene {
       ]
       for (const line of words) line.setOrigin(0.5)
       shown.set(
-        gathering,
+        clowder,
         add(
           this.add.container(xs[page], PAGE.y, [
             addArt(this, art.room.scrapbookPage),
@@ -1453,16 +1453,16 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * Shows each active Gathering on the Couch itself, named: a blanket over a
+   * Shows each active Clowder on the Couch itself, named: a blanket over a
    * Cuddle Puddle, Zs over a Nap Club, a bubble around each Cat with Personal
    * Space, bunting for a Variety Pack, and a glow round a Full Sofa. Drawn in
    * two layers, since blankets go over the Cats and the rest behind. Names
    * share one row above the purr meter, clear of the Shelf, with every
-   * Gathering in `row`, each as near the Seats that form it as it can be.
+   * Clowder in `row`, each as near the Seats that form it as it can be.
    */
-  private drawGatherings(
+  private drawClowders(
     add: Add,
-    active: ActiveGathering[],
+    active: ActiveClowder[],
     layer: "behind" | "over",
     row = active
   ) {
@@ -1471,30 +1471,30 @@ export class CouchScene extends Phaser.Scene {
     /** Midway along a stretch of Seats. */
     const across = (seats: number[]) =>
       (this.seatX[seats[0]] + this.seatX[seats.at(-1)!]) / 2
-    for (const { gathering, seats } of active) {
+    for (const { clowder, seats } of active) {
       const groups = contiguous(seats)
       const span = seats.at(-1)! - seats[0] + 1
       if (layer === "behind") {
-        if (gathering === "fullSofa")
-          overlay(gatheringArt(gathering), WIDTH / 2, FULL_SOFA_Y)
-        if (gathering === "personalSpace")
+        if (clowder === "fullSofa")
+          overlay(clowderArt(clowder), WIDTH / 2, FULL_SOFA_Y)
+        if (clowder === "personalSpace")
           for (const seat of seats)
-            overlay(gatheringArt(gathering), this.seatX[seat], SEAT_Y - 14)
-        if (gathering === "varietyPack")
-          overlay(gatheringArt(gathering, span), across(seats), BUNTING_Y)
+            overlay(clowderArt(clowder), this.seatX[seat], SEAT_Y - 14)
+        if (clowder === "varietyPack")
+          overlay(clowderArt(clowder, span), across(seats), BUNTING_Y)
       } else {
-        if (gathering === "cuddlePuddle")
+        if (clowder === "cuddlePuddle")
           for (const group of groups)
             overlay(
-              gatheringArt(gathering, group.length),
+              clowderArt(clowder, group.length),
               across(group),
               SEAT_Y + 21
             )
-        if (gathering === "napClub")
+        if (clowder === "napClub")
           for (const group of groups)
             for (const seat of group.slice(1)) {
               const x = (this.seatX[seat - 1] + this.seatX[seat]) / 2
-              const z = overlay(gatheringArt(gathering), x, SEAT_Y - 52)
+              const z = overlay(clowderArt(clowder), x, SEAT_Y - 52)
               this.tweens.add({
                 targets: z,
                 y: SEAT_Y - 58,
@@ -1508,39 +1508,39 @@ export class CouchScene extends Phaser.Scene {
     }
     if (layer === "behind") return
 
-    // Each Gathering's name, above the Seats that form it.
+    // Each Clowder's name, above the Seats that form it.
     const labels = row.map((active) =>
-      this.add.text(0, GATHERING_NAME_Y, gatheringLabel(active), numbers(14))
+      this.add.text(0, CLOWDER_NAME_Y, clowderLabel(active), numbers(14))
     )
     const pillWidth = (label: Phaser.GameObjects.Text) =>
-      label.width + 2 * GATHERING_PILL.padding
+      label.width + 2 * CLOWDER_PILL.padding
     const { centres, scale } = layOutRow(
       row.map(({ seats }, i) => ({
         wanted: (this.seatX[seats[0]] + this.seatX[seats.at(-1)!]) / 2,
         width: pillWidth(labels[i])
       })),
       {
-        left: GATHERING_PILL.margin,
-        right: WIDTH - GATHERING_PILL.margin,
-        gap: GATHERING_PILL.gap
+        left: CLOWDER_PILL.margin,
+        right: WIDTH - CLOWDER_PILL.margin,
+        gap: CLOWDER_PILL.gap
       }
     )
-    // Only the names of the Gatherings being drawn show; the rest of the row
+    // Only the names of the Clowders being drawn show; the rest of the row
     // was measured to keep their places.
-    const shown = new Set(active.map(({ gathering }) => gathering))
-    row.forEach(({ gathering }, i) => {
+    const shown = new Set(active.map(({ clowder }) => clowder))
+    row.forEach(({ clowder }, i) => {
       const label = labels[i]
-      if (!shown.has(gathering)) {
+      if (!shown.has(clowder)) {
         label.destroy()
         return
       }
       const x = centres[i]
-      label.setOrigin(0.5).setPosition(x, GATHERING_NAME_Y).setScale(scale)
+      label.setOrigin(0.5).setPosition(x, CLOWDER_NAME_Y).setScale(scale)
       const width = pillWidth(label) * scale
-      const height = GATHERING_PILL.height * scale
+      const height = CLOWDER_PILL.height * scale
       const pill = [
         x - width / 2,
-        GATHERING_NAME_Y - height / 2,
+        CLOWDER_NAME_Y - height / 2,
         width,
         height,
         height / 2
@@ -1556,7 +1556,7 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * Plays out a Play's events over the Couch as it was committed, as the
-   * choreography scripts them: Gatherings appear, each Cat scores left to
+   * choreography scripts them: Clowders appear, each Cat scores left to
    * right, its Purr flying into the total, Mult slamming in, × effects firing
    * with their House Cats triggered; then the Score counts up and lands, and
    * treats rain into the jar if the Night is cleared; then the Night as it now
@@ -1782,31 +1782,29 @@ export class CouchScene extends Phaser.Scene {
     )
     const timers: Phaser.Time.TimerEvent[] = []
     const counters: Phaser.Tweens.Tween[] = []
-    // The Play's Gatherings, their names sharing a row as each appears.
-    const gatherings = events.filter(
-      (event) => event.type === "gatheringActivated"
-    )
-    // "New Gathering!" banners, each waiting for the one before to leave.
+    // The Play's Clowders, their names sharing a row as each appears.
+    const clowders = events.filter((event) => event.type === "clowderActivated")
+    // "New Clowder!" banners, each waiting for the one before to leave.
     const banners: (() => void)[] = []
     let bannersFreeAt = 0
     /** How a step shows, worked out as the sequence is laid out. */
     const animate = (step: Step): (() => void) => {
       const { at, event } = step
       switch (event.type) {
-        case "gatheringActivated": {
+        case "clowderActivated": {
           const wait = Math.max(0, bannersFreeAt - at)
           if (event.firstTime) bannersFreeAt = at + wait + beat(BANNER_MS)
           return () => {
             if (event.firstTime)
               banners.push(this.discover(event.name, wait, beat))
-            this.revealGathering(add, event, gatherings, beat)
+            this.revealClowder(add, event, clowders, beat)
             // What it adds at its level pops up over the Seats forming it:
             // its Mult slams in, and any Purr flies into the Purr total.
             const x =
               (this.seatX[event.seats[0]] + this.seatX[event.seats.at(-1)!]) / 2
             const { adds } = step
             if (adds) {
-              pop(x, GATHERING_POP_Y, adds.mult, 16, POP.mult)
+              pop(x, CLOWDER_POP_Y, adds.mult, 16, POP.mult)
               if (adds.purr)
                 flyPurr(x, adds.purr, () => showPurr(event.tally.purr))
             }
@@ -2028,7 +2026,7 @@ export class CouchScene extends Phaser.Scene {
   /**
    * The chosen Scrapbook page flies into the Scrapbook on the floor, as the
    * rest of the open Scrapbook fades away; it lands in a burst of sparkles,
-   * its Gathering's new level popping up, and then the moment is `over`. As
+   * its Clowder's new level popping up, and then the moment is `over`. As
    * calm as Reduced motion asks: the page fades where it is instead.
    */
   private playPageChosen(
@@ -2044,7 +2042,7 @@ export class CouchScene extends Phaser.Scene {
       return object
     }
     const shown = this.choiceShown
-    const page = shown?.pages.get(event.gathering)
+    const page = shown?.pages.get(event.clowder)
     const others = shown
       ? [
           ...shown.around,
@@ -2132,13 +2130,13 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * Brings one Gathering onto the Couch mid-sequence, its name where it sits
-   * among the `row` of the Play's Gatherings.
+   * Brings one Clowder onto the Couch mid-sequence, its name where it sits
+   * among the `row` of the Play's Clowders.
    */
-  private revealGathering(
+  private revealClowder(
     add: Add,
-    active: ActiveGathering,
-    row: ActiveGathering[],
+    active: ActiveClowder,
+    row: ActiveClowder[],
     beat: (ms: number) => number
   ) {
     const shown: Phaser.GameObjects.GameObject[] = []
@@ -2146,10 +2144,10 @@ export class CouchScene extends Phaser.Scene {
       shown.push(add(object))
       return object
     }
-    this.drawGatherings(collect, [active], "behind")
-    // Blankets aside, a Gathering sits behind the Cats already seated.
+    this.drawClowders(collect, [active], "behind")
+    // Blankets aside, a Clowder sits behind the Cats already seated.
     for (const object of shown) this.layer.sendToBack(object)
-    this.drawGatherings(collect, [active], "over", row)
+    this.drawClowders(collect, [active], "over", row)
     this.tweens.add({
       targets: shown,
       alpha: { from: 0, to: 1 },
@@ -2158,7 +2156,7 @@ export class CouchScene extends Phaser.Scene {
   }
 
   /**
-   * The "New Gathering!" moment, the first time a Run activates one. Returns
+   * The "New Clowder!" moment, the first time a Run activates one. Returns
    * how to dismiss it early.
    */
   private discover(name: string, delay: number, beat: (ms: number) => number) {
@@ -2167,7 +2165,7 @@ export class CouchScene extends Phaser.Scene {
       .setAlpha(0)
       .setScale(0.6)
     const title = this.add
-      .text(0, -14, "New Gathering!", numbers(28, POP.purr))
+      .text(0, -14, "New Clowder!", numbers(28, POP.purr))
       .setOrigin(0.5)
     const subtitle = this.add
       .text(0, 18, name, display(20, "#fdf6ea"))

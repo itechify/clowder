@@ -1,6 +1,6 @@
 # Clowder
 
-A cozy cat-collecting roguelike: the player arranges Cats on a Couch to form scoring Gatherings, and builds a household of House Cats that changes how scoring works across a Run.
+A cozy cat-collecting roguelike: the player arranges Cats on a Couch to form scoring Clowders, and builds a household of House Cats that changes how scoring works across a Run.
 
 ## Run structure
 
@@ -90,26 +90,26 @@ The additive half of a Score, contributed by Cats as they score.
 _Avoid_: Points, chips
 
 **Mult**:
-The multiplier half of a Score, starting at 1 and raised by Gatherings and House Cats.
+The multiplier half of a Score, starting at 1 and raised by Clowders and House Cats.
 _Avoid_: Multiplier bonus, xMult
 
 **Score**:
 The result of one Play: total Purr × Mult.
 
-**Gathering**:
-A named Couch arrangement (e.g. Cuddle Puddle, Nap Club) that adds Purr and Mult, according to its Gathering level, once per Play when present.
-_Avoid_: Hand, combo, set
+**Clowder**:
+A named Couch arrangement (e.g. Cuddle Puddle, Nap Club) that adds Purr and Mult, according to its Clowder level, once per Play when present. Also the game's name: a clowder is a group of cats.
+_Avoid_: Gathering, Hand, combo, set
 
-**Gathering level**:
-How strong a Gathering is for the rest of the Run; every Gathering starts at level 1 and has no maximum.
+**Clowder level**:
+How strong a Clowder is for the rest of the Run; every Clowder starts at level 1 and has no maximum.
 _Avoid_: Rank, tier
 
 **Scrapbook page**:
-A permanent +1 Gathering level for one Gathering, chosen from three offered after clearing a Night.
+A permanent +1 Clowder level for one Clowder, chosen from three offered after clearing a Night.
 _Avoid_: Planet, upgrade card
 
 **Scrapbook**:
-The record of every Gathering's level and requirement in the current Run, with undiscovered Gatherings hidden.
+The record of every Clowder's level and requirement in the current Run, with undiscovered Clowders hidden.
 
 **Scoring event**:
 One Cat adding its base Purr plus its Personality bonus, and triggering every "when a Cat scores" effect.

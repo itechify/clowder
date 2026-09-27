@@ -6,19 +6,19 @@ export {
   type Tally
 } from "./actions"
 export { type Config, defaultConfig } from "./config"
+export {
+  type Clowder,
+  type ClowderBonus,
+  type ClowderId,
+  clowderById,
+  clowders
+} from "./content/clowders"
 export { type Coat, coats } from "./content/coats"
 export {
   type Disaster,
   type DisasterId,
   disasterById
 } from "./content/disasters"
-export {
-  type Gathering,
-  type GatheringBonus,
-  type GatheringId,
-  gatheringById,
-  gatherings
-} from "./content/gatherings"
 export {
   clearTreats,
   copying,
@@ -35,9 +35,9 @@ export {
 export { nightTarget, startRun } from "./run"
 export { restoreRun, serialiseRun } from "./save"
 export {
-  type ActiveGathering,
+  type ActiveClowder,
+  clowderBonus,
   type Growth,
-  gatheringBonus,
   previewPlay,
   type ScoreBreakdown,
   type ScoringEvent,

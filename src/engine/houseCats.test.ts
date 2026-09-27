@@ -80,7 +80,7 @@ describe("Box Goblin", () => {
 })
 
 describe("a Play with House Cats", () => {
-  it("scripts whole-Play effects after Gatherings and × effects after Scoring events", () => {
+  it("scripts whole-Play effects after Clowders and × effects after Scoring events", () => {
     const run = runWithCouch(["aloof", null, "clingy", null, "aloof"], {
       shelf: ["boxGoblin", "doNotTouch"]
     })
@@ -88,7 +88,7 @@ describe("a Play with House Cats", () => {
     const { events } = accepted(run, { type: "play" })
 
     expect(events.map((event) => event.type).slice(0, 7)).toEqual([
-      "gatheringActivated",
+      "clowderActivated",
       "wholePlayEffect",
       "catScored",
       "catScored",
@@ -415,7 +415,7 @@ describe("The Void", () => {
   const basePurr = (run: Run, cat: string) =>
     run.roster.find((c) => c.id === cat)!.basePurr
 
-  it("grows every played Black Cat +2 base Purr after a Play with a Gathering, from the next Play on", () => {
+  it("grows every played Black Cat +2 base Purr after a Play with a Clowder, from the next Play on", () => {
     // A Cuddle Puddle of three Black Cats, and one more Black Cat outside it.
     const run = seatFromHand(withVoid(), [
       "black clingy",
@@ -456,7 +456,7 @@ describe("The Void", () => {
     expect(basePurr(after, black!)).toBe(15)
   })
 
-  it("grows nobody after a Play without a Gathering", () => {
+  it("grows nobody after a Play without a Clowder", () => {
     const run = seatFromHand(withVoid(), ["black clingy", "white clingy"])
     const [black] = run.night.couch
 
@@ -569,8 +569,8 @@ describe("a Play with the remaining House Cats", () => {
 
     expect(events.slice(0, 8)).toEqual([
       expect.objectContaining({
-        type: "gatheringActivated",
-        gathering: "personalSpace"
+        type: "clowderActivated",
+        clowder: "personalSpace"
       }),
       expect.objectContaining({
         type: "catScored",

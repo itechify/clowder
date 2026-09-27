@@ -22,7 +22,7 @@ async function playOut(
       const couches: (string | null)[][] = []
       while (run().status === "playing") {
         const pages = run().scrapbookPages
-        if (pages) apply({ type: "choosePage", gathering: pages[0] })
+        if (pages) apply({ type: "choosePage", clowder: pages[0] })
         if (run().shop) apply({ type: "leaveShop" })
         run()
           .night.hand.slice(0, perPlay)

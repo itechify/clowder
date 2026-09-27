@@ -160,7 +160,7 @@ export async function toShop(
   await toScrapbook(page, seed, config)
   await page.evaluate(() => {
     const { run, apply } = window.__clowder!
-    apply({ type: "choosePage", gathering: run().scrapbookPages![0] })
+    apply({ type: "choosePage", clowder: run().scrapbookPages![0] })
   })
   await expect
     .poll(() => page.evaluate(() => window.__clowder!.scenes()), {

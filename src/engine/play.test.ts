@@ -148,8 +148,8 @@ describe("Play", () => {
 
     expect(events).toEqual([
       {
-        type: "gatheringActivated",
-        gathering: "napClub",
+        type: "clowderActivated",
+        clowder: "napClub",
         name: "Nap Club",
         level: 1,
         purr: 0,
@@ -197,7 +197,7 @@ describe("Play", () => {
         let scoring: string | undefined
         for (const event of events) {
           if (
-            event.type === "gatheringActivated" ||
+            event.type === "clowderActivated" ||
             event.type === "wholePlayEffect"
           ) {
             expect(phase).toBe(1)

@@ -36,7 +36,7 @@ const runInShop = (seed: number) => chooseFirstPage(runInScrapbook(seed)).run
 
 const choosePage: Step = (run) => ({
   type: "choosePage",
-  gathering: run.scrapbookPages![0]
+  clowder: run.scrapbookPages![0]
 })
 
 /**
@@ -126,7 +126,7 @@ describe("saving and resuming a Run", () => {
     ])
 
     expect(end.night.number).toBe(2)
-    expect(Object.values(end.gatheringLevels)).toContain(2)
+    expect(Object.values(end.clowderLevels)).toContain(2)
   })
 
   it("resumes a Disaster Night exactly as it would have gone on", () => {
@@ -160,6 +160,18 @@ describe("a save that cannot be resumed", () => {
     delete run.config.disasterTargetFactor
     delete run.config.clearReward.disaster
     save.version = 1
+
+    expect(restoreRun(JSON.stringify(save))).toBeUndefined()
+  })
+
+  it("is refused when it was saved before Clowders were named", () => {
+    const save = JSON.parse(serialiseRun(startRun(1)))
+    const { run } = save
+    run.discoveredGatherings = run.discoveredClowders
+    run.gatheringLevels = run.clowderLevels
+    delete run.discoveredClowders
+    delete run.clowderLevels
+    save.version = 6
 
     expect(restoreRun(JSON.stringify(save))).toBeUndefined()
   })
@@ -231,7 +243,7 @@ describe("a damaged save", () => {
     expect(restoreRun(serialiseRun(tooMany))).toBeUndefined()
   })
 
-  it("is refused when the Scrapbook offers a Gathering twice, mid-Night, or with the Shop open", () => {
+  it("is refused when the Scrapbook offers a Clowder twice, mid-Night, or with the Shop open", () => {
     const run = runInScrapbook(1)
     const [page] = run.scrapbookPages!
     const twice: Run = { ...run, scrapbookPages: [page, page, page] }

@@ -438,14 +438,14 @@ const ui: Record<UiPiece, (g: Graphics, ready: boolean) => void> = {
 
 const bunting = [0xe8893a, 0x2e2a30, 0xf4efe6, 0x8d9099, 0xd46a4f]
 
-function gathering(
+function clowder(
   g: Graphics,
   ctx: CanvasRenderingContext2D,
-  entry: ArtEntry & { kind: "gathering" }
+  entry: ArtEntry & { kind: "clowder" }
 ) {
   const { width } = entry.canvas
   const w = width / 3
-  switch (entry.gathering) {
+  switch (entry.clowder) {
     case "fullSofa":
       // A warm halo, softest furthest out.
       g.lineStyle(9, 0xf6c453, 0.25).strokeRoundedRect(5, 5, 380, 156, 24)
@@ -486,13 +486,13 @@ function gathering(
 }
 
 /**
- * The code-drawn fallback for a room, UI, or Gathering key, in design pixels
+ * The code-drawn fallback for a room, UI, or Clowder key, in design pixels
  * from the top left of its canvas.
  */
 export function paintRoomArt(entry: ArtEntry): Paint {
   return (g, ctx) => {
     if (entry.kind === "room") room[entry.piece](g, entry)
     else if (entry.kind === "ui") ui[entry.piece](g, entry.ready)
-    else if (entry.kind === "gathering") gathering(g, ctx, entry)
+    else if (entry.kind === "clowder") clowder(g, ctx, entry)
   }
 }

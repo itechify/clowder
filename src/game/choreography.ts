@@ -1,6 +1,6 @@
 import { houseCatArt } from "../art/manifest"
 import type { Cue, CueName } from "../audio/cues"
-import { gatheringById, type HouseCatId, type RunEvent } from "../engine"
+import { clowderById, type HouseCatId, type RunEvent } from "../engine"
 import { addedParts, levelLabel } from "../presentation/scrapbook"
 import { freyaPose } from "../presentation/staging"
 import type { ScoringSpeed } from "../shell/settings"
@@ -35,7 +35,7 @@ export type Step = {
   countUp?: CountUp
   rain?: Rain
   /**
-   * What a Gathering adds at its level, popping up over the Seats forming it:
+   * What a Clowder adds at its level, popping up over the Seats forming it:
    * its Mult, and any Purr its level adds, which joins the tally before any
    * Cat scores.
    */
@@ -81,7 +81,7 @@ const TAIL = 300
 
 /** How long each event holds the sequence at 1×; others take no beat. */
 const beats: Partial<Record<RunEvent["type"], number>> = {
-  gatheringActivated: 500,
+  clowderActivated: 500,
   wholePlayEffect: 500,
   catScored: 380,
   repeat: 380,
@@ -124,8 +124,8 @@ export function choreograph(
   let pitch = 0
   const cuesFor = (event: RunEvent): Cue[] => {
     switch (event.type) {
-      case "gatheringActivated":
-        return [{ name: "gatheringActivated" }]
+      case "clowderActivated":
+        return [{ name: "clowderActivated" }]
       case "wholePlayEffect":
         return [{ name: "multAdded" }]
       case "catScored":
@@ -214,9 +214,7 @@ export function choreograph(
       cues: cuesFor(event),
       ...(slam ? { slam } : {}),
       ...(fire && !reducedMotion ? { fire } : {}),
-      ...(event.type === "gatheringActivated"
-        ? { adds: addedParts(event) }
-        : {}),
+      ...(event.type === "clowderActivated" ? { adds: addedParts(event) } : {}),
       ...asSettingsAllow(
         escalate(
           slam ? config[slam] : fire ? config.fire : impactOf(event, config),
@@ -274,7 +272,7 @@ function triggeredPose(houseCat: HouseCatId, event: RunEvent) {
 /** The slam an event makes, if it adds Mult or multiplies it. */
 function slamOf(event: RunEvent): Slam | undefined {
   switch (event.type) {
-    case "gatheringActivated":
+    case "clowderActivated":
     case "wholePlayEffect":
       return "mult"
     case "catScored":
@@ -340,7 +338,7 @@ export type PageMoment = {
   flight: { arc: number; spin: number; shrinkTo: number } | null
   /** When the page reaches the Scrapbook, in ms from the moment's start... */
   lands: number
-  /** ...bursting this many sparkles, and showing its Gathering's new level... */
+  /** ...bursting this many sparkles, and showing its Clowder's new level... */
   particles: number
   label: string
   /** ...as the Scrapbook swells to take it; null under Reduced motion. */
@@ -354,7 +352,7 @@ export type PageMoment = {
  * motion keeps its sound and words, the sparkles only softened.
  */
 export function choreographPage(
-  { gathering, level }: Extract<RunEvent, { type: "pageChosen" }>,
+  { clowder, level }: Extract<RunEvent, { type: "pageChosen" }>,
   { reducedMotion }: Pick<ChoreographySettings, "reducedMotion">,
   config: EffectConfig = effectConfig
 ): PageMoment {
@@ -368,7 +366,7 @@ export function choreographPage(
     particles: reducedMotion
       ? Math.ceil(particles * config.reducedParticles)
       : particles,
-    label: `${gatheringById(gathering).name} ${levelLabel(level)}`,
+    label: `${clowderById(clowder).name} ${levelLabel(level)}`,
     landing: reducedMotion ? null : landing,
     duration: flyMs + holdMs
   }

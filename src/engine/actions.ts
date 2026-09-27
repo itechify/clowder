@@ -1,4 +1,4 @@
-import { type GatheringId, gatherings } from "./content/gatherings"
+import { type ClowderId, clowders } from "./content/clowders"
 import {
   clearTreats,
   type HouseCatId,
@@ -6,7 +6,7 @@ import {
 } from "./content/houseCats"
 import { shuffle } from "./rng"
 import {
-  type ActiveGathering,
+  type ActiveClowder,
   type Growth,
   previewPlay,
   type ScoringEvent,
@@ -31,7 +31,7 @@ export type Action =
   /** Moves a House Cat to another position; the others close up around it. */
   | { type: "reorderShelf"; houseCat: HouseCatId; position: number }
   /** Chooses one of the Scrapbook pages offered, then opens the Shop. */
-  | { type: "choosePage"; gathering: GatheringId }
+  | { type: "choosePage"; clowder: ClowderId }
   | ShopAction
 
 /** A Play's Purr and Mult so far, as its Score builds up event by event. */
@@ -40,10 +40,10 @@ export type Tally = { purr: number; mult: number }
 /** What happened, in order: the script the renderer animates. */
 export type RunEvent =
   | ({
-      type: "gatheringActivated"
+      type: "clowderActivated"
       firstTime: boolean
       tally: Tally
-    } & ActiveGathering)
+    } & ActiveClowder)
   | ({ type: "wholePlayEffect"; tally: Tally } & WholePlayEffect)
   | ({ type: "catScored"; tally: Tally } & ScoringEvent)
   /** Another, complete Scoring event for the Cat that just scored. */
@@ -72,11 +72,11 @@ export type RunEvent =
       treats: number
     }
   /** The Scrapbook opens on a cleared Night, offering these pages. */
-  | { type: "scrapbookOpened"; pages: GatheringId[] }
-  /** A page chosen, raising its Gathering to `level`, and perhaps revealing it. */
+  | { type: "scrapbookOpened"; pages: ClowderId[] }
+  /** A page chosen, raising its Clowder to `level`, and perhaps revealing it. */
   | {
       type: "pageChosen"
-      gathering: GatheringId
+      clowder: ClowderId
       level: number
       discovered: boolean
     }
@@ -107,7 +107,7 @@ export function applyAction(run: Run, action: Action): ActionResult {
   if (run.status !== "playing") return reject("The Run is over")
   if (run.scrapbookPages)
     return action.type === "choosePage"
-      ? choosePage(run, run.scrapbookPages, action.gathering)
+      ? choosePage(run, run.scrapbookPages, action.clowder)
       : reject("Choose a Scrapbook page first")
   if (action.type === "choosePage") return reject("The Scrapbook is closed")
   // A Play resolves at once, so the Shelf is always outside one here.
@@ -171,29 +171,29 @@ export function applyAction(run: Run, action: Action): ActionResult {
   }
 }
 
-/** Raises the chosen page's Gathering a level, revealing it, and opens the Shop. */
+/** Raises the chosen page's Clowder a level, revealing it, and opens the Shop. */
 function choosePage(
   run: Run,
-  pages: GatheringId[],
-  gathering: GatheringId
+  pages: ClowderId[],
+  clowder: ClowderId
 ): ActionResult {
-  if (!pages.includes(gathering))
+  if (!pages.includes(clowder))
     return { ok: false, run, reason: "That page is not offered" }
-  const level = run.gatheringLevels[gathering] + 1
-  const discovered = !run.discoveredGatherings.includes(gathering)
+  const level = run.clowderLevels[clowder] + 1
+  const discovered = !run.discoveredClowders.includes(clowder)
   const chosen: Run = {
     ...run,
-    gatheringLevels: { ...run.gatheringLevels, [gathering]: level },
-    discoveredGatherings: discovered
-      ? [...run.discoveredGatherings, gathering]
-      : run.discoveredGatherings,
+    clowderLevels: { ...run.clowderLevels, [clowder]: level },
+    discoveredClowders: discovered
+      ? [...run.discoveredClowders, clowder]
+      : run.discoveredClowders,
     scrapbookPages: null
   }
   return {
     ok: true,
     run: openShop(chosen),
     events: [
-      { type: "pageChosen", gathering, level, discovered },
+      { type: "pageChosen", clowder, level, discovered },
       { type: "shopOpened" }
     ]
   }
@@ -244,19 +244,19 @@ function redraw(run: Run, sentOut: CatId[]): ActionResult {
 
 function play(run: Run): ActionResult {
   const breakdown = previewPlay(run)
-  const newlyDiscovered = breakdown.gatherings
-    .map((active) => active.gathering)
-    .filter((gathering) => !run.discoveredGatherings.includes(gathering))
+  const newlyDiscovered = breakdown.clowders
+    .map((active) => active.clowder)
+    .filter((clowder) => !run.discoveredClowders.includes(clowder))
   // Each phase in turn (ADR-0001), tallying the Score as it builds.
   const tally: Tally = { purr: 0, mult: 1 }
   const events: RunEvent[] = [
-    ...breakdown.gatherings.map((active): RunEvent => {
+    ...breakdown.clowders.map((active): RunEvent => {
       tally.purr += active.purr
       tally.mult += active.mult
       return {
-        type: "gatheringActivated",
+        type: "clowderActivated",
         ...active,
-        firstTime: newlyDiscovered.includes(active.gathering),
+        firstTime: newlyDiscovered.includes(active.clowder),
         tally: { ...tally }
       }
     }),
@@ -315,7 +315,7 @@ function play(run: Run): ActionResult {
     roster,
     night,
     stats: recordPlay(run, breakdown),
-    discoveredGatherings: [...run.discoveredGatherings, ...newlyDiscovered]
+    discoveredClowders: [...run.discoveredClowders, ...newlyDiscovered]
   }
   if (night.score >= night.target)
     return clearNight(
@@ -380,10 +380,10 @@ function clearNight(run: Run, events: RunEvent[]): ActionResult {
     stats: { ...run.stats, nightsCleared: run.stats.nightsCleared + 1 }
   }
   if (night.number < config.nights) {
-    // Different Gatherings, drawn evenly from them all.
+    // Different Clowders, drawn evenly from them all.
     const [shuffled, rng] = shuffle(
       paid.rng,
-      gatherings.map((gathering) => gathering.id)
+      clowders.map((clowder) => clowder.id)
     )
     const pages = shuffled.slice(0, config.scrapbookPages)
     events.push({ type: "scrapbookOpened", pages })

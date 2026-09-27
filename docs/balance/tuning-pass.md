@@ -24,7 +24,7 @@ Targets are now 480, 720, 1,080, 1,620, 2,430, 3,645, 5,468, 8,201, and 12,302. 
 
 With Scrapbook pages at their first-draft strength, the game became far too easy. The best strategies won 84–90% of Runs, and every build cleared Night 6 at 91–100%. The levers were adjusted in the agreed order.
 
-1. **Page strength.** Weaker pages brought the win rates down, but Night 6 stayed at 96–100% for every coherent build, while Night 9 turned into a cliff. Pages add linearly per level, so they can't lower Night 6 without making Night 9 harder too. Per-Gathering strength also balances the builds against each other:
+1. **Page strength.** Weaker pages brought the win rates down, but Night 6 stayed at 96–100% for every coherent build, while Night 9 turned into a cliff. Pages add linearly per level, so they can't lower Night 6 without making Night 9 harder too. Per-Clowder strength also balances the builds against each other:
    - Personal Space levels made the antisocial household dominant, so they're now the weakest (+5 Purr, +1 Mult).
    - Cuddle Puddle and Nap Club form together in the orange + sleepy engine, doubling each page, so they lost a Mult.
    - Variety Pack's +2 Mult is what carries the growing void's five-Cat Couches, so it stays.
@@ -71,11 +71,11 @@ With Scrapbook pages at their first-draft strength, the game became far too easy
 ```sh
 pnpm sim --runs 100 --houseCats.voidGrowth 5 --firstTarget 300 --targetGrowth 1.6 \
   --clearReward '{"early":3,"earlyNights":2,"later":4,"disaster":6,"perUnusedPlay":1}' \
-  --gatheringLevelBonus.cuddlePuddle '{"purr":10,"mult":2}' \
-  --gatheringLevelBonus.napClub '{"purr":10,"mult":2}' \
-  --gatheringLevelBonus.personalSpace '{"purr":10,"mult":2}' \
-  --gatheringLevelBonus.varietyPack '{"purr":10,"mult":2}' \
-  --gatheringLevelBonus.fullSofa '{"purr":5,"mult":1}'
+  --clowderLevelBonus.cuddlePuddle '{"purr":10,"mult":2}' \
+  --clowderLevelBonus.napClub '{"purr":10,"mult":2}' \
+  --clowderLevelBonus.personalSpace '{"purr":10,"mult":2}' \
+  --clowderLevelBonus.varietyPack '{"purr":10,"mult":2}' \
+  --clowderLevelBonus.fullSofa '{"purr":5,"mult":1}'
 ```
 
 ```
@@ -89,7 +89,7 @@ no purchases (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 100% (31/31), The Human Wakes Up 86% (32/37), The Vacuum 41% (13/32)
   Night 9 clear rate by Disaster: The Doorbell 0% (0/17), The Human Wakes Up 0% (0/8), The Vacuum 0% (0/5)
   avg House Cats on Night 6: 0.0
-  avg Gathering levels at Run end: Cuddle Puddle 1.2, Nap Club 2.1, Personal Space 1.0, Variety Pack 3.8, Full Sofa 3.7
+  avg Clowder levels at Run end: Cuddle Puddle 1.2, Nap Club 2.1, Personal Space 1.0, Variety Pack 3.8, Full Sofa 3.7
 
 greedy any House Cat (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:100% 4:100% 5:100% 6:97% 7:100% 8:91% 9:40%
@@ -99,7 +99,7 @@ greedy any House Cat (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 100% (31/31), The Human Wakes Up 100% (37/37), The Vacuum 91% (29/32)
   Night 9 clear rate by Disaster: The Doorbell 53% (16/30), The Human Wakes Up 24% (7/29), The Vacuum 41% (12/29)
   avg House Cats on Night 6: 4.0
-  avg Gathering levels at Run end: Cuddle Puddle 1.2, Nap Club 2.4, Personal Space 1.1, Variety Pack 4.1, Full Sofa 4.0
+  avg Clowder levels at Run end: Cuddle Puddle 1.2, Nap Club 2.4, Personal Space 1.1, Variety Pack 4.1, Full Sofa 4.0
 
 orange + sleepy engine (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:100% 4:100% 5:100% 6:100% 7:100% 8:100% 9:84%
@@ -109,7 +109,7 @@ orange + sleepy engine (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 100% (31/31), The Human Wakes Up 100% (37/37), The Vacuum 100% (32/32)
   Night 9 clear rate by Disaster: The Doorbell 100% (33/33), The Human Wakes Up 74% (26/35), The Vacuum 78% (25/32)
   avg House Cats on Night 6: 3.3
-  avg Gathering levels at Run end: Cuddle Puddle 4.6, Nap Club 4.5, Personal Space 1.0, Variety Pack 1.2, Full Sofa 1.7
+  avg Clowder levels at Run end: Cuddle Puddle 4.6, Nap Club 4.5, Personal Space 1.0, Variety Pack 1.2, Full Sofa 1.7
 
 antisocial household (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:100% 4:100% 5:100% 6:99% 7:100% 8:99% 9:92%
@@ -119,7 +119,7 @@ antisocial household (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 100% (31/31), The Human Wakes Up 97% (36/37), The Vacuum 100% (32/32)
   Night 9 clear rate by Disaster: The Doorbell 97% (32/33), The Human Wakes Up 83% (29/35), The Vacuum 97% (29/30)
   avg House Cats on Night 6: 3.0
-  avg Gathering levels at Run end: Cuddle Puddle 1.1, Nap Club 1.6, Personal Space 5.8, Variety Pack 2.4, Full Sofa 2.1
+  avg Clowder levels at Run end: Cuddle Puddle 1.1, Nap Club 1.6, Personal Space 5.8, Variety Pack 2.4, Full Sofa 2.1
 
 growing void (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:100% 4:100% 5:100% 6:91% 7:98% 8:78% 9:49%
@@ -129,7 +129,7 @@ growing void (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 100% (31/31), The Human Wakes Up 86% (32/37), The Vacuum 88% (28/32)
   Night 9 clear rate by Disaster: The Doorbell 72% (18/25), The Human Wakes Up 17% (4/24), The Vacuum 60% (12/20)
   avg House Cats on Night 6: 2.9
-  avg Gathering levels at Run end: Cuddle Puddle 1.2, Nap Club 2.4, Personal Space 1.0, Variety Pack 4.2, Full Sofa 3.7
+  avg Clowder levels at Run end: Cuddle Puddle 1.2, Nap Club 2.4, Personal Space 1.0, Variety Pack 4.2, Full Sofa 3.7
 ```
 
 ## After
@@ -147,7 +147,7 @@ no purchases (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 87% (27/31), The Human Wakes Up 51% (18/35), The Vacuum 25% (8/32)
   Night 9 clear rate by Disaster: The Doorbell 0% (0/9), The Human Wakes Up 0% (0/5), The Vacuum 0% (0/1)
   avg House Cats on Night 6: 0.0
-  avg Gathering levels at Run end: Cuddle Puddle 1.2, Nap Club 2.0, Personal Space 1.0, Variety Pack 3.4, Full Sofa 3.5
+  avg Clowder levels at Run end: Cuddle Puddle 1.2, Nap Club 2.0, Personal Space 1.0, Variety Pack 3.4, Full Sofa 3.5
 
 greedy any House Cat (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:99% 4:100% 5:100% 6:84% 7:92% 8:87% 9:36%
@@ -157,7 +157,7 @@ greedy any House Cat (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 97% (30/31), The Human Wakes Up 81% (29/36), The Vacuum 75% (24/32)
   Night 9 clear rate by Disaster: The Doorbell 52% (12/23), The Human Wakes Up 27% (6/22), The Vacuum 29% (6/21)
   avg House Cats on Night 6: 2.5
-  avg Gathering levels at Run end: Cuddle Puddle 1.3, Nap Club 2.2, Personal Space 1.0, Variety Pack 3.6, Full Sofa 4.1
+  avg Clowder levels at Run end: Cuddle Puddle 1.3, Nap Club 2.2, Personal Space 1.0, Variety Pack 3.6, Full Sofa 4.1
 
 orange + sleepy engine (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:100% 4:99% 5:100% 6:84% 7:92% 8:75% 9:44%
@@ -167,7 +167,7 @@ orange + sleepy engine (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 94% (29/31), The Human Wakes Up 86% (32/37), The Vacuum 71% (22/31)
   Night 9 clear rate by Disaster: The Doorbell 33% (6/18), The Human Wakes Up 41% (7/17), The Vacuum 55% (12/22)
   avg House Cats on Night 6: 2.0
-  avg Gathering levels at Run end: Cuddle Puddle 4.3, Nap Club 4.2, Personal Space 1.0, Variety Pack 1.1, Full Sofa 1.6
+  avg Clowder levels at Run end: Cuddle Puddle 4.3, Nap Club 4.2, Personal Space 1.0, Variety Pack 1.1, Full Sofa 1.6
 
 antisocial household (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:99% 4:100% 5:96% 6:67% 7:78% 8:84% 9:50%
@@ -177,7 +177,7 @@ antisocial household (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 81% (25/31), The Human Wakes Up 43% (15/35), The Vacuum 83% (24/29)
   Night 9 clear rate by Disaster: The Doorbell 69% (11/16), The Human Wakes Up 7% (1/14), The Vacuum 75% (9/12)
   avg House Cats on Night 6: 1.8
-  avg Gathering levels at Run end: Cuddle Puddle 1.0, Nap Club 1.5, Personal Space 4.6, Variety Pack 2.2, Full Sofa 2.1
+  avg Clowder levels at Run end: Cuddle Puddle 1.0, Nap Club 1.5, Personal Space 4.6, Variety Pack 2.2, Full Sofa 2.1
 
 growing void (100 Runs)
   clear rate per Night reached: 1:100% 2:100% 3:99% 4:100% 5:100% 6:72% 7:86% 8:72% 9:36%
@@ -187,5 +187,5 @@ growing void (100 Runs)
   Night 6 clear rate by Disaster: The Doorbell 97% (30/31), The Human Wakes Up 75% (27/36), The Vacuum 44% (14/32)
   Night 9 clear rate by Disaster: The Doorbell 41% (7/17), The Human Wakes Up 13% (2/15), The Vacuum 58% (7/12)
   avg House Cats on Night 6: 1.9
-  avg Gathering levels at Run end: Cuddle Puddle 1.2, Nap Club 2.1, Personal Space 1.0, Variety Pack 3.7, Full Sofa 3.7
+  avg Clowder levels at Run end: Cuddle Puddle 1.2, Nap Club 2.1, Personal Space 1.0, Variety Pack 3.7, Full Sofa 3.7
 ```

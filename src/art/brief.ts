@@ -1,6 +1,6 @@
 import {
+  type ClowderId,
   type Coat,
-  type GatheringId,
   type HouseCatId,
   houseCat,
   type Personality
@@ -312,8 +312,8 @@ const uiLooks: Record<UiPiece, { ready: string; notReady: string }> = {
   }
 }
 
-const gatheringLooks: Record<
-  GatheringId,
+const clowderLooks: Record<
+  ClowderId,
   { name: string; look: (span: number) => string }
 > = {
   cuddlePuddle: {
@@ -346,7 +346,7 @@ const gatheringLooks: Record<
 const capitalised = (word: string) => word[0].toUpperCase() + word.slice(1)
 
 /**
- * The prompt for a room, UI, or Gathering image, sized for its canvas: flat
+ * The prompt for a room, UI, or Clowder image, sized for its canvas: flat
  * and front-on unless it lies on the floor.
  */
 const piecePrompt = (
@@ -447,8 +447,8 @@ function describe(entry: ArtEntry): { title: string; prompt: string } {
         prompt: piecePrompt(entry, entry.ready ? looks.ready : looks.notReady)
       }
     }
-    case "gathering": {
-      const { name, look } = gatheringLooks[entry.gathering]
+    case "clowder": {
+      const { name, look } = clowderLooks[entry.clowder]
       const span = entry.span ?? 1
       return {
         title: entry.span ? `${name}, across ${span} Seats` : name,
@@ -524,8 +524,8 @@ export function briefBatches(manifest: readonly ArtEntry[]): Batch[] {
     { title: "Cat poses", entries: of("cat") },
     { title: "House Cats, Skadi, and Freya", entries: of("houseCat") },
     {
-      title: "The room, badges, UI furniture, and Gathering overlays",
-      entries: of("room", "badge", "ui", "gathering")
+      title: "The room, badges, UI furniture, and Clowder overlays",
+      entries: of("room", "badge", "ui", "clowder")
     },
     {
       title: "The Shop, the living room by day",
@@ -538,7 +538,7 @@ export function briefBatches(manifest: readonly ArtEntry[]): Batch[] {
 const RULES = [
   `**Order.** Generate the style reference sheet first and approve it before anything else: it is attached to every later generation, so it holds the style together. Start each batch in a fresh conversation with it attached. The hero Cat on the sheet is then generated as its own image, like every other Cat.`,
   `**Characters.** Every Cat and House Cat is a transparent ${CHARACTER_CANVAS}×${CHARACTER_CANVAS} PNG at one shared scale: about ${CHARACTER_SPAN} px across, centred, sitting on its base ${CHARACTER_CANVAS * (1 - CHARACTER_BASE.y)} px above the bottom edge, which leaves room for a tail to dangle over the Shelf. A character turned to one side, like a reacting Cat, faces the viewer's right; the game mirrors it to face left. Leave out hearts, Zs, anger marks, and blush: the game draws them over the art.`,
-  `**The room, UI, and Gathering overlays** are authored at ${ROOM_SCALE}× the game's 390×844 design size. Only the wall is opaque; everything else has a transparent background. Leave buttons and the treat jar blank: the game writes their words and numbers.`,
+  `**The room, UI, and Clowder overlays** are authored at ${ROOM_SCALE}× the game's 390×844 design size. Only the wall is opaque; everything else has a transparent background. Leave buttons and the treat jar blank: the game writes their words and numbers.`,
   "**Sizes.** Astra generates at 1024×1024, 1536×1024, or 1024×1536. Resize, crop, or pad each image to exactly its size before saving it, without stretching; the build rejects any other size. For a long, thin piece such as the shelf or a blanket, generate it wide, spanning the whole width, then crop to its shape.",
   "**Delivery.** Save each image as a PNG at its file path. A game image in `art/raw/` replaces its code-drawn fallback with no code change, and the dev server reloads when one lands. Then run `pnpm brief` to mark it delivered here. A content Clingy or Aloof Cat, whose eyes are open, also needs its eyes measured in `src/art/eyes.ts` for the game to tint and blink them; until then it shows its own eyes.",
   "**Photos.** Skadi's and Freya's generations also attach every photo in `art/reference/photos/skadi/` or `art/reference/photos/freya/`. Those are the author's own cats: the folder is ignored by git, so the photos are never committed.",

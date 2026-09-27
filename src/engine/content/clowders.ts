@@ -1,23 +1,23 @@
 import type { Cat, Couch } from "../types"
 
-export type GatheringId =
+export type ClowderId =
   | "cuddlePuddle"
   | "napClub"
   | "personalSpace"
   | "varietyPack"
   | "fullSofa"
 
-/** Purr and Mult a Gathering adds to a Play, or a Gathering level adds to it. */
-export type GatheringBonus = { purr: number; mult: number }
+/** Purr and Mult a Clowder adds to a Play, or a Clowder level adds to it. */
+export type ClowderBonus = { purr: number; mult: number }
 
-export type Gathering = {
-  id: GatheringId
+export type Clowder = {
+  id: ClowderId
   name: string
   /** What the Couch needs to form it, as the Scrapbook describes it. */
   requirement: string
   /** The Mult it adds at level 1. */
   mult: number
-  /** The Seats forming this Gathering on the Couch; empty when it is absent. */
+  /** The Seats forming this Clowder on the Couch; empty when it is absent. */
   seats: (couch: Couch) => number[]
 }
 
@@ -51,10 +51,10 @@ const occupied = (couch: Couch) =>
 const sleepy = (cat: Cat) => cat.personality === "sleepy"
 
 /**
- * Every Gathering, each adding its Mult, and more with each Gathering level,
+ * Every Clowder, each adding its Mult, and more with each Clowder level,
  * once to any Play that forms it.
  */
-export const gatherings: readonly Gathering[] = [
+export const clowders: readonly Clowder[] = [
   {
     id: "cuddlePuddle",
     name: "Cuddle Puddle",
@@ -102,5 +102,5 @@ export const gatherings: readonly Gathering[] = [
   }
 ]
 
-export const gatheringById = (id: GatheringId): Gathering =>
-  gatherings.find((gathering) => gathering.id === id)!
+export const clowderById = (id: ClowderId): Clowder =>
+  clowders.find((clowder) => clowder.id === id)!

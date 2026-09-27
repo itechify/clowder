@@ -22,7 +22,7 @@ function memoryStorage(initial: Record<string, string> = {}) {
  */
 function playFive(session: Session) {
   const pages = session.run.scrapbookPages
-  if (pages) session.apply({ type: "choosePage", gathering: pages[0] })
+  if (pages) session.apply({ type: "choosePage", clowder: pages[0] })
   if (session.run.shop) session.apply({ type: "leaveShop" })
   session.run.night.hand.slice(0, 5).forEach((cat, seat) => {
     session.apply({ type: "place", cat, seat })
@@ -65,8 +65,8 @@ describe("resuming the Run", () => {
     const storage = memoryStorage()
     const first = new Session(storage, "?seed=1")
     while (!first.run.scrapbookPages) playFive(first)
-    const [gathering] = first.run.scrapbookPages
-    first.apply({ type: "choosePage", gathering })
+    const [clowder] = first.run.scrapbookPages
+    first.apply({ type: "choosePage", clowder })
 
     expect(new Session(storage).run.shop).toStrictEqual(first.run.shop)
   })

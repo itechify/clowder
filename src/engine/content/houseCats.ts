@@ -31,11 +31,11 @@ export type HouseCat = {
   repeats?: (couch: Couch, seat: number) => number
   /**
    * After the Play: base Purr a played Cat gains for good, given how many
-   * Gatherings the Play activated.
+   * Clowders the Play activated.
    */
   grows?: (
     cat: Cat,
-    gatherings: number,
+    clowders: number,
     tuning: Config["houseCats"]
   ) => number | null
   /** Treats it pays on clearing `night`, as the Night stands when cleared. */
@@ -94,9 +94,9 @@ export const houseCats: readonly HouseCat[] = [
     id: "theVoid",
     name: "The Void",
     ability: ({ voidGrowth }) =>
-      `After a Play with a Gathering, its Black Cats gain +${voidGrowth} base Purr`,
-    grows: (cat, gatherings, { voidGrowth }) =>
-      gatherings > 0 && cat.coat === "black" ? voidGrowth : null
+      `After a Play with a Clowder, its Black Cats gain +${voidGrowth} base Purr`,
+    grows: (cat, clowders, { voidGrowth }) =>
+      clowders > 0 && cat.coat === "black" ? voidGrowth : null
   },
   {
     id: "freya",

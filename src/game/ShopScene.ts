@@ -209,7 +209,7 @@ export class ShopScene extends Phaser.Scene {
   private transition: { skip: () => void } | null = null
   /** Night is falling, and the Shop has closed. */
   private closing = false
-  /** The Scrapbook, opened to show every Gathering. */
+  /** The Scrapbook, opened to show every Clowder. */
   private viewingScrapbook = false
 
   constructor() {

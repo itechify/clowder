@@ -77,7 +77,7 @@ describe("the doorway", () => {
     expect(
       doorway.find(({ offer }) => offer?.tag.name === "The Void")?.offer?.tag
         .about
-    ).toBe("After a Play with a Gathering, its Black Cats gain +7 base Purr")
+    ).toBe("After a Play with a Clowder, its Black Cats gain +7 base Purr")
   })
 
   it("leaves an empty spot where a Cat was Adopted, the rest keeping theirs", () => {

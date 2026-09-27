@@ -9,14 +9,14 @@ Every image the game needs, for Astra to generate (ADR-0005). Written by `pnpm b
 | 1. Style reference sheet | 2 of 2 |
 | 2. Cat poses | 29 of 29 |
 | 3. House Cats, Skadi, and Freya | 22 of 22 |
-| 4. The room, badges, UI furniture, and Gathering overlays | 45 of 45 |
+| 4. The room, badges, UI furniture, and Clowder overlays | 45 of 45 |
 | 5. The Shop, the living room by day | 8 of 8 |
 
 ## How to generate and deliver
 
 - **Order.** Generate the style reference sheet first and approve it before anything else: it is attached to every later generation, so it holds the style together. Start each batch in a fresh conversation with it attached. The hero Cat on the sheet is then generated as its own image, like every other Cat.
 - **Characters.** Every Cat and House Cat is a transparent 512×512 PNG at one shared scale: about 384 px across, centred, sitting on its base 64 px above the bottom edge, which leaves room for a tail to dangle over the Shelf. A character turned to one side, like a reacting Cat, faces the viewer's right; the game mirrors it to face left. Leave out hearts, Zs, anger marks, and blush: the game draws them over the art.
-- **The room, UI, and Gathering overlays** are authored at 3× the game's 390×844 design size. Only the wall is opaque; everything else has a transparent background. Leave buttons and the treat jar blank: the game writes their words and numbers.
+- **The room, UI, and Clowder overlays** are authored at 3× the game's 390×844 design size. Only the wall is opaque; everything else has a transparent background. Leave buttons and the treat jar blank: the game writes their words and numbers.
 - **Sizes.** Astra generates at 1024×1024, 1536×1024, or 1024×1536. Resize, crop, or pad each image to exactly its size before saving it, without stretching; the build rejects any other size. For a long, thin piece such as the shelf or a blanket, generate it wide, spanning the whole width, then crop to its shape.
 - **Delivery.** Save each image as a PNG at its file path. A game image in `art/raw/` replaces its code-drawn fallback with no code change, and the dev server reloads when one lands. Then run `pnpm brief` to mark it delivered here. A content Clingy or Aloof Cat, whose eyes are open, also needs its eyes measured in `src/art/eyes.ts` for the game to tint and blink them; until then it shows its own eyes.
 - **Photos.** Skadi's and Freya's generations also attach every photo in `art/reference/photos/skadi/` or `art/reference/photos/freya/`. Those are the author's own cats: the folder is ignored by git, so the photos are never committed.
@@ -774,7 +774,7 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats. Draw her from the attached photos, keeping her markings, colours, and face recognisable while translating them into the style. On a shelf (don't draw the shelf), warming up, stage 3 of 3 from reserved to affectionate: fully affectionate: facing the viewer with her eyes closed happily, head tilted to rub against an unseen hand, tail up like a question mark. Square image with a transparent background and no floor or cast shadow. One character, full body, centred left to right and sitting on an invisible floor line 87.5% of the way down, so the bottom 12.5% stays empty but for a tail that may dangle into it. The character is about 75% of the image wide, at the same scale as the hero Cat on the style reference sheet. No floating hearts, Zs, anger marks, or blush: the game adds its own. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-## 4. The room, badges, UI furniture, and Gathering overlays
+## 4. The room, badges, UI furniture, and Clowder overlays
 
 - [x] `art/raw/badge/orange.png`
 - [x] `art/raw/badge/black.png`
@@ -813,14 +813,14 @@ A House Cat called Freya (Slow to Warm Up): Freya, one of the author's real cats
 - [x] `art/raw/ui/redrawButton/disabled.png`
 - [x] `art/raw/ui/pip/spent.png`
 - [x] `art/raw/ui/purrMeter/empty.png`
-- [x] `art/raw/gathering/cuddlePuddle/3.png`
-- [x] `art/raw/gathering/cuddlePuddle/4.png`
-- [x] `art/raw/gathering/cuddlePuddle/5.png`
-- [x] `art/raw/gathering/varietyPack/4.png`
-- [x] `art/raw/gathering/varietyPack/5.png`
-- [x] `art/raw/gathering/napClub.png`
-- [x] `art/raw/gathering/personalSpace.png`
-- [x] `art/raw/gathering/fullSofa.png`
+- [x] `art/raw/clowder/cuddlePuddle/3.png`
+- [x] `art/raw/clowder/cuddlePuddle/4.png`
+- [x] `art/raw/clowder/cuddlePuddle/5.png`
+- [x] `art/raw/clowder/varietyPack/4.png`
+- [x] `art/raw/clowder/varietyPack/5.png`
+- [x] `art/raw/clowder/napClub.png`
+- [x] `art/raw/clowder/personalSpace.png`
+- [x] `art/raw/clowder/fullSofa.png`
 
 ### Orange Coat badge: `art/raw/badge/orange.png`
 
@@ -1303,11 +1303,11 @@ A small, round pip already spent: an empty, hollow ring. Transparent background.
 The same long, slim, rounded meter empty: a soft cream fabric channel with a darker inset where the glow will fill it, exactly the same shape and outline as the full one. Leave its face blank: the game writes on it. Transparent background. Front-on, with no perspective. It will be resized to exactly 900×78 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Cuddle Puddle, across 3 Seats: `art/raw/gathering/cuddlePuddle/3.png`
+### Cuddle Puddle, across 3 Seats: `art/raw/clowder/cuddlePuddle/3.png`
 
 **Delivered.**
 
-- Key: `gathering/cuddlePuddle/3`
+- Key: `clowder/cuddlePuddle/3`
 - Size: 624×54
 - Anchor: (312, 27): centre
 - Attach: `art/reference/style-sheet.png`
@@ -1316,11 +1316,11 @@ The same long, slim, rounded meter empty: a soft cream fabric channel with a dar
 A long, thin strip of soft pink knitted blanket, draped across 3 Cats sitting side by side on a sofa: just the blanket. Transparent background. Front-on, with no perspective. It will be resized to exactly 624×54 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Cuddle Puddle, across 4 Seats: `art/raw/gathering/cuddlePuddle/4.png`
+### Cuddle Puddle, across 4 Seats: `art/raw/clowder/cuddlePuddle/4.png`
 
 **Delivered.**
 
-- Key: `gathering/cuddlePuddle/4`
+- Key: `clowder/cuddlePuddle/4`
 - Size: 834×54
 - Anchor: (417, 27): centre
 - Attach: `art/reference/style-sheet.png`
@@ -1329,11 +1329,11 @@ A long, thin strip of soft pink knitted blanket, draped across 3 Cats sitting si
 A long, thin strip of soft pink knitted blanket, draped across 4 Cats sitting side by side on a sofa: just the blanket. Transparent background. Front-on, with no perspective. It will be resized to exactly 834×54 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Cuddle Puddle, across 5 Seats: `art/raw/gathering/cuddlePuddle/5.png`
+### Cuddle Puddle, across 5 Seats: `art/raw/clowder/cuddlePuddle/5.png`
 
 **Delivered.**
 
-- Key: `gathering/cuddlePuddle/5`
+- Key: `clowder/cuddlePuddle/5`
 - Size: 1044×54
 - Anchor: (522, 27): centre
 - Attach: `art/reference/style-sheet.png`
@@ -1342,11 +1342,11 @@ A long, thin strip of soft pink knitted blanket, draped across 4 Cats sitting si
 A long, thin strip of soft pink knitted blanket, draped across 5 Cats sitting side by side on a sofa: just the blanket. Transparent background. Front-on, with no perspective. It will be resized to exactly 1044×54 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Variety Pack, across 4 Seats: `art/raw/gathering/varietyPack/4.png`
+### Variety Pack, across 4 Seats: `art/raw/clowder/varietyPack/4.png`
 
 **Delivered.**
 
-- Key: `gathering/varietyPack/4`
+- Key: `clowder/varietyPack/4`
 - Size: 810×42
 - Anchor: (405, 0): top centre
 - Attach: `art/reference/style-sheet.png`
@@ -1355,11 +1355,11 @@ A long, thin strip of soft pink knitted blanket, draped across 5 Cats sitting si
 A string of bunting strung across 4 seats of a sofa, hanging from its top edge, with small triangle flags in turn orange, black, white, gray, and calico. Transparent background. Front-on, with no perspective. It will be resized to exactly 810×42 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Variety Pack, across 5 Seats: `art/raw/gathering/varietyPack/5.png`
+### Variety Pack, across 5 Seats: `art/raw/clowder/varietyPack/5.png`
 
 **Delivered.**
 
-- Key: `gathering/varietyPack/5`
+- Key: `clowder/varietyPack/5`
 - Size: 1020×42
 - Anchor: (510, 0): top centre
 - Attach: `art/reference/style-sheet.png`
@@ -1368,11 +1368,11 @@ A string of bunting strung across 4 seats of a sofa, hanging from its top edge, 
 A string of bunting strung across 5 seats of a sofa, hanging from its top edge, with small triangle flags in turn orange, black, white, gray, and calico. Transparent background. Front-on, with no perspective. It will be resized to exactly 1020×42 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Nap Club: `art/raw/gathering/napClub.png`
+### Nap Club: `art/raw/clowder/napClub.png`
 
 **Delivered.**
 
-- Key: `gathering/napClub`
+- Key: `clowder/napClub`
 - Size: 126×72
 - Anchor: (63, 36): centre
 - Attach: `art/reference/style-sheet.png`
@@ -1381,11 +1381,11 @@ A string of bunting strung across 5 seats of a sofa, hanging from its top edge, 
 Two soft, puffy periwinkle Z shapes drifting up between two sleeping Cats, one small and one large. Transparent background. Front-on, with no perspective. It will be resized to exactly 126×72 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Personal Space: `art/raw/gathering/personalSpace.png`
+### Personal Space: `art/raw/clowder/personalSpace.png`
 
 **Delivered.**
 
-- Key: `gathering/personalSpace`
+- Key: `clowder/personalSpace`
 - Size: 204×204
 - Anchor: (102, 102): centre
 - Attach: `art/reference/style-sheet.png`
@@ -1394,11 +1394,11 @@ Two soft, puffy periwinkle Z shapes drifting up between two sleeping Cats, one s
 A round, translucent pale-blue bubble around one Cat: just the bubble, see-through in the middle. Transparent background. Front-on, with no perspective. It will be resized to exactly 204×204 pixels, so compose for that shape. No words, signatures, or watermarks. Style: Cult of the Lamb-inspired cute 2D game art, with thick, bold dark-brown outlines, chunky rounded shapes, flat cel shading with one soft shadow tone, and a saturated, cute palette, for a cozy living room at night. Match the attached style reference sheet exactly: its outline weight, palette, shading, and proportions.
 ```
 
-### Full Sofa: `art/raw/gathering/fullSofa.png`
+### Full Sofa: `art/raw/clowder/fullSofa.png`
 
 **Delivered.**
 
-- Key: `gathering/fullSofa`
+- Key: `clowder/fullSofa`
 - Size: 1170×498
 - Anchor: (585, 249): centre
 - Attach: `art/reference/style-sheet.png`

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 import {
+  type ClowderId,
   coats,
   defaultConfig,
-  type GatheringId,
   houseCats,
   personalities
 } from "../engine"
@@ -12,13 +12,13 @@ import {
   artManifest,
   CHARACTER_CANVAS,
   catArt,
-  gatheringArt,
+  clowderArt,
   houseCatArt,
   moonArt,
   ROOM_SCALE
 } from "./manifest"
 
-const gatheringIds: GatheringId[] = [
+const clowderIds: ClowderId[] = [
   "cuddlePuddle",
   "napClub",
   "personalSpace",
@@ -47,18 +47,18 @@ function requestable(): string[] {
     keys.push(art.playButton(ready), art.redrawButton(ready))
   for (const full of [true, false])
     keys.push(art.pip(full), art.purrMeter(full))
-  // A Gathering spans between its first and last Seats; each forms only
-  // across so many Seats (see src/engine/content/gatherings.ts).
-  const fewest: Record<GatheringId, number> = {
+  // A Clowder spans between its first and last Seats; each forms only
+  // across so many Seats (see src/engine/content/clowders.ts).
+  const fewest: Record<ClowderId, number> = {
     cuddlePuddle: 3,
     napClub: 2,
     personalSpace: 1,
     varietyPack: 4,
     fullSofa: defaultConfig.seats
   }
-  for (const gathering of gatheringIds)
-    for (let span = fewest[gathering]; span <= defaultConfig.seats; span++)
-      keys.push(gatheringArt(gathering, span))
+  for (const clowder of clowderIds)
+    for (let span = fewest[clowder]; span <= defaultConfig.seats; span++)
+      keys.push(clowderArt(clowder, span))
   return keys
 }
 
@@ -137,7 +137,7 @@ describe("the art manifest", () => {
       height: 844 * ROOM_SCALE
     })
     for (const entry of artManifest)
-      if (["room", "ui", "gathering"].includes(entry.kind)) {
+      if (["room", "ui", "clowder"].includes(entry.kind)) {
         expect(entry.canvas.width % ROOM_SCALE).toBe(0)
         expect(entry.canvas.height % ROOM_SCALE).toBe(0)
       }
