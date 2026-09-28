@@ -139,3 +139,23 @@ test("still places and unseats Cats by tapping", async ({ page }) => {
   await tap(page, ...layout.seat(1))
   expect((await run(page)).night.couch[1]).toBe(null)
 })
+
+test("keeps a Play's totals over the Clowders it reveals", async ({ page }) => {
+  await boot(page, 7)
+  await page.evaluate(() => {
+    const { run, apply } = window.__clowder!
+    run()
+      .night.hand.slice(0, 5)
+      .forEach((cat, seat) => {
+        apply({ type: "place", cat, seat })
+      })
+  })
+  await tap(page, ...layout.play)
+  const texts = () => page.evaluate(() => window.__clowder!.texts())
+  await expect.poll(texts).toContain("Variety Pack Lv 1")
+
+  // Drawn in order, so what comes later shows over what came before.
+  const shown = await texts()
+  const total = shown.findIndex((text) => text.endsWith(" Purr"))
+  expect(shown.indexOf("Variety Pack Lv 1")).toBeLessThan(total)
+})
