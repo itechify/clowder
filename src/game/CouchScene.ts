@@ -93,15 +93,15 @@ const DRAW_PILE_LABEL = { x: 22, y: 52 }
 const JAR_MOUTH = 44
 /** How long the jar bobs as each treat lands in it, at 1×. */
 const JAR_BOB_MS = 120
-const PURR_METER = { x: WIDTH / 2, y: 276 }
+const PURR_METER = { x: WIDTH / 2, y: 288 }
 /**
  * A Full Sofa's glow is centred on the Couch; Variety Pack bunting hangs from
  * the top of its back, beneath the purr meter.
  */
-const FULL_SOFA_Y = 337
-const BUNTING_Y = 286
+const FULL_SOFA_Y = 349
+const BUNTING_Y = 298
 /** Where a seated Cat's Purr shows above it, just below the purr meter. */
-const PURR_Y = 298
+const PURR_Y = 310
 /** Each Seat's tap and drop area, around its centre. */
 const SEAT_AREA = { w: 68, h: 110, dy: -10 }
 /**
@@ -116,9 +116,9 @@ const LIFT = 14
 /** How high a Cat hops between the rug and the Couch. */
 const HOP_HEIGHT = 46
 /** Where Clowder names sit, side by side just above the purr meter... */
-const CLOWDER_NAME_Y = 248
+const CLOWDER_NAME_Y = 260
 /** ...and where the Mult a Clowder adds pops up, just above its name. */
-const CLOWDER_POP_Y = 222
+const CLOWDER_POP_Y = 234
 /**
  * Each Clowder name's pill: its padding either side, its height, the gap
  * between pills, and how far in from the room's sides they keep.
@@ -1607,6 +1607,8 @@ export class CouchScene extends Phaser.Scene {
 
     // Purr × Mult so far, where the preview was: each Cat's Purr flies into
     // the Purr total, and Mult slams into its own. The Score counts up above.
+    // These and every word the sequence pops up stay over the Couch, even
+    // over a Clowder revealed after them.
     const purrTotal = add(
       this.add
         .text(WIDTH / 2 - TALLY_GAP, PREVIEW_Y, "0 Purr", numbers(22))
@@ -1806,7 +1808,7 @@ export class CouchScene extends Phaser.Scene {
           return () => {
             if (event.firstTime)
               banners.push(this.discover(event.name, wait, beat))
-            this.revealClowder(add, event, clowders, beat)
+            this.revealClowder(add, event, clowders, purrTotal, beat)
             // What it adds at its level pops up over the Seats forming it:
             // its Mult slams in, and any Purr flies into the Purr total.
             const x =
@@ -2140,12 +2142,14 @@ export class CouchScene extends Phaser.Scene {
 
   /**
    * Brings one Clowder onto the Couch mid-sequence, its name where it sits
-   * among the `row` of the Play's Clowders.
+   * among the `row` of the Play's Clowders, beneath the sequence's words
+   * from `tally` up.
    */
   private revealClowder(
     add: Add,
     active: ActiveClowder,
     row: ActiveClowder[],
+    tally: Phaser.GameObjects.GameObject,
     beat: (ms: number) => number
   ) {
     const shown: Phaser.GameObjects.GameObject[] = []
@@ -2156,7 +2160,11 @@ export class CouchScene extends Phaser.Scene {
     this.drawClowders(collect, [active], "behind")
     // Blankets aside, a Clowder sits behind the Cats already seated.
     for (const object of shown) this.layer.sendToBack(object)
+    const behind = shown.length
     this.drawClowders(collect, [active], "over", row)
+    // Blankets and names go over the Cats, but under the totals and pops.
+    for (const object of shown.slice(behind))
+      this.layer.moveBelow<Phaser.GameObjects.GameObject>(object, tally)
     this.tweens.add({
       targets: shown,
       alpha: { from: 0, to: 1 },

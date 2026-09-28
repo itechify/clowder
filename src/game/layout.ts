@@ -16,8 +16,8 @@ export const TREAT_JAR = { x: 362, y: 60 }
 export const TREAT_COUNT = { x: TREAT_JAR.x - 28, y: TREAT_JAR.y - 24 }
 export const SHELF_Y = 186
 export const SHELF_CAT_SIZE = 48
-export const COUCH_FLOOR_Y = 428
-export const SEAT_PAD_Y = 344
+export const COUCH_FLOOR_Y = 440
+export const SEAT_PAD_Y = 356
 export const RUG_Y = 636
 /**
  * The nail a Disaster's sign or note hangs from, below the treat jar, and how
@@ -25,7 +25,7 @@ export const RUG_Y = 636
  */
 export const DISASTER_PLAQUE = { x: 296, y: 64, textWidth: 140 }
 /** Where a seated Cat's centre sits above its Seat, and how big it is shown. */
-export const SEAT_Y = 352
+export const SEAT_Y = 364
 export const SEATED_SIZE = 64
 /** Each rug row's Cats: their centres' height, and how big they are shown. */
 export const RUG_ROWS = {

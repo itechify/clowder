@@ -81,4 +81,13 @@ function App() {
   )
 }
 
-createRoot(document.getElementById("root")!).render(<App />)
+const root = document.getElementById("root")!
+// Phaser hears presses anywhere on the page, off its canvas too, and hit-tests
+// the scene beneath them; a press on the shell's panels and buttons stops here
+// so it never also lands in the scene. Letting go still reaches Phaser, so a
+// Cat dragged over the shell is dropped.
+for (const type of ["mousedown", "touchstart"])
+  root.addEventListener(type, (event) => event.stopPropagation(), {
+    passive: true
+  })
+createRoot(root).render(<App />)
